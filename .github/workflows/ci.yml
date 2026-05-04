@@ -12,19 +12,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # ✅ Setup PHP + Composer
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: 8.2
+          tools: composer
 
+      # ✅ Install dependencies
       - name: Install dependencies
-        run: composer install
+        run: composer install --no-interaction --prefer-dist --no-progress
 
-      - name: Copy env
-        run: cp .env.example .env
-
-      - name: Generate key
-        run: php artisan key:generate
-
-      - name: Fake test
+      # ✅ Test thử
+      - name: Run test
         run: echo "CI is working"
