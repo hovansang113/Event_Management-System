@@ -12,17 +12,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # ✅ Setup PHP + Composer
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: 8.2
+          extensions: mbstring, pdo, pdo_mysql
           tools: composer
 
-      # ✅ Install dependencies
       - name: Install dependencies
+        working-directory: BackEnd
         run: composer install --no-interaction --prefer-dist --no-progress
 
-      # ✅ Test thử
-      - name: Run test
+      - name: Test
         run: echo "CI is working"
