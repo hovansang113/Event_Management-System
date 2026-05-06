@@ -1,10 +1,11 @@
 {
     "$schema": "https://www.schemastore.org/package.json",
+    "name": "backend",
     "private": true,
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "concurrently -c \"#93c5fd,#c4b5fd,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1\" \"vite\" --names='server,queue,vite'"
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.0.0",

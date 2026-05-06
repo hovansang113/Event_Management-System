@@ -20,7 +20,7 @@ jobs:
           tools: composer
 
       - name: Install dependencies
-        working-directory: BackEnd
+        working-directory: apps/backend
         run: composer install --no-interaction --prefer-dist --no-progress
 
       - name: Test
