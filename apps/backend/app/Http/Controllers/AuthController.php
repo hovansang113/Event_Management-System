@@ -23,7 +23,7 @@ class AuthController extends Controller
             'verification_token' => $token,
             'verification_token_expires_at' => now()->addHours(24)
         ]);
-
+    
         // gửi mail (bật lại khi cần)
         // Mail::to($user->email)->send(new VerificationMail($user, $token));
 
