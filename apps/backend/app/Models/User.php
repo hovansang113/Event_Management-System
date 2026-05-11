@@ -5,9 +5,10 @@ namespace App\Models;
 // app/Models/User.php
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
-
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 class User extends Authenticatable implements JWTSubject
 {
+    use HasFactory;
     # The attributes that are mass assignable.
     # it alow create new user with these attributes
     protected $fillable = [
