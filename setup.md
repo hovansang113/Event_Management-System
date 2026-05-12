@@ -125,3 +125,8 @@ Nếu bạn chỉ muốn tập trung làm việc trên một phần nhất đị
 - Khi thêm một thư viện mới vào frontend, hãy dùng `pnpm add <package-name>` tại thư mục của ứng dụng đó hoặc dùng `-filter` từ thư mục gốc.
 - Luôn kiểm tra file `.env` của backend nếu gặp lỗi kết nối API.
 - Nếu `shared-ui` có thay đổi, Turbo sẽ tự động phát hiện và build lại khi bạn chạy lệnh dev.
+
+
+
+
+sevh yava hgvn vonq

@@ -6,7 +6,7 @@ Route::prefix('auth')->group(function () {
     // Public
     Route::post('/register', [AuthController::class, 'register']);        // REQ_01
     Route::post('/login', [AuthController::class, 'login']);              // REQ_02
-    Route::get('/verify-email/{token}', [AuthController::class, 'verifyEmail']); // REQ_03
+    Route::get('/verify-email', [AuthController::class, 'verifyEmail']); // REQ_03
     Route::post('/resend-verification', [AuthController::class, 'resendVerification']); // REQ_03
 
     // Protected
