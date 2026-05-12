@@ -5,8 +5,6 @@ export default function RegisterPage() {
     const navigate = useNavigate();
     
     return (
-        <RegisterForm role="organizer" onSuccess={() => navigate("/login")}
-    />
-    
+        <RegisterForm role="organizer" onSuccess={() => navigate("/login")} />
     )
 }
