@@ -1,5 +1,9 @@
 {
   "name": "@eventnextday/shared-ui",
   "version": "1.0.0",
-  "main": "src/index.jsx"
+  "main": "src/index.jsx",
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  }
 }
