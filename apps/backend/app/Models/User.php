@@ -36,7 +36,11 @@ class User extends Authenticatable implements JWTSubject
     # This method allows us to add custom claims to the JWT token. In this case, we are adding the user's role as a claim, which can be useful for authorization purposes when the token is decoded.
     public function getJWTCustomClaims()
     {
-        return ['role' => $this->role];
+        return [
+            'role' => $this->role,
+            'name' => $this->name
+        
+        ];
     }
 
         # it helps the code is cleaner and more readable when we want to check if the user's email is verified. instead of checking $user->email_verified every time, we can simply call $user->isVerified() which is more intuitive and self-explanatory.

@@ -1,14 +1,14 @@
 <?php
 namespace App\Http\Controllers;
 use App\Traits\ApiResponse;
-
+use App\Http\Requests\LoginRequest;
 use App\Models\User;
-use Illuminate\Http\Request;                 // ← thêm dòng này
+use Illuminate\Http\Request;                
 use Illuminate\Support\Facades\Hash;
 use App\Http\Requests\RegisterRequest;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\VerificationMail;
-
+use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 class AuthController extends Controller
 {
     use ApiResponse;
@@ -34,6 +34,28 @@ class AuthController extends Controller
             ['user' => $user],
             'Đăng ký thành công. Vui lòng kiểm tra email.',
             201
+        );
+    }
+
+    public function login(LoginRequest $request)
+    {
+        $credentials = $request->validated();
+
+        $user = User::where('email', $credentials['email'])->first();
+
+        if (!$user || !Hash::check($credentials['password'], $user->password)) {
+            return $this->error('Thông tin đăng nhập không chính xác.', 401);
+        }
+
+        if (!$user->email_verified) {
+            return $this->error('Vui lòng xác minh email trước khi đăng nhập.', 403);
+        }
+
+        $token = JWTAuth::fromUser($user);
+
+        return $this->success(
+            ['access_token' => $token, 'token_type' => 'Bearer'],
+            'Đăng nhập thành công.'
         );
     }
 
