@@ -3,7 +3,7 @@ namespace App\Http\Controllers;
 use App\Traits\ApiResponse;
 use App\Http\Requests\LoginRequest;
 use App\Models\User;
-use Illuminate\Http\Request;                
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Requests\RegisterRequest;
 use Illuminate\Support\Facades\Mail;
@@ -123,5 +123,14 @@ class AuthController extends Controller
         Mail::to($user->email)->send(new VerificationMail($user, $token));
 
         return $this->success(null, 'Đã gửi lại email xác minh.');
+    }
+
+    public function logout(){
+        auth('api')->check();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Đăng xuất thành công'
+        ]);
     }
 }
