@@ -1,0 +1,75 @@
+@use "variables" as *;
+
+@mixin form-container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: $bg-light;
+  padding: 8px;
+
+  @media (min-width: 600px) {
+    padding: 16px;
+  }
+}
+
+@mixin form-paper($prefix) {
+  .#{$prefix}-form-paper.#{$prefix}-form-paper {
+    width: 100%;
+    max-width: $max-width-form;
+    padding: 24px;
+    border-radius: $border-radius-lg;
+
+    @media (min-width: 600px) {
+      padding: 40px;
+    }
+
+    .#{$prefix}-form-brand.#{$prefix}-form-brand {
+      font-weight: $font-weight-bold;
+      color: $primary-color;
+      margin-bottom: 8px;
+      font-size: 24px;
+
+      @media (min-width: 600px) {
+        font-size: 32px;
+      }
+    }
+
+    .#{$prefix}-form-title.#{$prefix}-form-title {
+      font-weight: $font-weight-bold;
+      margin-bottom: 32px;
+      font-size: 20px;
+
+      @media (min-width: 600px) {
+        font-size: 28px;
+      }
+    }
+
+    .#{$prefix}-form-label.#{$prefix}-form-label {
+      margin-bottom: 8px;
+      font-weight: $font-weight-semibold;
+    }
+
+    .#{$prefix}-form-input.#{$prefix}-form-input {
+      margin-bottom: 24px;
+    }
+
+    .#{$prefix}-form-alert.#{$prefix}-form-alert {
+      margin-bottom: 24px;
+    }
+
+    .#{$prefix}-form-submit-btn.#{$prefix}-form-submit-btn {
+      padding-top: 12px;
+      padding-bottom: 12px;
+      border-radius: $border-radius-sm;
+      font-weight: $font-weight-bold;
+      text-transform: none;
+      font-size: 16px;
+    }
+
+    .#{$prefix}-form-footer.#{$prefix}-form-footer {
+      margin-top: 24px;
+      color: $text-secondary;
+    }
+  }
+}

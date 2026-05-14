@@ -47,6 +47,11 @@ class AuthController extends Controller
             return $this->error('Thông tin đăng nhập không chính xác.', 401);
         }
 
+        # Check Role
+        if (isset($credentials['role']) && $user->role !== $credentials['role']) {
+            return $this->error('Bạn không có quyền truy cập vào hệ thống này.', 403);
+        }
+
         if (!$user->email_verified) {
             return $this->error('Vui lòng xác minh email trước khi đăng nhập.', 403);
         }
@@ -54,7 +59,15 @@ class AuthController extends Controller
         $token = JWTAuth::fromUser($user);
 
         return $this->success(
-            ['access_token' => $token, 'token_type' => 'Bearer'],
+            [
+                'access_token' => $token,
+                'token_type' => 'Bearer',
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'role' => $user->role,
+                ]
+            ],
             'Đăng nhập thành công.'
         );
     }

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAuthRegister } from "../hooks/useAuthRegister";
+import "../style/RegisterForm.scss";
 
 import {
   Box,
@@ -34,35 +35,16 @@ export const RegisterForm = ({ role, onSuccess }) => {
 
 
   return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: "#f5f5f5",
-        p: { xs: 1, sm: 2 },
-      }}
-    >
+    <Box className="register-form-container">
       <Paper
         elevation={3}
-        sx={{
-          width: "100%",
-          maxWidth: 450,
-          p: { xs: 3, sm: 5 },
-          borderRadius: 4,
-        }}
+        className="register-form-paper"
       >
         {/* Brand */}
         <Typography
           variant="h3"
           align="center"
-          sx={{
-            fontWeight: "bold",
-            color: "#0057c2",
-            mb: 1,
-            fontSize: { xs: "24px", sm: "32px" },
-          }}
+          className="register-form-brand"
         >
           EVENTNOW
         </Typography>
@@ -71,11 +53,7 @@ export const RegisterForm = ({ role, onSuccess }) => {
         <Typography
           variant="h4"
           align="center"
-          sx={{
-            fontWeight: "bold",
-            mb: 4,
-            fontSize: { xs: "20px", sm: "28px" },
-          }}
+          className="register-form-title"
         >
           Tạo tài khoản
         </Typography>
@@ -84,7 +62,7 @@ export const RegisterForm = ({ role, onSuccess }) => {
         <Box component="form" onSubmit={handleSubmit}>
 
           {/* Name */}
-          <Typography sx={{ mb: 1, fontWeight: 600 }}>
+          <Typography className="register-form-label">
             Tên
           </Typography>
 
@@ -95,11 +73,11 @@ export const RegisterForm = ({ role, onSuccess }) => {
             placeholder="Nhập tên của bạn"
             value={formData.name}
             onChange={handleChange}
-            sx={{ mb: 3 }}
+            className="register-form-input"
           />
 
           {/* Email */}
-          <Typography sx={{ mb: 1, fontWeight: 600 }}>
+          <Typography className="register-form-label">
             Email
           </Typography>
 
@@ -110,11 +88,11 @@ export const RegisterForm = ({ role, onSuccess }) => {
             placeholder="Nhập địa chỉ email"
             value={formData.email}
             onChange={handleChange}
-            sx={{ mb: 3 }}
+            className="register-form-input"
           />
 
           {/* Password */}
-          <Typography sx={{ mb: 1, fontWeight: 600 }}>
+          <Typography className="register-form-label">
             Mật khẩu
           </Typography>
 
@@ -125,7 +103,7 @@ export const RegisterForm = ({ role, onSuccess }) => {
             placeholder="Tạo mật khẩu"
             value={formData.password}
             onChange={handleChange}
-            sx={{ mb: 3 }}
+            className="register-form-input"
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
@@ -146,7 +124,7 @@ export const RegisterForm = ({ role, onSuccess }) => {
           />
 
           {/* Confirm Password */}
-          <Typography sx={{ mb: 1, fontWeight: 600 }}>
+          <Typography className="register-form-label">
             Xác nhận mật khẩu
           </Typography>
 
@@ -159,7 +137,7 @@ export const RegisterForm = ({ role, onSuccess }) => {
             placeholder="Nhập lại mật khẩu"
             value={formData.password_confirmation}
             onChange={handleChange}
-            sx={{ mb: 3 }}
+            className="register-form-input"
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
@@ -183,7 +161,7 @@ export const RegisterForm = ({ role, onSuccess }) => {
 
           {/* Error */}
           {error && (
-            <Alert severity="error" sx={{ mb: 3 }}>
+            <Alert severity="error" className="register-form-alert">
               {error}
             </Alert>
           )}
@@ -194,13 +172,7 @@ export const RegisterForm = ({ role, onSuccess }) => {
             type="submit"
             variant="contained"
             disabled={loading}
-            sx={{
-              py: 1.5,
-              borderRadius: 2,
-              fontWeight: "bold",
-              textTransform: "none",
-              fontSize: 16,
-            }}
+            className="register-form-submit-btn"
           >
             {loading ? (
               <CircularProgress size={24} color="inherit" />
@@ -212,10 +184,7 @@ export const RegisterForm = ({ role, onSuccess }) => {
           {/* Login */}
           <Typography
             align="center"
-            sx={{
-              mt: 3,
-              color: "#666",
-            }}
+            className="register-form-footer"
           >
             Đã có tài khoản?{" "}
             <Link href="/login" underline="hover">

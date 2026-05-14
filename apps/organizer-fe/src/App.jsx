@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import RegisterPage from "./pages/RegisterPage";
-
+import LoginPage from "./pages/LoginPage";
 const theme = createTheme();
 
 export default function App() {
@@ -13,6 +13,7 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/login" element={<LoginPage />} />
         </Routes>
       </BrowserRouter>
     </ThemeProvider>

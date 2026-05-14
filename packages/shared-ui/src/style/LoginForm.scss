@@ -1,0 +1,6 @@
+@use "mixins" as *;
+
+.login-form-container {
+  @include form-container;
+  @include form-paper("login");
+}
