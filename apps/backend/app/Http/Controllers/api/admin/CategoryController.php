@@ -2,11 +2,9 @@
 namespace App\Http\Controllers\api\admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Http\Requests\Category\StoreCategoryRequest;
 use App\Http\Requests\Category\UpdateCategoryRequest;
 use App\Http\Resources\Category\CategoryResource;
-use App\Models\Category;
 use App\Service\CategoryService;
 use App\Traits\ApiResponse;
 
@@ -21,7 +19,6 @@ class CategoryController extends Controller
 
     public function index(){
         $categories = $this->categoryService->getAllCategories();
-
         return $this->success(CategoryResource::collection($categories), 'Categories retrieved successfully');
     }
     public function store(StoreCategoryRequest $request){
