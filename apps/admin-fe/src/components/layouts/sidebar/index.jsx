@@ -40,8 +40,10 @@ const Sidebar = () => {
     >
       {/* Phần thông tin user */}
       <Box sx={{ p: 3, display: "flex", flexDirection: "column", alignItems: "center" }}>
+        <Typography variant="h5" sx={{ fontWeight: "bold", mb: 1, marginBottom: 5, color: "primary.main" }}>
+          EVEMTNOW
+        </Typography>
         <Avatar
-          src="https://i.pravatar.cc/150?u=admin"
           sx={{ width: 64, height: 64, mb: 1 }}
         />
         <Typography variant="h6" sx={{ fontWeight: "bold" }}>

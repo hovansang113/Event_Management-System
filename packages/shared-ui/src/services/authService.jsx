@@ -4,7 +4,7 @@ import { STORAGE_KEYS } from "../constants/storage";
 
 export const authService = {
     register: async (data) => {
-        const response = await api.post(API_ENDPOINTS.AUTH.REGISTER, data);
+        const response = await api.post(API_ENDPOINTS.AUTH.REGISTER, data);   
         return response.data
     },
 
@@ -18,3 +18,4 @@ export const authService = {
         localStorage.removeItem(STORAGE_KEYS.USER);
     }
 }
+

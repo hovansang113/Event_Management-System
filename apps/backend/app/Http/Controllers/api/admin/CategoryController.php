@@ -5,36 +5,36 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Category\StoreCategoryRequest;
 use App\Http\Requests\Category\UpdateCategoryRequest;
 use App\Http\Resources\Category\CategoryResource;
-use App\Service\CategoryService;
+use App\Repositories\CategoryRepository;
 use App\Traits\ApiResponse;
 
 class CategoryController extends Controller
 {
     use ApiResponse;
-    protected $categoryService;
-    public function __construct(CategoryService $categoryService)
+    protected $categoryRepository;
+    public function __construct(CategoryRepository $categoryRepository)
     {
-        $this->categoryService = $categoryService;
+        $this->categoryRepository = $categoryRepository;
     }
 
     public function index(){
-        $categories = $this->categoryService->getAllCategories();
+        $categories = $this->categoryRepository->all();
         return $this->success(CategoryResource::collection($categories), 'Categories retrieved successfully');
     }
     public function store(StoreCategoryRequest $request){
-        $category = $this->categoryService->createCategory($request->validated());
+        $category = $this->categoryRepository->create($request->validated());
 
         return $this->success(new CategoryResource($category), 'Category created successfully', 201);
     }
     
     public function update(UpdateCategoryRequest $request, $id){
-        $category = $this->categoryService->updateCategory($id, $request->validated());
+        $category = $this->categoryRepository->update($id, $request->validated());
 
         return $this->success(new CategoryResource($category), 'Category updated successfully');
     }
 
     public function destroy($id){
-        $this->categoryService->deleteCategory($id);
+        $this->categoryRepository->delete($id);
 
         return $this->success(null, 'Category deleted successfully');
     }

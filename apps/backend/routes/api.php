@@ -2,8 +2,10 @@
 
 use App\Http\Controllers\api\AuthController;
 use App\Http\Controllers\api\admin\CategoryController;
+use App\Http\Controllers\api\organizer\EventController;
 use Illuminate\Support\Facades\Route;
 
+// url: http://localhost:8000/api/auth/register
 
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
@@ -24,5 +26,9 @@ Route::middleware(['auth:api', 'role:admin'])->prefix('admin')->group(function (
     Route::post('/categories', [CategoryController::class, 'store']);
     Route::put('/categories/{id}', [CategoryController::class, 'update']);
     Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);
+});
+
+Route::middleware(['auth:api', 'role:organizer'])->prefix('organizer')->group(function () {
+    Route::post('/events', [EventController::class, 'store']);
 });
 
