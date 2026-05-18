@@ -5,10 +5,8 @@ import Sidebar from "../components/layouts/sidebar";
 const AdminLayout = () => {
   return (
     <Box sx={{ display: "flex", minHeight: "100vh" }}>
-      {/* Sidebar cố định - Chỉ render 1 lần */}
       <Sidebar />
 
-      {/* Main Content thay đổi dựa theo Route */}
       <Box
         component="main"
         sx={{
@@ -18,7 +16,7 @@ const AdminLayout = () => {
           width: { sm: `calc(100% - 240px)` },
         }}
       >
-        <Outlet /> {/* Đây là nơi các trang con (Dashboard, Categories...) sẽ hiển thị */}
+        <Outlet />
       </Box>
     </Box>
   );

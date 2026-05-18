@@ -14,11 +14,16 @@ import {
   CircularProgress,
   Alert,
   Tooltip,
+  Chip,
+  Switch,
 } from "@mui/material";
 
 import AddIcon from "@mui/icons-material/Add";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+import RestoreFromTrashIcon from "@mui/icons-material/RestoreFromTrash";
+import BlockIcon from "@mui/icons-material/Block";
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
 
 import { useCategory } from "../../hooks/Category/useCategory";
 import CategoryForm from "./CategoryForm";
@@ -26,7 +31,9 @@ import styles from "./Category.module.scss";
 
 const getCategoryIcon = (iconSource) => {
   if (!iconSource || (!iconSource.startsWith("http") && !iconSource.startsWith("/"))) {
-    return null;
+    return <Box sx={{ backgroundColor: '#f0f0f0', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 1 }}>
+      <Typography variant="caption">N/A</Typography>
+    </Box>;
   }
 
   return (
@@ -58,7 +65,9 @@ export default function ManageCategories() {
     handleOpenEdit,
     handleCloseForm,
     handleSubmit, 
-    handleDelete 
+    handleDelete,
+    handleRestore,
+    handleToggleStatus
   } = useCategory();
 
   return (
@@ -70,7 +79,7 @@ export default function ManageCategories() {
             Manage Categories
           </Typography>
           <Typography className={styles.subtitle}>
-            Organize events with categories
+            Organize events with categories, now with slugs and status control
           </Typography>
         </Box>
 
@@ -107,8 +116,9 @@ export default function ManageCategories() {
           <TableHead className={styles.tableHead}>
             <TableRow>
               <TableCell sx={{ width: 80 }}>Icon</TableCell>
-              <TableCell>Name</TableCell>
+              <TableCell>Category Info</TableCell>
               <TableCell>Description</TableCell>
+              <TableCell>Status</TableCell>
               <TableCell align="right">Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -116,7 +126,7 @@ export default function ManageCategories() {
           <TableBody>
             {categories && categories.length > 0 ? (
               categories.map((category) => (
-                <TableRow key={category.id} hover>
+                <TableRow key={category.id} hover sx={{ opacity: category.deleted_at ? 0.6 : 1 }}>
                   <TableCell>
                     <Box className={styles.iconBox}>
                       {getCategoryIcon(category.icon)}
@@ -127,6 +137,9 @@ export default function ManageCategories() {
                     <Typography variant="subtitle2" className={styles.categoryName}>
                       {category.name}
                     </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Slug: {category.slug}
+                    </Typography>
                   </TableCell>
 
                   <TableCell>
@@ -135,27 +148,60 @@ export default function ManageCategories() {
                     </Typography>
                   </TableCell>
 
+                  <TableCell>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <Chip 
+                        label={category.is_active ? "Active" : "Inactive"} 
+                        color={category.is_active ? "success" : "default"}
+                        size="small"
+                        variant="outlined"
+                        icon={category.is_active ? <CheckCircleOutlineIcon /> : <BlockIcon />}
+                      />
+                      {!category.deleted_at && (
+                        <Switch 
+                          size="small" 
+                          checked={category.is_active} 
+                          onChange={() => handleToggleStatus(category)}
+                        />
+                      )}
+                    </Stack>
+                  </TableCell>
+
                   <TableCell align="right">
                     <Box className={styles.actionsCell}>
-                      <Tooltip title="Edit">
-                        <IconButton 
-                          color="primary" 
-                          size="small"
-                          onClick={() => handleOpenEdit(category)}
-                        >
-                          <EditOutlinedIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
+                      {!category.deleted_at ? (
+                        <>
+                          <Tooltip title="Edit">
+                            <IconButton 
+                              color="primary" 
+                              size="small"
+                              onClick={() => handleOpenEdit(category)}
+                            >
+                              <EditOutlinedIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
 
-                      <Tooltip title="Delete">
-                        <IconButton
-                          color="error"
-                          size="small"
-                          onClick={() => handleDelete(category.id)}
-                        >
-                          <DeleteOutlineOutlinedIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
+                          <Tooltip title="Delete">
+                            <IconButton
+                              color="error"
+                              size="small"
+                              onClick={() => handleDelete(category.id)}
+                            >
+                              <DeleteOutlineOutlinedIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                        </>
+                      ) : (
+                        <Tooltip title="Restore">
+                          <IconButton
+                            color="success"
+                            size="small"
+                            onClick={() => handleRestore(category.id)}
+                          >
+                            <RestoreFromTrashIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      )}
                     </Box>
                   </TableCell>
                 </TableRow>
@@ -163,7 +209,7 @@ export default function ManageCategories() {
             ) : (
               !loading && (
                 <TableRow>
-                  <TableCell colSpan={4} align="center" sx={{ py: 8 }}>
+                  <TableCell colSpan={5} align="center" sx={{ py: 8 }}>
                     <Typography color="text.secondary">
                       No categories found. Start by adding one!
                     </Typography>

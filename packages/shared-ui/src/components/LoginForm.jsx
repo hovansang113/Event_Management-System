@@ -37,7 +37,6 @@ export const LoginForm = ({ role, onSuccess, showRegisterLink = true }) => {
         elevation={3}
         className="login-form-paper"
       >
-        {/* Brand */}
         <Typography
           variant="h3"
           align="center"
@@ -46,19 +45,16 @@ export const LoginForm = ({ role, onSuccess, showRegisterLink = true }) => {
           EVENTNOW
         </Typography>
 
-        {/* Title */}
         <Typography
           variant="h4"
           align="center"
           className="login-form-title"
         >
-          Đăng nhập
+          Login
         </Typography>
 
-        {/* Form */}
         <Box component="form" onSubmit={handleSubmit}>
 
-          {/* Email */}
           <Typography className="login-form-label">
             Email
           </Typography>
@@ -67,22 +63,21 @@ export const LoginForm = ({ role, onSuccess, showRegisterLink = true }) => {
             fullWidth
             name="email"
             type="email"
-            placeholder="Nhập địa chỉ email"
+            placeholder="Enter your email"
             value={formData.email}
             onChange={handleChange}
             className="login-form-input"
           />
 
-          {/* Password */}
           <Typography className="login-form-label">
-            Mật khẩu
+            Password
           </Typography>
 
           <TextField
             fullWidth
             name="password"
             type={showPassword ? "text" : "password"}
-            placeholder="Nhập mật khẩu"
+            placeholder="Enter your password"
             value={formData.password}
             onChange={handleChange}
             className="login-form-input"
@@ -105,14 +100,12 @@ export const LoginForm = ({ role, onSuccess, showRegisterLink = true }) => {
             }}
           />
 
-          {/* Error */}
           {error && (
             <Alert severity="error" className="login-form-alert">
               {error}
             </Alert>
           )}
 
-          {/* Button */}
           <Button
             fullWidth
             type="submit"
@@ -123,19 +116,18 @@ export const LoginForm = ({ role, onSuccess, showRegisterLink = true }) => {
             {loading ? (
               <CircularProgress size={24} color="inherit" />
             ) : (
-              "Đăng nhập"
+              "Login"
             )}
           </Button>
 
-          {/* Register Link */}
           {showRegisterLink && (
             <Typography
               align="center"
               className="login-form-footer"
             >
-              Chưa có tài khoản?{" "}
+              Don't have an account?{" "}
               <Link href="/register" underline="hover">
-                Đăng ký ngay
+                Register now
               </Link>
             </Typography>
           )}

@@ -15,14 +15,14 @@ class RoleMiddleware
         if (!$user) {
             return response()->json([
                 'success' => false,
-                'message' => 'Bạn chưa đăng nhập hoặc token không hợp lệ.',
+                'message' => 'You are not logged in or the token is invalid.',
             ], 401);
         }
 
         if (!in_array($user->role, $roles, true)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Bạn không có quyền thực hiện thao tác này.',
+                'message' => 'You do not have permission to perform this action.',
             ], 403);
         }
 

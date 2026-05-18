@@ -23,7 +23,6 @@ export const useAuthLogin = (role, onSuccess) => {
         try{
             const result = await authService.login({ ...formData, role });
             
-            // Save to localStorage
             if (result.data?.access_token) {
                 localStorage.setItem(STORAGE_KEYS.TOKEN, result.data.access_token);
                 localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(result.data.user));
@@ -32,7 +31,7 @@ export const useAuthLogin = (role, onSuccess) => {
             onSuccess?.(result);
             
         }catch(err){
-            setError(err.response?.data?.message || "Đăng nhập thất bại");
+            setError(err.response?.data?.message || "Login failed");
         }finally{
             setLoading(false);
         }

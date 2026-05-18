@@ -2,32 +2,39 @@
 
 namespace App\Http\Requests\Auth;
 
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class LoginRequest extends FormRequest
 {
+    /**
+     * Determine if the user is authorized to make this request.
+     */
     public function authorize(): bool
     {
         return true;
     }
 
+    /**
+     * Get the validation rules that apply to the request.
+     */
     public function rules(): array
     {
         return [
-            'email' => ['required', 'email'],
-            'password' => ['required', 'string', 'min:8'],
-            'role' => ['nullable', 'string', 'in:admin,organizer,attendee'],
+            'email' => 'required|email',
+            'password' => 'required|min:8',
         ];
     }
 
+    /**
+     * Custom message for validation
+     */
     public function messages(): array
     {
         return [
-            'email.required' => 'Vui lòng nhập địa chỉ email.',
-            'email.email' => 'Địa chỉ email không đúng định dạng.',
-            'password.required' => 'Vui lòng nhập mật khẩu.',
-            'password.min' => 'Mật khẩu phải có ít nhất 8 ký tự.',
+            'email.required' => 'Please enter your email address.',
+            'email.email' => 'The email address format is invalid.',
+            'password.required' => 'Please enter your password.',
+            'password.min' => 'Password must be at least 8 characters.',
         ];
     }
 }

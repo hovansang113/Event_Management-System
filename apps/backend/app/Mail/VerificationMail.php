@@ -22,7 +22,7 @@ class VerificationMail extends Mailable
     public function build(): self
     {
         return $this
-            ->subject('Xác minh địa chỉ email của bạn')
+            ->subject('Verify your email address')
             ->view('emails.verify-email');
     }
 }

@@ -27,7 +27,7 @@ class AuthController extends Controller
             $user = $this->authService->register($request->validated());
             return $this->success(
                 ['user' => $user],
-                'Đăng ký thành công. Vui lòng kiểm tra email.',
+                'Registration successful. Please check your email.',
                 201
             );
         } catch (Exception $e) {
@@ -39,7 +39,7 @@ class AuthController extends Controller
     {
         try {
             $data = $this->authService->login($request->validated());
-            return $this->success($data, 'Đăng nhập thành công.');
+            return $this->success($data, 'Login successful.');
         } catch (Exception $e) {
             return $this->error($e->getMessage(), $e->getCode() ?: 401);
         }
@@ -63,7 +63,7 @@ class AuthController extends Controller
 
         try {
             $this->authService->resendVerification($request->email);
-            return $this->success(null, 'Đã gửi lại email xác minh.');
+            return $this->success(null, 'Verification email resent.');
         } catch (Exception $e) {
             return $this->error($e->getMessage(), $e->getCode() ?: 500);
         }
@@ -73,11 +73,11 @@ class AuthController extends Controller
     {
         $this->authService->logout();
 
-        return $this->success(null, 'Đăng xuất thành công.');
+        return $this->success(null, 'Logout successful.');
     }
 
     public function me()
     {
-        return $this->success(auth('api')->user(), 'Lấy thông tin người dùng thành công.');
+        return $this->success(auth('api')->user(), 'User information retrieved successfully.');
     }
 }

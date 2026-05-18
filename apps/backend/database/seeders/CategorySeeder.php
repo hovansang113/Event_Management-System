@@ -2,70 +2,84 @@
 
 namespace Database\Seeders;
 
+use App\Models\Category;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class CategorySeeder extends Seeder
 {
+    /**
+     * Run the database seeds.
+     */
     public function run(): void
     {
-        DB::table('category')->insert([
+        $categories = [
             [
-                'name'        => 'Âm nhạc',
-                'description' => 'Các sự kiện âm nhạc, concert, live show',
-                'icon'        => 'music',
-                'created_at'  => now(),
-                'updated_at'  => now(),
+                'name'        => 'Music',
+                'description' => 'Exciting music events, concerts, and live shows.',
+                'icon'        => 'https://cdn-icons-png.flaticon.com/512/3844/3844724.png',
+                'is_active'   => true,
             ],
             [
-                'name'        => 'Thể thao',
-                'description' => 'Các sự kiện thể thao, giải đấu',
-                'icon'        => 'sports',
-                'created_at'  => now(),
-                'updated_at'  => now(),
+                'name'        => 'Sports',
+                'description' => 'Football tournaments, tennis matches, marathons, and physical activities.',
+                'icon'        => 'https://cdn-icons-png.flaticon.com/512/857/857418.png',
+                'is_active'   => true,
             ],
             [
-                'name'        => 'Công nghệ',
-                'description' => 'Hội thảo, workshop về công nghệ',
-                'icon'        => 'technology',
-                'created_at'  => now(),
-                'updated_at'  => now(),
+                'name'        => 'Technology',
+                'description' => 'Tech conferences, product launches, and programming workshops.',
+                'icon'        => 'https://cdn-icons-png.flaticon.com/512/4257/4257487.png',
+                'is_active'   => true,
             ],
             [
-                'name'        => 'Ẩm thực',
-                'description' => 'Lễ hội ẩm thực, food festival',
-                'icon'        => 'food',
-                'created_at'  => now(),
-                'updated_at'  => now(),
+                'name'        => 'Food & Drink',
+                'description' => 'Explore culinary culture, cooking classes, and food festivals.',
+                'icon'        => 'https://cdn-icons-png.flaticon.com/512/706/706164.png',
+                'is_active'   => true,
             ],
             [
-                'name'        => 'Giáo dục',
-                'description' => 'Hội thảo, khóa học, seminar',
-                'icon'        => 'education',
-                'created_at'  => now(),
-                'updated_at'  => now(),
+                'name'        => 'Education',
+                'description' => 'Short-term training courses, seminars, and career orientation.',
+                'icon'        => 'https://cdn-icons-png.flaticon.com/512/2997/2997314.png',
+                'is_active'   => true,
             ],
             [
-                'name'        => 'Nghệ thuật',
-                'description' => 'Triển lãm, biểu diễn nghệ thuật',
-                'icon'        => 'art',
-                'created_at'  => now(),
-                'updated_at'  => now(),
+                'name'        => 'Arts',
+                'description' => 'Art exhibitions, theatrical plays, and cultural performances.',
+                'icon'        => 'https://cdn-icons-png.flaticon.com/512/1033/1033921.png',
+                'is_active'   => true,
             ],
             [
-                'name'        => 'Du lịch',
-                'description' => 'Các tour du lịch, khám phá',
-                'icon'        => 'travel',
-                'created_at'  => now(),
-                'updated_at'  => now(),
+                'name'        => 'Travel',
+                'description' => 'Nature exploration tours, trekking, and cultural exchanges.',
+                'icon'        => 'https://cdn-icons-png.flaticon.com/512/201/201623.png',
+                'is_active'   => true,
             ],
             [
-                'name'        => 'Sức khỏe',
-                'description' => 'Hội thảo sức khỏe, yoga, thiền',
-                'icon'        => 'health',
-                'created_at'  => now(),
-                'updated_at'  => now(),
+                'name'        => 'Health',
+                'description' => 'Yoga events, meditation sessions, and proactive healthcare.',
+                'icon'        => 'https://cdn-icons-png.flaticon.com/512/2966/2966327.png',
+                'is_active'   => true,
             ],
-        ]);
+            [
+                'name'        => 'Business',
+                'description' => 'Entrepreneur conferences, investment networking, and startups.',
+                'icon'        => 'https://cdn-icons-png.flaticon.com/512/2652/2652234.png',
+                'is_active'   => false,
+            ],
+        ];
+
+        foreach ($categories as $category) {
+            Category::updateOrCreate(
+                ['name' => $category['name']],
+                [
+                    'slug'        => Str::slug($category['name']),
+                    'description' => $category['description'],
+                    'icon'        => $category['icon'],
+                    'is_active'   => $category['is_active'],
+                ]
+            );
+        }
     }
 }

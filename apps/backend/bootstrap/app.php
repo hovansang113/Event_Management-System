@@ -37,7 +37,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (ValidationException $e, $request) {
             return response()->json([
                 'success' => false,
-                'message' => 'Dữ liệu không hợp lệ.',
+                'message' => 'Invalid data.',
                 'errors'  => $e->errors(),
             ], 422);
         });
@@ -46,7 +46,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (AuthenticationException $e, $request) {
             return response()->json([
                 'success' => false,
-                'message' => 'Bạn chưa đăng nhập hoặc token không hợp lệ.',
+                'message' => 'You are not logged in or the token is invalid.',
             ], 401);
         });
 
@@ -54,7 +54,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (AuthorizationException $e, $request) {
             return response()->json([
                 'success' => false,
-                'message' => 'Bạn không có quyền thực hiện thao tác này.',
+                'message' => 'You do not have permission to perform this action.',
             ], 403);
         });
 
@@ -63,7 +63,7 @@ return Application::configure(basePath: dirname(__DIR__))
             $model = class_basename($e->getModel());
             return response()->json([
                 'success' => false,
-                'message' => "{$model} không tìm thấy.",
+                'message' => "{$model} not found.",
             ], 404);
         });
 
@@ -71,7 +71,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (NotFoundHttpException $e, $request) {
             return response()->json([
                 'success' => false,
-                'message' => 'Endpoint không tồn tại.',
+                'message' => 'Endpoint does not exist.',
             ], 404);
         });
 
@@ -79,7 +79,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (QueryException $e, $request) {
             return response()->json([
                 'success' => false,
-                'message' => 'Lỗi cơ sở dữ liệu. Vui lòng thử lại.',
+                'message' => 'Database error. Please try again.',
             ], 500);
         });
 

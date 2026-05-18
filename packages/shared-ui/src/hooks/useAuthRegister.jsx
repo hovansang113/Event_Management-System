@@ -1,4 +1,3 @@
-// packages/shared-ui/src/hooks/useAuthRegister.js
 import { useState } from "react";
 import { authService } from "../services/authService";
 
@@ -24,7 +23,7 @@ export const useAuthRegister = (role, onSuccess) => {
       const result = await authService.register({ ...formData, role });
       onSuccess?.(result);
     } catch (err) {
-      setError(err.response?.data?.message || "Đăng ký thất bại");
+      setError(err.response?.data?.message || "Registration failed");
     } finally {
       setLoading(false);
     }
@@ -32,4 +31,3 @@ export const useAuthRegister = (role, onSuccess) => {
 
   return { formData, handleChange, handleSubmit, loading, error };
 };
-

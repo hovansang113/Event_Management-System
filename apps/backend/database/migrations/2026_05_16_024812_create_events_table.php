@@ -16,7 +16,7 @@ return new class extends Migration
                   ->cascadeOnDelete();
 
             $table->foreignId('category_id')
-                  ->constrained('category');
+                  ->constrained('categories');
 
             $table->string('title');
             $table->longText('description');

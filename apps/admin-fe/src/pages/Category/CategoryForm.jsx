@@ -7,6 +7,9 @@ import {
   Button,
   Box,
   CircularProgress,
+  FormControlLabel,
+  Switch,
+  Typography,
 } from "@mui/material";
 
 const CategoryForm = ({ open, onClose, formData, onChange, onSubmit, loading }) => {
@@ -19,7 +22,6 @@ const CategoryForm = ({ open, onClose, formData, onChange, onSubmit, loading }) 
 
         <DialogContent dividers>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 3, pt: 1 }}>
-            {/* Tên danh mục */}
             <TextField
               label="Category Name"
               name="name"
@@ -31,7 +33,18 @@ const CategoryForm = ({ open, onClose, formData, onChange, onSubmit, loading }) 
               autoFocus
             />
 
-            {/* Mô tả */}
+            {formData?.id && (
+              <TextField
+                label="Slug"
+                name="slug"
+                value={formData.slug || ""}
+                onChange={onChange}
+                fullWidth
+                disabled
+                helperText="Slug is generated automatically from name"
+              />
+            )}
+
             <TextField
               label="Description"
               name="description"
@@ -43,7 +56,6 @@ const CategoryForm = ({ open, onClose, formData, onChange, onSubmit, loading }) 
               placeholder="Tell something about this category..."
             />
 
-            {/* URL Icon */}
             <TextField
               label="Icon URL"
               name="icon"
@@ -53,6 +65,23 @@ const CategoryForm = ({ open, onClose, formData, onChange, onSubmit, loading }) 
               placeholder="https://example.com/icon.png"
               helperText="Paste a direct image link here"
             />
+
+            <Box>
+              <Typography variant="subtitle2" gutterBottom>
+                Status
+              </Typography>
+              <FormControlLabel
+                control={
+                  <Switch
+                    name="is_active"
+                    checked={formData.is_active ?? true}
+                    onChange={onChange}
+                    color="primary"
+                  />
+                }
+                label={formData.is_active ? "Active" : "Inactive"}
+              />
+            </Box>
           </Box>
         </DialogContent>
 

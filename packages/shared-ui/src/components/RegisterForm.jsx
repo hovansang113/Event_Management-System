@@ -32,15 +32,12 @@ export const RegisterForm = ({ role, onSuccess }) => {
     error,
   } = useAuthRegister(role, onSuccess);
 
-
-
   return (
     <Box className="register-form-container">
       <Paper
         elevation={3}
         className="register-form-paper"
       >
-        {/* Brand */}
         <Typography
           variant="h3"
           align="center"
@@ -49,34 +46,30 @@ export const RegisterForm = ({ role, onSuccess }) => {
           EVENTNOW
         </Typography>
 
-        {/* Title */}
         <Typography
           variant="h4"
           align="center"
           className="register-form-title"
         >
-          Tạo tài khoản
+          Create Account
         </Typography>
 
-        {/* Form */}
         <Box component="form" onSubmit={handleSubmit}>
 
-          {/* Name */}
           <Typography className="register-form-label">
-            Tên
+            Name
           </Typography>
 
           <TextField
             fullWidth
             name="name"
             type="text"
-            placeholder="Nhập tên của bạn"
+            placeholder="Enter your name"
             value={formData.name}
             onChange={handleChange}
             className="register-form-input"
           />
 
-          {/* Email */}
           <Typography className="register-form-label">
             Email
           </Typography>
@@ -85,22 +78,21 @@ export const RegisterForm = ({ role, onSuccess }) => {
             fullWidth
             name="email"
             type="email"
-            placeholder="Nhập địa chỉ email"
+            placeholder="Enter your email"
             value={formData.email}
             onChange={handleChange}
             className="register-form-input"
           />
 
-          {/* Password */}
           <Typography className="register-form-label">
-            Mật khẩu
+            Password
           </Typography>
 
           <TextField
             fullWidth
             name="password"
             type={showPassword ? "text" : "password"}
-            placeholder="Tạo mật khẩu"
+            placeholder="Create a password"
             value={formData.password}
             onChange={handleChange}
             className="register-form-input"
@@ -123,9 +115,8 @@ export const RegisterForm = ({ role, onSuccess }) => {
             }}
           />
 
-          {/* Confirm Password */}
           <Typography className="register-form-label">
-            Xác nhận mật khẩu
+            Confirm Password
           </Typography>
 
           <TextField
@@ -134,7 +125,7 @@ export const RegisterForm = ({ role, onSuccess }) => {
             type={
               showConfirmPassword ? "text" : "password"
             }
-            placeholder="Nhập lại mật khẩu"
+            placeholder="Re-enter your password"
             value={formData.password_confirmation}
             onChange={handleChange}
             className="register-form-input"
@@ -159,14 +150,12 @@ export const RegisterForm = ({ role, onSuccess }) => {
             }}
           />
 
-          {/* Error */}
           {error && (
             <Alert severity="error" className="register-form-alert">
               {error}
             </Alert>
           )}
 
-          {/* Button */}
           <Button
             fullWidth
             type="submit"
@@ -177,18 +166,17 @@ export const RegisterForm = ({ role, onSuccess }) => {
             {loading ? (
               <CircularProgress size={24} color="inherit" />
             ) : (
-              "Đăng ký"
+              "Register"
             )}
           </Button>
 
-          {/* Login */}
           <Typography
             align="center"
             className="register-form-footer"
           >
-            Đã có tài khoản?{" "}
+            Already have an account?{" "}
             <Link href="/login" underline="hover">
-              Đăng nhập
+              Login
             </Link>
           </Typography>
         </Box>

@@ -38,7 +38,6 @@ const Sidebar = () => {
         [`& .MuiDrawer-paper`]: { width: drawerWidth, boxSizing: "border-box" },
       }}
     >
-      {/* Phần thông tin user */}
       <Box sx={{ p: 3, display: "flex", flexDirection: "column", alignItems: "center" }}>
         <Typography variant="h5" sx={{ fontWeight: "bold", mb: 1, marginBottom: 5, color: "primary.main" }}>
           EVEMTNOW
@@ -56,7 +55,6 @@ const Sidebar = () => {
 
       <Divider />
 
-      {/* Menu navigation */}
       <Box sx={{ flexGrow: 1 }}>
         <List>
           {menuItems.map((item) => (
@@ -82,7 +80,6 @@ const Sidebar = () => {
 
       <Divider />
 
-      {/* Nút Logout */}
       <List>
         <ListItemButton sx={{ color: "error.main" }} onClick={() => navigate("/login")}>
           <ListItemIcon sx={{ color: "inherit" }}>

@@ -1,29 +1,30 @@
 <?php
-// app/Exceptions/ApiException.php
 
 namespace App\Exceptions;
 
 use Exception;
+use Illuminate\Http\JsonResponse;
 
 class ApiException extends Exception
 {
     protected array $errors;
 
     public function __construct(
-        string $message = 'Đã xảy ra lỗi.',
+        string $message = 'An error occurred.',
         int $code = 400,
-        array $errors = []
+        array $errors = [],
+        Exception $previous = null
     ) {
-        parent::__construct($message, $code);
+        parent::__construct($message, $code, $previous);
         $this->errors = $errors;
     }
 
-    public function render($request)
+    public function render($request): JsonResponse
     {
         return response()->json([
             'success' => false,
             'message' => $this->getMessage(),
-            'errors'  => $this->errors,
+            'errors' => $this->errors,
         ], $this->getCode());
     }
 }

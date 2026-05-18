@@ -42,15 +42,15 @@ class AuthService
         $user = $this->userRepository->findByEmail($credentials['email']);
 
         if (!$user || !Hash::check($credentials['password'], $user->password)) {
-            throw new Exception('Thông tin đăng nhập không chính xác.', 401);
+            throw new Exception('Incorrect login credentials.', 401);
         }
 
         if (isset($credentials['role']) && $user->role !== $credentials['role']) {
-            throw new Exception('Bạn không có quyền truy cập vào hệ thống này.', 403);
+            throw new Exception('You do not have permission to access this system.', 403);
         }
 
         if (!$user->email_verified) {
-            throw new Exception('Vui lòng xác minh email trước khi đăng nhập.', 403);
+            throw new Exception('Please verify your email before logging in.', 403);
         }
 
         $token = JWTAuth::fromUser($user);
@@ -71,11 +71,11 @@ class AuthService
         $user = $this->userRepository->findByVerificationToken($token);
 
         if (!$user) {
-            throw new Exception('Link xác minh không hợp lệ hoặc đã được sử dụng.');
+            throw new Exception('Invalid or already used verification link.');
         }
 
         if (now()->gt($user->verification_token_expires_at)) {
-            throw new Exception('Link đã hết hạn. Vui lòng yêu cầu gửi lại.');
+            throw new Exception('Link has expired. Please request a new one.');
         }
 
         return $this->userRepository->update($user, [
@@ -91,7 +91,7 @@ class AuthService
         $user = $this->userRepository->findByEmail($email);
 
         if (!$user || $user->email_verified) {
-            throw new Exception('Email không tồn tại hoặc đã được xác minh.', 404);
+            throw new Exception('Email does not exist or is already verified.', 404);
         }
 
         $token = hash('sha256', $user->email . now()->timestamp);
@@ -114,7 +114,7 @@ class AuthService
                 JWTAuth::invalidate($token);
             }
         } catch (\Exception $e) {
-            // Token đã hết hạn hoặc không hợp lệ, không cần xử lý thêm
+            // Token expired or invalid, no further action needed
         }
     }
 }

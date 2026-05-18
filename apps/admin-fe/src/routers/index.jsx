@@ -1,30 +1,41 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import {
+  createBrowserRouter,
+  Navigate,
+  RouterProvider,
+} from "react-router-dom";
 import AdminLayout from "../layouts/AdminLayout";
-import CategoryPage from "../pages/Category";
 import LoginPage from "../pages/LoginPage";
+import ManageCategories from "../pages/Category";
 
-const AppRouter = () => {
-  return (
-    <BrowserRouter>
-      <Routes>
-        {/* Route Login - Không dùng AdminLayout */}
-        <Route path="/login" element={<LoginPage />} />
+const router = createBrowserRouter([
+    {
+        path: "/login",
+        element: <LoginPage />,
+    },
+    {
+        path: "/admin",
+        element: <AdminLayout />,
+        children: [
+            {
+                index: true,
+                element: <Navigate to="/admin/dashboard" replace />,
+            },
+            {
+                path: "dashboard",
+                element: <div>Dashboard Page (Coming Soon)</div>,
+            },
+            {
+                path: "categories",
+                element: <ManageCategories />,
+            },
+        ],
+    },
+    {
+        path: "*",
+        element: <Navigate to="/login" replace />,
+    },
+]);
 
-        {/* Cấu trúc Nested Routes cho Admin Dashboard */}
-        <Route path="/admin" element={<AdminLayout />}>
-          {/* Mặc định khi vào /admin sẽ redirect về dashboard */}
-          <Route index element={<Navigate to="/admin/dashboard" replace />} />
-          
-          <Route path="dashboard" element={<div>Trang Dashboard Content</div>} />
-          <Route path="events" element={<div>Trang Manage Events Content</div>} />
-          <Route path="categories" element={<CategoryPage />} />
-        </Route>
-
-        {/* Redirect mặc định */}
-        <Route path="/" element={<Navigate to="/admin/dashboard" replace />} />
-      </Routes>
-    </BrowserRouter>
-  );
-};
-
-export default AppRouter;
+export default function AppRouter() {
+    return <RouterProvider router={router} />;
+}
