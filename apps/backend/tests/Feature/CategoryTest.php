@@ -4,10 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Category;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->admin = User::create([

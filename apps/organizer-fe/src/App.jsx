@@ -1,21 +1,27 @@
-// apps/organizer-fe/src/App.jsx
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { ThemeProvider, createTheme } from "@mui/material/styles";
-import CssBaseline from "@mui/material/CssBaseline";
-import RegisterPage from "./pages/RegisterPage";
-import LoginPage from "./pages/LoginPage";
-const theme = createTheme();
+import AppRouter from "./routers";
+import { ThemeProvider, createTheme, CssBaseline } from "@mui/material";
 
-export default function App() {
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: "#1976d2",
+    },
+    background: {
+      default: "#f5f5f5",
+    },
+  },
+  typography: {
+    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+  },
+});
+
+function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/login" element={<LoginPage />} />
-        </Routes>
-      </BrowserRouter>
+      <AppRouter />
     </ThemeProvider>
   );
 }
+
+export default App;

@@ -2,7 +2,6 @@
 
 namespace App\Http\Resources\Event;
 
-use App\Http\Resources\Category\CategoryResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -18,15 +17,21 @@ class EventResource extends JsonResource
         return [
             'id' => $this->id,
             'title' => $this->title,
-            'description' => $this->description,
-            'location' => $this->location,
+            'category_name' => $this->category ? $this->category->name : null,
             'event_date' => $this->event_date instanceof \DateTimeInterface 
                 ? $this->event_date->format('Y-m-d') 
                 : $this->event_date,
             'event_time' => $this->event_time,
+            'location' => $this->location,
+            'registrations_count' => $this->confirmed_count ?? $this->registrations()->where('status', 'Confirmed')->count(),
             'capacity' => $this->capacity,
+            'waitlist_count' => $this->waitlist_count ?? $this->registrations()->where('status', 'Waitlist')->count(),
             'status' => $this->status,
-            'category' => new CategoryResource($this->whenLoaded('category')),
+            'description' => $this->description,
+            'image' => $this->image,
+            'rejection_reason' => $this->rejection_reason,
+            'cancellation_reason' => $this->cancellation_reason,
+            'cancelled_at' => $this->cancelled_at,
             'organizer' => [
                 'id' => $this->organizer_id,
                 'name' => $this->organizer ? $this->organizer->name : null,

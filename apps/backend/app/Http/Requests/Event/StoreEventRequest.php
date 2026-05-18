@@ -5,8 +5,6 @@ namespace App\Http\Requests\Event;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
-use function Laravel\Prompts\title;
-
 class StoreEventRequest extends FormRequest
 {
     /**
@@ -29,9 +27,11 @@ class StoreEventRequest extends FormRequest
             'description' => 'required|string',
             'location' => 'required|string|max:255',
             'event_date' => 'required|date|after:today',
-            'event_time' => 'required|date_format:H:i',
+            'event_time' => 'required',
             'capacity' => 'required|integer|min:1',
-            'category_id' => 'required|exists:category,id',
+            'category_id' => 'required|exists:categories,id',
+            'image' => 'nullable|image|mimes:jpeg,jpg,png,gif|max:10240',
+            'status' => 'nullable|in:draft,pending',
         ];
     }
 }

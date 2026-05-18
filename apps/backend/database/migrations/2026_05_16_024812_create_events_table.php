@@ -34,6 +34,7 @@ return new class extends Migration
                   ->default('Draft');
 
             $table->timestamp('cancelled_at')->nullable();
+            $table->text('rejection_reason')->nullable();
             $table->text('cancellation_reason')->nullable();
 
             $table->timestamps(); 

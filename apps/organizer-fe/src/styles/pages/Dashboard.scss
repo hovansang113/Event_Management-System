@@ -1,0 +1,160 @@
+@import '../variables';
+
+.dashboard {
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: $spacing-xl;
+
+    .title {
+      font-size: $font-size-xl;
+      font-weight: $font-weight-bold;
+      color: $gray-900;
+    }
+
+    .create-btn {
+      text-transform: none;
+      font-size: $font-size-base;
+      font-weight: $font-weight-semibold;
+      border-radius: $border-radius-sm;
+      box-shadow: none;
+    }
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: $spacing-lg;
+    margin-bottom: $spacing-xl;
+  }
+
+  .stat-card {
+    padding: $spacing-lg;
+    border-radius: $border-radius-md;
+    border: 1px solid $border-color;
+    box-shadow: none;
+
+    .stat-label {
+      font-size: $font-size-sm;
+      color: $gray-500;
+      margin-bottom: $spacing-sm;
+    }
+
+    .stat-value {
+      font-size: 26px;
+      font-weight: $font-weight-bold;
+      color: $gray-900;
+    }
+  }
+
+  .filters {
+    display: flex;
+    gap: $spacing-lg;
+    margin-bottom: $spacing-xl;
+
+    .filter-group {
+      flex: 1;
+
+      .filter-label {
+        font-size: $font-size-sm;
+        font-weight: $font-weight-semibold;
+        color: $gray-700;
+        margin-bottom: $spacing-sm;
+      }
+    }
+  }
+
+  .events-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: $spacing-lg;
+  }
+
+  .event-card {
+    border-radius: $border-radius-md;
+    border: 1px solid $border-color;
+    overflow: hidden;
+    transition: all 0.2s;
+    cursor: pointer;
+
+    &:hover {
+      box-shadow: $shadow-md;
+      transform: translateY(-2px);
+    }
+
+    .event-image {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+    }
+
+    .event-content {
+      padding: $spacing-lg;
+
+      .event-title {
+        font-size: $font-size-md;
+        font-weight: $font-weight-bold;
+        color: $gray-900;
+        margin-bottom: $spacing-sm;
+      }
+
+      .event-meta {
+        display: flex;
+        align-items: center;
+        gap: $spacing-sm;
+        font-size: $font-size-sm;
+        color: $gray-500;
+        margin-bottom: $spacing-xs;
+      }
+
+      .event-status {
+        display: inline-block;
+        padding: 4px $spacing-sm;
+        border-radius: 12px;
+        font-size: $font-size-xs;
+        font-weight: $font-weight-medium;
+        margin-top: $spacing-sm;
+
+        &.pending {
+          background-color: #fef3c7;
+          color: #92400e;
+        }
+
+        &.approved {
+          background-color: #d1fae5;
+          color: #065f46;
+        }
+
+        &.rejected {
+          background-color: #fee2e2;
+          color: #991b1b;
+        }
+
+        &.cancelled {
+          background-color: $gray-200;
+          color: $gray-700;
+        }
+      }
+    }
+  }
+
+  .pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: $spacing-xl;
+  }
+
+  .loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: $spacing-2xl;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: $spacing-2xl;
+    color: $gray-500;
+  }
+}

@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Repositories\UserRepository;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 use Exception;
 
@@ -21,7 +22,7 @@ class AuthService
 
     public function register(array $data)
     {
-        $token = hash('sha256', $data['email'] . now()->timestamp);
+        $token = Str::random(64);
 
         $user = $this->userRepository->create([
             'name' => $data['name'],
@@ -94,7 +95,7 @@ class AuthService
             throw new Exception('Email does not exist or is already verified.', 404);
         }
 
-        $token = hash('sha256', $user->email . now()->timestamp);
+        $token = Str::random(64);
         
         $this->userRepository->update($user, [
             'verification_token' => $token,

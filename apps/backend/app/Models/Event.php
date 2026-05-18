@@ -18,7 +18,17 @@ class Event extends Model
         'event_date',
         'event_time',
         'capacity',
-        'status', 
+        'status',
+        'rejection_reason',
+        'cancelled_at',
+        'cancellation_reason',
+    ];
+
+    protected $casts = [
+        'event_date' => 'date',
+        'event_time' => 'string',
+        'capacity' => 'integer',
+        'cancelled_at' => 'datetime',
     ];
 
     public function organizer()
@@ -29,5 +39,10 @@ class Event extends Model
     public function category()
     {
         return $this->belongsTo(Category::class, 'category_id');
+    }
+
+    public function registrations()
+    {
+        return $this->hasMany(Registration::class);
     }
 }

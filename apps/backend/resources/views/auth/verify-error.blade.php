@@ -19,7 +19,7 @@
         <div class="icon">✕</div>
         <h1>Verification Failed</h1>
         <p>{{ $message ?? 'The verification link is invalid or has expired.' }}</p>
-        <a href="{{ config('app.frontend_url') ?: '#' }}" class="btn">Back to Home</a>
+        <a href="{{ env('FRONTEND_URL', 'http://localhost:3000') }}" class="btn">Back to Home</a>
     </div>
 </body>
 </html>

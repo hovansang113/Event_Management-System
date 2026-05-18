@@ -49,4 +49,14 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->email_verified;
     }
+
+    public function organizedEvents()
+    {
+        return $this->hasMany(Event::class, 'organizer_id');
+    }
+
+    public function registrations()
+    {
+        return $this->hasMany(Registration::class);
+    }
 }

@@ -19,7 +19,7 @@
         <div class="icon">✓</div>
         <h1>Verification Successful!</h1>
         <p>Congratulations! Your account has been successfully activated. You can now log in to the application.</p>
-        <a href="{{ config('app.frontend_url') ?: '#' }}" class="btn">Go to Login</a>
+        <a href="{{ env('FRONTEND_URL', 'http://localhost:3000') }}" class="btn">Go to Login</a>
     </div>
 </body>
 </html>

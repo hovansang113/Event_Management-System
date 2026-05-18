@@ -29,7 +29,7 @@ class RegisterRequest extends FormRequest
                 'min:8',
                 'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/'
             ],
-            'role' => 'required|in:attendee,admin,organizer',
+            'role' => 'required|in:attendee,organizer',
         ];
     }
 

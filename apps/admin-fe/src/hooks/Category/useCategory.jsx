@@ -8,27 +8,44 @@ export const useCategory = () => {
     const [formData, setFormData] = useState({ name: "", icon: "", description: "", is_active: true });
     const [openForm, setOpenForm] = useState(false);
 
-    const fetchCategories = async () => {
-        setLoading(true);
+    const fetchCategories = async (options = {}) => {
+        const { skipLoading = false } = options;
+        if (!skipLoading) setLoading(true);
         try {
             const response = await categoryService.getAll();
             setCategories(Array.isArray(response.data) ? response.data : response);
         } catch (err) {
             setError(err.response?.data?.message || "Failed to fetch categories");
         } finally {
-            setLoading(false);
+            if (!skipLoading) setLoading(false);
         }
     };
 
     useEffect(() => {
-        fetchCategories();
+        let cancelled = false;
+
+        const loadInitialCategories = async () => {
+            const response = await categoryService.getAll();
+            if (!cancelled) {
+                const data = Array.isArray(response.data) ? response.data : response;
+                setCategories(data);
+            }
+        };
+
+        loadInitialCategories().catch((err) => {
+            if (!cancelled) {
+                setError(err.response?.data?.message || "Failed to fetch categories");
+            }
+        });
+
+        return () => { cancelled = true; };
     }, []);
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
-        setFormData((prev) => ({ 
-            ...prev, 
-            [name]: type === 'checkbox' ? checked : value 
+        setFormData((prev) => ({
+            ...prev,
+            [name]: type === "checkbox" ? checked : value
         }));
     };
 
@@ -39,7 +56,14 @@ export const useCategory = () => {
     };
 
     const handleOpenEdit = (category) => {
-        setFormData(category);
+        setFormData({
+            id: category.id,
+            name: category.name,
+            description: category.description || "",
+            icon: category.icon || "",
+            is_active: category.is_active,
+            slug: category.slug,
+        });
         setOpenForm(true);
         setError(null);
     };
@@ -55,8 +79,9 @@ export const useCategory = () => {
         try {
             let response;
             if (formData.id) {
-                response = await categoryService.update(formData.id, formData);
-                setCategories((prev) => prev.map(cat => cat.id === formData.id ? response.data : cat));
+                const { id, slug, ...updateData } = formData;
+                response = await categoryService.update(id, updateData);
+                setCategories((prev) => prev.map(cat => cat.id === id ? response.data : cat));
             } else {
                 response = await categoryService.add(formData);
                 setCategories((prev) => [...prev, response.data]);
@@ -90,7 +115,7 @@ export const useCategory = () => {
 
     const handleToggleStatus = async (category) => {
         const originalStatus = category.is_active;
-        setCategories((prev) => 
+        setCategories((prev) =>
             prev.map(cat => cat.id === category.id ? { ...cat, is_active: !originalStatus } : cat)
         );
 
@@ -101,11 +126,11 @@ export const useCategory = () => {
             } else {
                 response = await categoryService.activate(category.id);
             }
-            setCategories((prev) => 
+            setCategories((prev) =>
                 prev.map(cat => cat.id === category.id ? response.data : cat)
             );
         } catch (err) {
-            setCategories((prev) => 
+            setCategories((prev) =>
                 prev.map(cat => cat.id === category.id ? { ...cat, is_active: originalStatus } : cat)
             );
             setError(err.response?.data?.message || "Failed to update status");

@@ -19,11 +19,13 @@ Route::prefix('auth')->group(function () {
     });
 });
 
+// Public Categories (for organizers to view when creating events)
+Route::middleware('auth:api')->get('/categories', [CategoryController::class, 'index']);
+
 // Admin Routes
 Route::middleware(['auth:api', 'role:admin'])->prefix('admin')->group(function () {
     // Category Management
     Route::prefix('categories')->group(function () {
-        Route::get('/', [CategoryController::class, 'index']);
         Route::post('/', [CategoryController::class, 'store']);
         Route::put('/{id}', [CategoryController::class, 'update']);
         Route::delete('/{id}', [CategoryController::class, 'destroy']);
@@ -37,5 +39,10 @@ Route::middleware(['auth:api', 'role:admin'])->prefix('admin')->group(function (
 
 // Organizer Routes
 Route::middleware(['auth:api', 'role:organizer'])->prefix('organizer')->group(function () {
+    Route::get('/events', [EventController::class, 'index']);
     Route::post('/events', [EventController::class, 'store']);
+    Route::get('/dashboard/stats', [EventController::class, 'statistics']);
+    Route::get('/events/{id}', [EventController::class, 'show']);
+    Route::patch('/events/{id}/submit', [EventController::class, 'submitForApproval']);
+    Route::patch('/events/{id}/cancel', [EventController::class, 'cancel']);
 });

@@ -3,10 +3,10 @@ import {
   Navigate,
   RouterProvider,
 } from "react-router-dom";
-import AdminLayout from "../layouts/AdminLayout";
-import LoginPage from "../pages/LoginPage";
+import OrganizerLayout from "../layouts/OrganizerLayout";
 import Dashboard from "../pages/Dashboard";
-import ManageCategories from "../pages/Category";
+import LoginPage from "../pages/LoginPage";
+import RegisterPage from "../pages/RegisterPage";
 
 const router = createBrowserRouter([
     {
@@ -14,26 +14,30 @@ const router = createBrowserRouter([
         element: <LoginPage />,
     },
     {
-        path: "/admin",
-        element: <AdminLayout />,
+        path: "/register",
+        element: <RegisterPage />,
+    },
+    {
+        path: "/organizer",
+        element: <OrganizerLayout />,
         children: [
             {
                 index: true,
-                element: <Navigate to="/admin/dashboard" replace />,
+                element: <Navigate to="/organizer/dashboard" replace />,
             },
             {
                 path: "dashboard",
                 element: <Dashboard />,
             },
             {
-                path: "categories",
-                element: <ManageCategories />,
+                path: "events",
+                element: <div>My Events Page (Coming Soon)</div>,
             },
         ],
     },
     {
         path: "*",
-        element: <Navigate to="/login" replace />,
+        element: <Navigate to="/organizer/dashboard" replace />,
     },
 ]);
 
