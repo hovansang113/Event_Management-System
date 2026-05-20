@@ -3,8 +3,10 @@
 namespace App\Service;
 
 use App\Repositories\EventRepository;
+use App\Mail\EventCancelledMail;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
-
+use Illuminate\Http\UploadedFile;
 class EventService
 {
     protected $eventRepository;
@@ -20,7 +22,7 @@ class EventService
         $data['status'] = $data['status'] ?? 'Draft';
 
         // Handle image upload
-        if (isset($data['image']) && $data['image'] instanceof \Illuminate\Http\UploadedFile) {
+        if (isset($data['image']) && $data['image'] instanceof UploadedFile) {
             $path = $data['image']->store('events', 'public');
             $data['image'] = Storage::url($path);
         }
@@ -70,10 +72,50 @@ class EventService
             return false;
         }
 
-        return $this->eventRepository->update($id, [
+        $result =  $this->eventRepository->update($id, [
             'status' => 'Cancelled',
             'cancellation_reason' => $reason,
             'cancelled_at' => now(),
         ]);
+
+        if($result){
+            $registrations = $event->registrations()->where('status', 'Confirmed')->get();
+            foreach ($registrations as $registration) {
+                //TODO: Send notification email to users about event cancellation
+                Mail::to($registration->user->email)->send(new EventCancelledMail($event));
+            }
+        }
+
+        return $result;
+    }
+
+    public function updateEvent($id, array $data){
+        $event = $this->getEventById($id);
+        if (!$event || $event->status === 'Pending') {
+            return null;
+        }
+
+        // Validate capacity không thể giảm xuống dưới số đăng ký hiện tại
+        if (isset($data['capacity'])) {
+            $confirmedCount = $event->registrations()->where('status', 'Confirmed')->count();
+            if ($data['capacity'] < $confirmedCount) {
+                throw new \Exception("Cannot reduce capacity below current registrations ({$confirmedCount})");
+            }
+        }
+
+        // Handle image upload
+        if (isset($data['image']) && $data['image'] instanceof UploadedFile) {
+            // Xóa ảnh cũ nếu có
+            if ($event->image) {
+                $oldPath = str_replace('/storage/', '', $event->image);
+                Storage::disk('public')->delete($oldPath);
+            }
+            
+            $path = $data['image']->store('events', 'public');
+            $data['image'] = Storage::url($path);
+        }
+
+        $this->eventRepository->update($id, $data);
+        return $this->eventRepository->findById($id);
     }
 }

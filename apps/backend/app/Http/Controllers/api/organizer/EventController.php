@@ -9,6 +9,7 @@ use App\Http\Resources\Event\EventResource;
 use App\Service\EventService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
+use App\Http\Requests\Event\UpdateEventRequest;
 
 class EventController extends Controller
 {
@@ -56,7 +57,7 @@ class EventController extends Controller
 
     public function cancel(CancelEventRequest $request, $id){
         $result = $this->eventService->cancelEvent($id, $request->cancellation_reason);
-        if (!$result) {
+        if (!$result){
             return $this->error('Cannot cancel this event', 400);
         }
         return $this->success(null, 'Event cancelled successfully');
@@ -65,5 +66,19 @@ class EventController extends Controller
     public function statistics(){
         $stats = $this->eventService->getOrganizerStats();
         return $this->success($stats, 'Dashboard statistics retrieved successfully');
+    }
+
+    public function update(UpdateEventRequest $request, $id){
+        try{
+            $event = $this->eventService->updateEvent($id, $request->validated());
+            if(!$event){
+                return $this->error("Cannot update this event", 400);
+            }
+            return $this->success(new EventResource($event), 'Event updated successfully');
+
+        }catch(\Exception $e){
+            return $this->error($e->getMessage(), 500);
+        }
+
     }
 }

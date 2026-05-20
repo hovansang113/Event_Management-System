@@ -43,6 +43,7 @@ Route::middleware(['auth:api', 'role:organizer'])->prefix('organizer')->group(fu
     Route::post('/events', [EventController::class, 'store']);
     Route::get('/dashboard/stats', [EventController::class, 'statistics']);
     Route::get('/events/{id}', [EventController::class, 'show']);
+    Route::put('/events/{id}', [EventController::class, 'update']);
     Route::patch('/events/{id}/submit', [EventController::class, 'submitForApproval']);
     Route::patch('/events/{id}/cancel', [EventController::class, 'cancel']);
 });
