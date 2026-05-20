@@ -30,6 +30,7 @@ import { useNavigate } from "react-router-dom";
 import { useDashboard } from "../hooks/useDashboard";
 import { eventService } from "../services/eventService";
 import CreateEventDialog from "../components/CreateEventDialog";
+import CancelEventDialog from "../components/CancelEventDialog";
 
 const statusTabs = ["All", "Draft", "Pending", "Published", "Rejected", "Cancelled"];
 
@@ -63,6 +64,9 @@ const Dashboard = () => {
   const [tab, setTab] = useState("All");
   const [openCreateDialog, setOpenCreateDialog] = useState(false);
   const [editEventId, setEditEventId] = useState(null);
+  const [openCancelDialog, setOpenCancelDialog] = useState(false);
+  const [cancelEventId, setCancelEventId] = useState(null);
+  const [cancelLoading, setCancelLoading] = useState(false);
   const filteredEvents = useMemo(() => {
     if (tab === "All") return events;
     return events.filter((e) => e.status === tab);
@@ -177,19 +181,21 @@ const Dashboard = () => {
                     <IconButton size="small" sx={{ color: "#1170e4", p: 0.5 }} onClick={() => navigate(`/organizer/events/${event.id}`)}>
                       <RemoveRedEyeOutlined sx={{ fontSize: 16 }} />
                     </IconButton>
-                    <IconButton size="small" sx={{ color: "#1170e4", p: 0.5 }} onClick={() => { setEditEventId(event.id); setOpenCreateDialog(true); }}>
-                      <EditOutlined sx={{ fontSize: 16 }} />
-                    </IconButton>
+                    {event.status?.toLowerCase() !== "pending" && (
+                      <IconButton size="small" sx={{ color: "#1170e4", p: 0.5 }} onClick={() => { setEditEventId(event.id); setOpenCreateDialog(true); }}>
+                        <EditOutlined sx={{ fontSize: 16 }} />
+                      </IconButton>
+                    )}
                     <IconButton size="small" sx={{ color: "#1170e4", p: 0.5 }}>
                       <GroupOutlined sx={{ fontSize: 16 }} />
                     </IconButton>
-                    {(event.status === "Rejected" || event.status === "Draft") && (
+                    {(event.status?.toLowerCase() === "rejected" || event.status?.toLowerCase() === "draft") && (
                       <IconButton size="small" sx={{ color: "#16a34a", p: 0.5 }} onClick={async () => { await eventService.submit(event.id); fetchEvents(); }}>
                         <SendOutlined sx={{ fontSize: 16 }} />
                       </IconButton>
                     )}
-                    {event.status === "Published" && (
-                      <IconButton size="small" sx={{ color: "#ef4444", p: 0.5 }} onClick={async () => { const reason = window.prompt("Cancellation reason:"); if (reason) { await eventService.cancel(event.id, reason); fetchEvents(); } }}>
+                    {event.status?.toLowerCase() === "published" && (
+                      <IconButton size="small" sx={{ color: "#ef4444", p: 0.5 }} onClick={() => { setCancelEventId(event.id); setOpenCancelDialog(true); }}>
                         <CancelOutlined sx={{ fontSize: 16 }} />
                       </IconButton>
                     )}
@@ -218,6 +224,29 @@ const Dashboard = () => {
           setEditEventId(null);
         }}
         eventId={editEventId}
+      />
+
+      {/* Cancel Event Dialog */}
+      <CancelEventDialog
+        open={openCancelDialog}
+        onClose={() => {
+          setOpenCancelDialog(false);
+          setCancelEventId(null);
+        }}
+        onConfirm={async (reason) => {
+          setCancelLoading(true);
+          try {
+            await eventService.cancel(cancelEventId, reason);
+            fetchEvents();
+            setOpenCancelDialog(false);
+            setCancelEventId(null);
+          } catch (error) {
+            console.error("Failed to cancel event:", error);
+          } finally {
+            setCancelLoading(false);
+          }
+        }}
+        loading={cancelLoading}
       />
     </Box>
   );

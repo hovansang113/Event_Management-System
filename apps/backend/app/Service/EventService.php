@@ -79,9 +79,11 @@ class EventService
         ]);
 
         if($result){
+            // Refresh event để lấy cancellation_reason mới
+            $event->refresh();
+            
             $registrations = $event->registrations()->where('status', 'Confirmed')->get();
             foreach ($registrations as $registration) {
-                //TODO: Send notification email to users about event cancellation
                 Mail::to($registration->user->email)->send(new EventCancelledMail($event));
             }
         }
