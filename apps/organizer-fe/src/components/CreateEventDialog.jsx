@@ -17,11 +17,13 @@ import { Send as SendIcon, Close as CloseIcon, CloudUpload as UploadIcon } from 
 import { useCreateEvent } from "../hooks/useCreateEvent";
 import "../styles/components/CreateEventDialog.scss";
 
-const CreateEventDialog = ({ open, onClose, onSuccess }) => {
-  const { formData, loading, error, categories, imagePreview, handleChange, handleImageChange, handleSaveDraft, handleSubmitReview, resetForm } = useCreateEvent(() => {
+const CreateEventDialog = ({ open, onClose, onSuccess, eventId = null }) => {  // ← Thêm eventId prop
+  const { formData, loading, error, categories, imagePreview, handleChange, handleImageChange, handleSaveDraft, handleSubmitReview, handleUpdate, resetForm } = useCreateEvent(() => {
     onSuccess?.();
     onClose();
-  });
+  }, eventId);  // ← Truyền eventId vào hook
+
+  const isEditMode = !!eventId;  // ← Kiểm tra Edit mode
 
   const handleCancel = () => {
     resetForm();
@@ -32,7 +34,7 @@ const CreateEventDialog = ({ open, onClose, onSuccess }) => {
     <Dialog open={open} onClose={handleCancel} maxWidth="sm" fullWidth className="create-event-dialog">
       <DialogTitle className="dialog-title">
         <Typography className="title-text">
-          Create New Event
+          {isEditMode ? "Edit Event" : "Create New Event"}  {/* ← Đổi title */}
         </Typography>
         <IconButton size="small" onClick={handleCancel}>
           <CloseIcon fontSize="small" />
@@ -86,7 +88,7 @@ const CreateEventDialog = ({ open, onClose, onSuccess }) => {
               <Select
                 name="category_id"
                 value={formData.category_id}
-                onChange={handleChange}
+onChange={handleChange}
                 displayEmpty
               >
                 <MenuItem value="" disabled>
@@ -177,7 +179,7 @@ const CreateEventDialog = ({ open, onClose, onSuccess }) => {
           <Box component="label" className="upload-area">
             <input
               type="file"
-              accept="image/png,image/jpeg,image/jpg,image/gif"
+accept="image/png,image/jpeg,image/jpg,image/gif"
               onChange={handleImageChange}
             />
             {imagePreview ? (
@@ -200,9 +202,11 @@ const CreateEventDialog = ({ open, onClose, onSuccess }) => {
             )}
           </Box>
 
-          <Alert severity="info" className="info-alert">
-            <strong>How it works:</strong> Save as Draft to continue editing later, or Submit for Review to send to admin for approval. You cannot edit an event while it's under review.
-          </Alert>
+          {!isEditMode && (
+            <Alert severity="info" className="info-alert">
+              <strong>How it works:</strong> Save as Draft to continue editing later, or Submit for Review to send to admin for approval. You cannot edit an event while it's under review.
+            </Alert>
+          )}
 
           {error && (
             <Alert severity="error" className="error-alert">
@@ -219,23 +223,38 @@ const CreateEventDialog = ({ open, onClose, onSuccess }) => {
             >
               Cancel
             </Button>
-            <Button
-              variant="outlined"
-              onClick={handleSaveDraft}
-              disabled={loading}
-              className="btn"
-            >
-              Save as Draft
-            </Button>
-            <Button
-              variant="contained"
-              onClick={handleSubmitReview}
-              disabled={loading}
-              startIcon={loading ? <CircularProgress size={14} /> : <SendIcon sx={{ fontSize: 16 }} />}
-              className="btn"
-            >
-              {loading ? "Submitting..." : "Submit for Review"}
-            </Button>
+            
+            {isEditMode ? (
+              <Button
+                variant="contained"
+                onClick={handleUpdate}
+                disabled={loading}
+                startIcon={loading ? <CircularProgress size={14} /> : null}
+                className="btn"
+              >
+                {loading ? "Updating..." : "Update Event"}
+              </Button>
+            ) : (
+              <>
+                <Button
+                  variant="outlined"
+                  onClick={handleSaveDraft}
+                  disabled={loading}
+                  className="btn"
+                >
+                  Save as Draft
+                </Button>
+                <Button
+                  variant="contained"
+                  onClick={handleSubmitReview}
+                  disabled={loading}
+                  startIcon={loading ? <CircularProgress size={14} /> : <SendIcon sx={{ fontSize: 16 }} />}
+                  className="btn"
+                >
+                  {loading ? "Submitting..." : "Submit for Review"}
+                </Button>
+              </>
+            )}
           </Box>
       </DialogContent>
     </Dialog>

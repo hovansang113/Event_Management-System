@@ -62,7 +62,7 @@ const Dashboard = () => {
   const { stats, events, loading, filters, handleFilterChange, fetchEvents } = useDashboard();
   const [tab, setTab] = useState("All");
   const [openCreateDialog, setOpenCreateDialog] = useState(false);
-
+  const [editEventId, setEditEventId] = useState(null);
   const filteredEvents = useMemo(() => {
     if (tab === "All") return events;
     return events.filter((e) => e.status === tab);
@@ -177,7 +177,7 @@ const Dashboard = () => {
                     <IconButton size="small" sx={{ color: "#1170e4", p: 0.5 }} onClick={() => navigate(`/organizer/events/${event.id}`)}>
                       <RemoveRedEyeOutlined sx={{ fontSize: 16 }} />
                     </IconButton>
-                    <IconButton size="small" sx={{ color: "#1170e4", p: 0.5 }} onClick={() => navigate(`/organizer/events/${event.id}/edit`)}>
+                    <IconButton size="small" sx={{ color: "#1170e4", p: 0.5 }} onClick={() => { setEditEventId(event.id); setOpenCreateDialog(true); }}>
                       <EditOutlined sx={{ fontSize: 16 }} />
                     </IconButton>
                     <IconButton size="small" sx={{ color: "#1170e4", p: 0.5 }}>
@@ -208,11 +208,16 @@ const Dashboard = () => {
       {/* Create Event Dialog */}
       <CreateEventDialog
         open={openCreateDialog}
-        onClose={() => setOpenCreateDialog(false)}
+        onClose={() => {
+          setOpenCreateDialog(false);
+          setEditEventId(null);
+        }}
         onSuccess={() => {
           fetchEvents();
           setOpenCreateDialog(false);
+          setEditEventId(null);
         }}
+        eventId={editEventId}
       />
     </Box>
   );

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { eventService } from "../services/eventService";
 import api from "../../../../packages/shared-ui/src/services/api";
 
-export const useCreateEvent = (onSuccess) => {
+export const useCreateEvent = (onSuccess, eventId = null) => {  // ← Thêm eventId param
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [categories, setCategories] = useState([]);
@@ -18,6 +18,33 @@ export const useCreateEvent = (onSuccess) => {
     capacity: "",
     image: "",
   });
+
+  useEffect(() => {
+    if (eventId) {
+      const fetchEvent = async () => {
+        try {
+          const res = await eventService.getDetail(eventId);
+          const event = res.data;
+          setFormData({
+            title: event.title || "",
+            description: event.description || "",
+            category_id: event.category_id || "",
+            location: event.location || "",
+            event_date: event.event_date || "",
+            event_time: event.event_time || "",
+            capacity: event.capacity || "",
+            image: event.image || "",
+          });
+          if (event.image) {
+            setImagePreview(event.image);
+          }
+        } catch {
+          setError("Failed to load event data");
+        }
+      };
+      fetchEvent();
+    }
+  }, [eventId]);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -50,12 +77,32 @@ export const useCreateEvent = (onSuccess) => {
     }
   };
 
+  // ← THÊM: Handle Update
+  const handleUpdate = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const submitData = { ...formData };
+      if (imageFile) {
+        submitData.image = imageFile;
+      }
+      await eventService.update(eventId, submitData);
+      resetForm();
+      onSuccess?.();
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to update event");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSaveDraft = async () => {
     setLoading(true);
     setError(null);
 
     try {
-      const submitData = { ...formData, status: "draft" };
+const submitData = { ...formData, status: "draft" };
       if (imageFile) {
         submitData.image = imageFile;
       }
@@ -115,6 +162,7 @@ export const useCreateEvent = (onSuccess) => {
     handleImageChange,
     handleSaveDraft,
     handleSubmitReview,
+    handleUpdate,  // ← THÊM
     resetForm,
   };
 };
