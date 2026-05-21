@@ -4,6 +4,8 @@ import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import RegisterPage from "./pages/RegisterPage";
 import LoginPage from "./pages/LoginPage";
+import GoogleCallback from "./pages/GoogleCallback";
+import HomePage from "./pages/HomePage";
 const theme = createTheme();
 
 export default function App() {
@@ -14,6 +16,8 @@ export default function App() {
         <Routes>
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/auth/callback" element={<GoogleCallback />} />
+          <Route path="/home" element={<HomePage />} />
         </Routes>
       </BrowserRouter>
     </ThemeProvider>

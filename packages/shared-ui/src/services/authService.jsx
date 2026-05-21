@@ -13,6 +13,11 @@ export const authService = {
         return response.data
     },
 
+    getMe: async () => {
+        const response = await api.get(API_ENDPOINTS.AUTH.ME);
+        return response.data
+    },
+
     logout: () => {
         localStorage.removeItem(STORAGE_KEYS.TOKEN);
         localStorage.removeItem(STORAGE_KEYS.USER);
