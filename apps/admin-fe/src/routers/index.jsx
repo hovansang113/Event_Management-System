@@ -7,6 +7,7 @@ import AdminLayout from "../layouts/AdminLayout";
 import LoginPage from "../pages/LoginPage";
 import Dashboard from "../pages/Dashboard";
 import ManageCategories from "../pages/Category";
+import ManageEvents from "../pages/Events/ManageEvents";
 
 const router = createBrowserRouter([
     {
@@ -28,6 +29,10 @@ const router = createBrowserRouter([
             {
                 path: "categories",
                 element: <ManageCategories />,
+            },
+            {
+                path: "events",
+                element: <ManageEvents />,
             },
         ],
     },

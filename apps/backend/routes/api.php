@@ -2,7 +2,8 @@
 
 use App\Http\Controllers\api\AuthController;
 use App\Http\Controllers\api\admin\CategoryController;
-use App\Http\Controllers\api\EventController;
+use App\Http\Controllers\api\admin\AdminEventController;
+use App\Http\Controllers\api\organizer\EventController;
 use Illuminate\Support\Facades\Route;
 
 // Auth Routes
@@ -26,6 +27,7 @@ Route::middleware('auth:api')->get('/categories', [CategoryController::class, 'i
 Route::middleware(['auth:api', 'role:admin'])->prefix('admin')->group(function () {
     // Category Management
     Route::prefix('categories')->group(function () {
+        Route::get('/', [CategoryController::class, 'index']);
         Route::post('/', [CategoryController::class, 'store']);
         Route::put('/{id}', [CategoryController::class, 'update']);
         Route::delete('/{id}', [CategoryController::class, 'destroy']);
@@ -34,6 +36,15 @@ Route::middleware(['auth:api', 'role:admin'])->prefix('admin')->group(function (
         Route::post('/{id}/restore', [CategoryController::class, 'restore']);
         Route::patch('/{id}/deactivate', [CategoryController::class, 'deactivate']);
         Route::patch('/{id}/activate', [CategoryController::class, 'activate']);
+    });
+
+    // Event Management
+    Route::prefix('events')->group(function () {
+        Route::get('/', [AdminEventController::class, 'index']);
+        Route::get('/{id}', [AdminEventController::class, 'show']);
+        Route::patch('/{id}/approve', [AdminEventController::class, 'approve']);
+        Route::patch('/{id}/reject', [AdminEventController::class, 'reject']);
+        Route::delete('/{id}', [AdminEventController::class, 'destroy']);
     });
 });
 
