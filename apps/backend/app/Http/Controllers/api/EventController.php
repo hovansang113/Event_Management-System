@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\api\organizer;
+namespace App\Http\Controllers\api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Event\CancelEventRequest;

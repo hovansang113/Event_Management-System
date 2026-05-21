@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\api\AuthController;
 use App\Http\Controllers\api\admin\CategoryController;
-use App\Http\Controllers\api\organizer\EventController;
+use App\Http\Controllers\api\EventController;
 use Illuminate\Support\Facades\Route;
 
 // Auth Routes
