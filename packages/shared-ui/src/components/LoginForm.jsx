@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuthLogin } from "../hooks/useAuthLogin";
 import "../style/LoginForm.scss";
+import { API_ENDPOINTS } from "../constants/api";
 
 import {
   Box,
@@ -13,11 +14,13 @@ import {
   Link,
   InputAdornment,
   IconButton,
+  Divider,
 } from "@mui/material";
 
 import {
   Visibility,
   VisibilityOff,
+  Google,
 } from "@mui/icons-material";
 
 export const LoginForm = ({ role, onSuccess, showRegisterLink = true }) => {
@@ -30,6 +33,11 @@ export const LoginForm = ({ role, onSuccess, showRegisterLink = true }) => {
     loading,
     error,
   } = useAuthLogin(role, onSuccess);
+
+  const handleGoogleLogin = () => {
+    const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
+    window.location.href = `${apiUrl}/${API_ENDPOINTS.AUTH.GOOGLE}`;
+  };
 
   return (
     <Box className="login-form-container">
@@ -119,6 +127,21 @@ export const LoginForm = ({ role, onSuccess, showRegisterLink = true }) => {
               "Login"
             )}
           </Button>
+
+          {role === 'attendee' && (
+            <>
+              <Divider sx={{ my: 2 }}>OR</Divider>
+              <Button
+                fullWidth
+                variant="outlined"
+                startIcon={<Google />}
+                onClick={handleGoogleLogin}
+                sx={{ mb: 2, py: 1.2, textTransform: 'none', fontSize: '1rem' }}
+              >
+                Continue with Google
+              </Button>
+            </>
+          )}
 
           {showRegisterLink && (
             <Typography

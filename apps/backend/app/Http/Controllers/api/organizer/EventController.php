@@ -55,15 +55,12 @@ class EventController extends Controller
         return $this->success(new EventResource($event), 'Event retrieved successfully');
     }
 
-    public function update(UpdateEventRequest $request, $id)
-    {
+    public function update(UpdateEventRequest $request, $id){
         try {
             $event = $this->eventService->updateEvent($id, $request->validated());
-            
             if (!$event) {
                 return $this->error('Event not found or unauthorized', 404);
             }
-            
             return $this->success(new EventResource($event), 'Event updated successfully');
         } catch (\Exception $e) {
             return $this->error($e->getMessage(), 400);

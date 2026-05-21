@@ -5,6 +5,9 @@ use App\Http\Controllers\api\admin\CategoryController;
 use App\Http\Controllers\api\admin\AdminEventController;
 use App\Http\Controllers\api\organizer\EventController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Log;
+
+Log::info('API Route Hit: ' . request()->fullUrl());
 
 // Auth Routes
 Route::prefix('auth')->group(function () {
@@ -12,6 +15,10 @@ Route::prefix('auth')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
     Route::get('/verify-email', [AuthController::class, 'verifyEmail']);
     Route::post('/resend-verification', [AuthController::class, 'resendVerification']);
+
+    // Google OAuth Routes
+    Route::get('/google', [AuthController::class, 'redirectToGoogle']);
+    Route::get('/google/callback', [AuthController::class, 'handleGoogleCallback']);
 
     // Protected Auth Routes
     Route::middleware('auth:api')->group(function () {

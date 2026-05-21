@@ -8,6 +8,7 @@ use App\Http\Requests\Auth\RegisterRequest;
 use App\Service\AuthService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
+use Laravel\Socialite\Facades\Socialite;
 use Exception;
 
 class AuthController extends Controller
@@ -79,5 +80,60 @@ class AuthController extends Controller
     public function me()
     {
         return $this->success(auth('api')->user(), 'User information retrieved successfully.');
+    }
+
+    public function redirectToGoogle()
+    {
+        try {
+            /** @var \Laravel\Socialite\Two\AbstractProvider $driver */
+            $driver = Socialite::driver('google');
+            return $driver->stateless()->redirect();
+        } catch (Exception $e) {
+            return $this->error($e->getMessage(), 500);
+        }
+    }
+
+    public function handleGoogleCallback(Request $request)
+    {
+        \Illuminate\Support\Facades\Log::info('Google Callback Hit', $request->all());
+        try {
+            /** @var \Laravel\Socialite\Two\AbstractProvider $driver */
+            $driver = Socialite::driver('google');
+
+            // Bỏ qua kiểm tra SSL trên localhost để tránh lỗi "cURL error 60"
+            if (config('app.env') === 'local') {
+                $driver->setHttpClient(new \GuzzleHttp\Client(['verify' => false]));
+            }
+
+            $googleUser = $driver->stateless()->user();
+            
+            \Illuminate\Support\Facades\Log::info('Google User Obtained', [
+                'email' => $googleUser->getEmail(),
+                'id' => $googleUser->getId()
+            ]);
+
+            $data = $this->authService->handleSocialLogin('google', $googleUser);
+            
+            // Redirect to the correct frontend based on role
+            // Attendee: http://localhost:3002
+            // Organizer: http://localhost:3001
+            $role = $data['user']['role'];
+            $frontendUrl = 'http://localhost:3002'; // Default for attendee
+
+            if ($role === 'organizer') {
+                $frontendUrl = 'http://localhost:3001';
+            } else if ($role === 'admin') {
+                $frontendUrl = 'http://localhost:3003';
+            }
+
+            \Illuminate\Support\Facades\Log::info('Redirecting to frontend', ['url' => $frontendUrl, 'role' => $role]);
+
+            return redirect()->to($frontendUrl . '/auth/callback?token=' . $data['token'] . '&role=' . $role);
+        } catch (Exception $e) {
+            \Illuminate\Support\Facades\Log::error('LỖI ĐĂNG NHẬP GOOGLE: ' . $e->getMessage());
+            
+            // Luôn quay về attendee frontend (3002) khi có lỗi
+            return redirect()->to('http://localhost:3002/login?error=' . urlencode($e->getMessage()));
+        }
     }
 }
