@@ -18,7 +18,7 @@ import {
 import { useNavigate, useLocation } from "react-router-dom";
 import { STORAGE_KEYS } from "@eventnextday/shared-ui";
 
-const drawerWidth = 240;
+const drawerWidth = 250;
 
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -85,13 +85,13 @@ const Sidebar = () => {
               onClick={() => navigate(item.path)}
               sx={{ borderRadius: 2, minHeight: 42, mb: 0.5 }}
             >
-              <ListItemIcon sx={{ minWidth: 30, color: location.pathname === item.path ? "#1170e4" : "#6b7280" }}>
+              <ListItemIcon sx={{ minWidth: 30, color: location.pathname === item.path ? "#1170e4" : "#111827" }}>
                 {item.icon}
               </ListItemIcon>
               <ListItemText
                 primary={item.text}
                 primaryTypographyProps={{
-                  fontSize: 13,
+                  fontSize: 15,
                   fontWeight: location.pathname === item.path ? 700 : 500,
                   color: location.pathname === item.path ? "#1170e4" : "#374151",
                 }}
@@ -111,7 +111,7 @@ const Sidebar = () => {
           </ListItemIcon>
           <ListItemText
             primary="Logout"
-            primaryTypographyProps={{ fontWeight: 700, fontSize: 13 }}
+            primaryTypographyProps={{ fontWeight: 700, fontSize: 15 }}
           />
         </ListItemButton>
       </List>

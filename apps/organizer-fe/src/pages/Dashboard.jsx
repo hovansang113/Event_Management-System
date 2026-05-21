@@ -50,12 +50,12 @@ const statusChipSx = {
 };
 
 const formatDateTime = (event) => {
-  if (!event.event_date) return { date: "-", time: "-" };
-  const d = new Date(event.event_date);
+  if (!event.date) return { date: "-", time: "-" };
+  const d = new Date(event.date);
   const date = Number.isNaN(d.getTime())
-    ? event.event_date
+    ? event.date
     : d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-  return { date, time: event.event_time || "-" };
+  return { date, time: event.time || "-" };
 };
 
 const Dashboard = () => {

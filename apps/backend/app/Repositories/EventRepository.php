@@ -71,4 +71,62 @@ class EventRepository
             'upcoming_events' => $events->where('event_date', '>=', $today)->count(),
         ];
     }
+
+    public function getAllForAdmin(array $filters = []): LengthAwarePaginator
+    {
+        $query = Event::query()
+            ->with(['category:id,name,slug', 'organizer:id,name,email'])
+            ->withCount([
+                'registrations as registered' => fn($q) => $q->where('status', 'Confirmed'),
+            ]);
+
+        // Status filter
+        if (!empty($filters['status']) && $filters['status'] !== 'all') {
+            $query->where('status', $filters['status']);
+        }
+
+        // Category filter
+        if (!empty($filters['category'])) {
+            $query->whereHas('category', fn($q) => $q->where('slug', $filters['category']));
+        }
+
+        // Search filter
+        if (!empty($filters['search'])) {
+            $search = $filters['search'];
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%")
+                  ->orWhereHas('organizer', fn($q) => $q->where('name', 'like', "%{$search}%"));
+            });
+        }
+
+        // Sorting
+        $query->orderBy('created_at', 'desc');
+
+        return $query->paginate($filters['per_page'] ?? 10);
+    }
+
+    public function getAdminStatistics(): array
+    {
+        $today = now()->toDateString();
+
+        $totalEvents = Event::count();
+        $pendingEvents = Event::where('status', 'Pending')->count();
+        $publishedEvents = Event::where('status', 'Published')->count();
+        $rejectedEvents = Event::where('status', 'Rejected')->count();
+        $approvedToday = Event::where('status', 'Published')
+            ->whereDate('updated_at', $today)
+            ->count();
+        $rejectedToday = Event::where('status', 'Rejected')
+            ->whereDate('updated_at', $today)
+            ->count();
+
+        return [
+            'total_pending' => $pendingEvents,
+            'total_published' => $publishedEvents,
+            'total_rejected' => $rejectedEvents,
+            'approved_today' => $approvedToday,
+            'rejected_today' => $rejectedToday,
+        ];
+    }
 }

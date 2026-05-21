@@ -8,6 +8,14 @@ export const API_ENDPOINTS = {
       RESTORE:    (id) => `admin/categories/${id}/restore`,
       ACTIVATE:   (id) => `admin/categories/${id}/activate`,
       DEACTIVATE: (id) => `admin/categories/${id}/deactivate`,
+    },
+    EVENTS: {
+      ALL:        'admin/events',
+      GET:        (id) => `admin/events/${id}`,
+      APPROVE:    (id) => `admin/events/${id}/approve`,
+      REJECT:     (id) => `admin/events/${id}/reject`,
+      DELETE:     (id) => `admin/events/${id}`,
+      AUDIT_LOG:  'admin/audit-log',
     }
   }
 }
