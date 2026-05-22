@@ -24,8 +24,8 @@ export default function GoogleCallback() {
           
           if (response.data) {
             localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(response.data));
-            console.log("Success! Redirecting to /home");
-            navigate("/home");
+            console.log("Success! Redirecting to /");
+            navigate("/");
           } else {
             console.error("No user data in response");
             navigate("/login?error=no_user_data");

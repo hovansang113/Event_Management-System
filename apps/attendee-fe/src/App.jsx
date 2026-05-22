@@ -1,5 +1,5 @@
 // apps/attendee-fe/src/App.jsx
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import RegisterPage from "./pages/RegisterPage";
@@ -17,7 +17,8 @@ export default function App() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/auth/callback" element={<GoogleCallback />} />
-          <Route path="/home" element={<HomePage />} />
+          <Route path="/home" element={<Navigate to="/" replace />} />
+          <Route path="/" element={<HomePage />} />
         </Routes>
       </BrowserRouter>
     </ThemeProvider>

@@ -32,8 +32,6 @@ export const ViewEventModal = ({
   event,
   loading,
   onClose,
-  onApprove,
-  onReject,
   onLoadApprove,
   onLoadReject,
 }) => {
