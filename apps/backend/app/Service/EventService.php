@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Exceptions\ApiException;
 use App\Repositories\EventRepository;
 use App\Mail\EventCancelledMail;
 use Illuminate\Support\Facades\Mail;
@@ -61,7 +62,6 @@ class EventService
         if (!$event || !in_array($event->status, ['Draft', 'Rejected'])) {
             return false;
         }
-
         return $this->eventRepository->update($id, ['status' => 'Pending']);
     }
 
@@ -101,7 +101,10 @@ class EventService
         if (isset($data['capacity'])) {
             $confirmedCount = $event->registrations()->where('status', 'Confirmed')->count();
             if ($data['capacity'] < $confirmedCount) {
-                throw new \Exception("Cannot reduce capacity below current registrations ({$confirmedCount})");
+                throw new ApiException(
+                    "Cannot reduce capacity below current registrations ({$confirmedCount})",
+                    422
+                );
             }
         }
 
@@ -119,5 +122,38 @@ class EventService
 
         $this->eventRepository->update($id, $data);
         return $this->eventRepository->findById($id);
+    }
+
+    public function approveEvent($id){
+        $event = $this->eventRepository->findById($id);
+        
+        if (!$event){
+            throw new ApiException('Event not found', 404);
+        }
+        if ($event->status !== 'Pending') {
+            throw new ApiException('Only pending events can be approved', 400);
+        }
+
+        $this->eventRepository->update($id, ['status' => 'Published']);
+
+        return $event->refresh();
+    }
+
+    public function rejectEvent($id, $reason){
+        $event = $this->eventRepository->findById($id);
+        
+        if (!$event){
+            throw new ApiException('Event not found', 404);
+        }
+        if ($event->status !== 'Pending') {
+            throw new ApiException('Only pending events can be rejected', 400);
+        }
+
+        $this->eventRepository->update($id, [
+            'status' => 'Rejected',
+            'rejection_reason' => $reason,
+        ]);
+
+        return $event->refresh();
     }
 }
