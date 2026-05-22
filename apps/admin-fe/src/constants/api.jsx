@@ -1,5 +1,9 @@
 export const API_ENDPOINTS = {
   ADMIN: {
+    DASHBOARD: {
+      STATS:      'admin/dashboard/stats',
+      OVERVIEW:   'admin/dashboard/overview',
+    },
     CATEGORIES: {
       ALL:        'admin/categories',
       ADD:        'admin/categories',

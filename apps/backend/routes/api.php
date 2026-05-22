@@ -4,6 +4,7 @@ use App\Http\Controllers\api\AuthController;
 use App\Http\Controllers\api\admin\CategoryController;
 use App\Http\Controllers\api\admin\AdminEventController;
 use App\Http\Controllers\api\attendee\EventController as AttendeeEventController;
+use App\Http\Controllers\api\admin\DashboardController;
 use App\Http\Controllers\api\organizer\EventController;
 use Illuminate\Support\Facades\Route;
 
@@ -37,6 +38,10 @@ Route::prefix('attendee')->group(function () {
 
 // Admin Routes
 Route::middleware(['auth:api', 'role:admin'])->prefix('admin')->group(function () {
+    // Dashboard
+    Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
+    Route::get('/dashboard/overview', [DashboardController::class, 'overview']);
+
     // Category Management
     Route::prefix('categories')->group(function () {
         Route::get('/', [CategoryController::class, 'index']);
