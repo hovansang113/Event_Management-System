@@ -118,4 +118,55 @@ class AuthService
             // Token expired or invalid, no further action needed
         }
     }
+
+    public function handleSocialLogin(string $provider, $socialUser)
+    {
+        $email = $socialUser->getEmail();
+        $googleId = $socialUser->getId();
+
+        \Illuminate\Support\Facades\Log::info("--- Bắt đầu xử lý Social Login ---", [
+            'email' => $email,
+            'google_id' => $googleId
+        ]);
+
+        $user = $this->userRepository->findByEmail($email);
+
+        if (!$user) {
+            \Illuminate\Support\Facades\Log::info("Tạo user mới cho attendee");
+            $user = $this->userRepository->create([
+                'name' => $socialUser->getName() ?? 'User',
+                'email' => $email,
+                'password' => Hash::make(Str::random(32)),
+                'role' => 'attendee',
+                'email_verified' => true,
+                'email_verified_at' => now(),
+                'google_id' => $googleId,
+            ]);
+        } else {
+            \Illuminate\Support\Facades\Log::info("Tìm thấy user cũ", ['role' => $user->role]);
+            
+            if ($user->role !== 'attendee') {
+                \Illuminate\Support\Facades\Log::warning("Từ chối login vì role không phải attendee");
+                throw new Exception('Social login is only available for regular users.', 403);
+            }
+
+            // Cập nhật google_id nếu chưa có hoặc khác
+            $user->google_id = $googleId;
+            $user->email_verified = true;
+            if (!$user->email_verified_at) {
+                $user->email_verified_at = now();
+            }
+            
+            $user->save(); // Ép buộc lưu vào DB
+            \Illuminate\Support\Facades\Log::info("Đã cập nhật google_id cho user cũ");
+        }
+
+        $token = JWTAuth::fromUser($user);
+        \Illuminate\Support\Facades\Log::info("Tạo JWT Token thành công");
+
+        return [
+            'token' => $token,
+            'user' => $user,
+        ];
+    }
 }

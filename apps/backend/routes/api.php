@@ -6,12 +6,17 @@ use App\Http\Controllers\api\admin\AdminEventController;
 use App\Http\Controllers\api\organizer\EventController;
 use Illuminate\Support\Facades\Route;
 
+
 // Auth Routes
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
     Route::get('/verify-email', [AuthController::class, 'verifyEmail']);
     Route::post('/resend-verification', [AuthController::class, 'resendVerification']);
+
+    // Google OAuth Routes
+    Route::get('/google', [AuthController::class, 'redirectToGoogle']);
+    Route::get('/google/callback', [AuthController::class, 'handleGoogleCallback']);
 
     // Protected Auth Routes
     Route::middleware('auth:api')->group(function () {
@@ -20,7 +25,6 @@ Route::prefix('auth')->group(function () {
     });
 });
 
-// Public Categories (for organizers to view when creating events)
 Route::middleware('auth:api')->get('/categories', [CategoryController::class, 'index']);
 
 // Admin Routes
@@ -31,7 +35,7 @@ Route::middleware(['auth:api', 'role:admin'])->prefix('admin')->group(function (
         Route::post('/', [CategoryController::class, 'store']);
         Route::put('/{id}', [CategoryController::class, 'update']);
         Route::delete('/{id}', [CategoryController::class, 'destroy']);
-        
+
         // Extended Category Routes
         Route::post('/{id}/restore', [CategoryController::class, 'restore']);
         Route::patch('/{id}/deactivate', [CategoryController::class, 'deactivate']);
@@ -42,9 +46,9 @@ Route::middleware(['auth:api', 'role:admin'])->prefix('admin')->group(function (
     Route::prefix('events')->group(function () {
         Route::get('/', [AdminEventController::class, 'index']);
         Route::get('/{id}', [AdminEventController::class, 'show']);
+        Route::delete('/{id}', [AdminEventController::class, 'destroy']);
         Route::patch('/{id}/approve', [AdminEventController::class, 'approve']);
         Route::patch('/{id}/reject', [AdminEventController::class, 'reject']);
-        Route::delete('/{id}', [AdminEventController::class, 'destroy']);
     });
 });
 
