@@ -35,11 +35,49 @@ export const RejectEventModal = ({
       maxWidth="sm"
       fullWidth
       PaperProps={{
-        sx: { borderRadius: 2 },
+        sx: {
+          borderRadius: 4,
+          overflow: "hidden",
+        },
       }}
     >
-      <DialogTitle sx={{ fontWeight: 700, fontSize: 18 }}>
-        Reject Event?
+      <DialogTitle
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 1.5,
+          fontWeight: 700,
+          fontSize: 20,
+          pb: 1,
+        }}
+      >
+        <Box
+          sx={{
+            width: 36,
+            height: 36,
+            borderRadius: "50%",
+            backgroundColor: "#fee2e2",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 18,
+          }}
+        >
+          ⚠️
+        </Box>
+
+        <Box>
+          <Typography sx={{ fontWeight: 700, fontSize: 18 }}>
+            Reject Event
+          </Typography>
+
+          <Typography
+            variant="caption"
+            sx={{ color: "#6b7280" }}
+          >
+            Please provide a reason for rejection
+          </Typography>
+        </Box>
       </DialogTitle>
 
       <DialogContent>
@@ -54,29 +92,61 @@ export const RejectEventModal = ({
             rows={4}
             placeholder="Please provide constructive feedback..."
             value={reason}
-            onChange={(e) => setReason(e.target.value.slice(0, maxChars))}
+            onChange={(e) =>
+              setReason(e.target.value.slice(0, maxChars))
+            }
             variant="outlined"
             size="small"
             disabled={loading}
-            sx={{ mb: 1 }}
+            sx={{
+              mb: 1,
+              "& .MuiOutlinedInput-root": {
+                borderRadius: 3,
+                backgroundColor: "#fafafa",
+              },
+            }}
           />
 
-          <Typography variant="caption" color="textSecondary">
+          <Typography
+            variant="caption"
+            color="textSecondary"
+          >
             {reason.length}/{maxChars} characters
           </Typography>
         </Box>
       </DialogContent>
 
       <DialogActions sx={{ p: 2 }}>
-        <Button onClick={onCancel} variant="outlined" disabled={loading}>
+        <Button
+          onClick={onCancel}
+          variant="outlined"
+          disabled={loading}
+          sx={{
+            borderRadius: 2,
+            textTransform: "none",
+          }}
+        >
           Cancel
         </Button>
+
         <Button
           onClick={handleConfirm}
           variant="contained"
           color="error"
           disabled={loading || !reason.trim()}
-          startIcon={loading ? <CircularProgress size={20} /> : null}
+          startIcon={
+            loading ? (
+              <CircularProgress
+                size={20}
+                color="inherit"
+              />
+            ) : null
+          }
+          sx={{
+            borderRadius: 2,
+            textTransform: "none",
+            boxShadow: "none",
+          }}
         >
           {loading ? "Rejecting..." : "Confirm Rejection"}
         </Button>
