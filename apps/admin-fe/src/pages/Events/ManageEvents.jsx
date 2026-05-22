@@ -113,14 +113,16 @@ export default function ManageEvents() {
             <Box sx={{ display: "grid", placeItems: "center", py: 6 }}>
               <CircularProgress size={24} />
             </Box>
-          ) : (
+          ) 
+          : (
             <EventsTable
               events={events}
               loading={false}
               onView={handleViewEvent}
               onDelete={handleDeleteEvent}
             />
-          )}
+          )
+          }
         </Box>
       </Card>
 

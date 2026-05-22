@@ -16,7 +16,6 @@ import {
 } from "@mui/material";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import DeleteIcon from "@mui/icons-material/Delete";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { format } from "date-fns";
 
 const getStatusColor = (status) => {
@@ -215,19 +214,6 @@ export const EventsTable = ({
                         </IconButton>
                       </Tooltip>
                     )}
-
-                    <Tooltip title="More Options">
-                      <IconButton
-                        size="small"
-                        sx={{
-                          color: "#6b7280",
-                          p: 0.5,
-                          "&:hover": { backgroundColor: "#f3f4f6" },
-                        }}
-                      >
-                        <MoreVertIcon sx={{ fontSize: 16 }} />
-                      </IconButton>
-                    </Tooltip>
                   </Box>
                 </TableCell>
               </TableRow>
