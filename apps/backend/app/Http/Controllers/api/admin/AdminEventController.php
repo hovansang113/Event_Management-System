@@ -44,11 +44,9 @@ class AdminEventController extends Controller
         }
     }
 
-    public function show($id)
-    {
+    public function show($id){
         try {
             $event = $this->eventRepository->findById($id);
-
             if (!$event) {
                 return $this->error('Event not found', 404);
             }
@@ -59,11 +57,9 @@ class AdminEventController extends Controller
         }
     }
 
-    public function approve($id)
-    {
+    public function approve($id){
         try {
             $event = $this->eventRepository->findById($id);
-
             if (!$event) {
                 return $this->error('Event not found', 404);
             }
