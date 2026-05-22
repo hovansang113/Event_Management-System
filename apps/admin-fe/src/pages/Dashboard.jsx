@@ -1,22 +1,24 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
+import { Link as RouterLink } from "react-router-dom";
 import {
   Alert,
   Box,
   Card,
   CardContent,
   CircularProgress,
-  Grid,
-  List,
-  ListItem,
-  ListItemText,
-  Paper,
-  Chip,
+  Link,
   Typography,
 } from "@mui/material";
-import { categoryService } from "../services/categoryService";
+import { dashboardService } from "../services/dashboardService";
 
 const Dashboard = () => {
-  const [categories, setCategories] = useState([]);
+  const [stats, setStats] = useState({
+    total_users: 0,
+    total_events: 0,
+    pending_approval: 0,
+    approved_events: 0,
+    active_categories: 0,
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -27,10 +29,9 @@ const Dashboard = () => {
       setLoading(true);
       setError(null);
       try {
-        const result = await categoryService.getAll();
-        const raw = Array.isArray(result.data) ? result.data : [];
+        const dashboardResult = await dashboardService.getOverview();
         if (!cancelled) {
-          setCategories(raw);
+          setStats(dashboardResult.data.stats);
         }
       } catch (err) {
         if (!cancelled) {
@@ -50,105 +51,156 @@ const Dashboard = () => {
     };
   }, []);
 
-  const stats = useMemo(() => {
-    const total = categories.length;
-    const active = categories.filter((item) => item.is_active && !item.deleted_at).length;
-    const inactive = categories.filter((item) => !item.is_active && !item.deleted_at).length;
-    const deleted = categories.filter((item) => !!item.deleted_at).length;
-
-    return { total, active, inactive, deleted };
-  }, [categories]);
-
-  const cards = [
-    { label: "Total Categories", value: stats.total },
-    { label: "Active", value: stats.active },
-    { label: "Inactive", value: stats.inactive },
-    { label: "Deleted", value: stats.deleted },
+  const statLabels = [
+    { key: "total_users", label: "Total Users" },
+    { key: "total_events", label: "Total Events" },
+    { key: "pending_approval", label: "Pending Approval" },
+    { key: "approved_events", label: "Approved Events" },
   ];
 
   return (
-    <Box>
+    <Box sx={{ p: { xs: 1, sm: 2 } }}>
+      {/* Header */}
       <Box sx={{ mb: 3 }}>
-        <Typography variant="h4" sx={{ fontWeight: 700 }}>
+        <Typography variant="h4" sx={{ fontWeight: 700, mb: 0.5 }}>
           Admin Dashboard
         </Typography>
-        <Typography color="text.secondary">Overview of category data from database</Typography>
+        <Typography color="text.secondary">System overview and management</Typography>
       </Box>
 
+      {/* Error Alert */}
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
           {error}
         </Alert>
       )}
 
-     <Box
+      {/* Stats Cards Grid */}
+      <Box
         sx={{
-          display: "flex",
-          gap: 3,
+          display: "grid",
+          gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)", md: "repeat(4, 1fr)" },
+          gap: 2,
           mb: 3,
-          width: "100%",
         }}
       >
-        {cards.map((card) => (
+        {statLabels.map(({ key, label }) => (
           <Card
-            key={card.label}
+            key={key}
             sx={{
-              flex: 1,
-              borderRadius: 3,
-              boxShadow: "0 2px 10px rgba(0,0,0,0.06)",
+              borderRadius: 2,
+              boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+              backgroundColor: "#fff",
             }}
           >
-            <CardContent>
-              <Typography
-                color="text.secondary"
-                variant="body2"
-              >
-                {card.label}
+            <CardContent sx={{ p: 2 }}>
+              <Typography color="textSecondary" variant="body2" sx={{ fontSize: "0.85rem", mb: 1 }}>
+                {label}
               </Typography>
-
-              <Typography
-                variant="h4"
-                sx={{ fontWeight: 700 }}
-              >
-                {loading ? "-" : card.value}
+              <Typography variant="h6" sx={{ fontWeight: 700, fontSize: "1.75rem" }}>
+                {loading ? "-" : stats[key]}
               </Typography>
             </CardContent>
           </Card>
         ))}
       </Box>
 
-      <Paper sx={{ p: 2 }}>
-        <Typography variant="h6" sx={{ mb: 1 }}>
-          Latest Categories
-        </Typography>
-        {loading ? (
-          <Box sx={{ py: 3, display: "grid", placeItems: "center" }}>
-            <CircularProgress size={24} />
-          </Box>
-        ) : (
-          <List dense>
-            {categories.map((item) => (
-              <ListItem key={item.id} divider>
-                <ListItemText
-                  primary={item.name}
-                  secondary={`Slug: ${item.slug}`}
-                />
-                <Chip
-                  size="small"
-                  label={item.deleted_at ? "Deleted" : item.is_active ? "Active" : "Inactive"}
-                  color={item.deleted_at ? "error" : item.is_active ? "success" : "default"}
-                  variant={item.is_active && !item.deleted_at ? "filled" : "outlined"}
-                />
-              </ListItem>
-            ))}
-            {categories.length === 0 && (
-              <ListItem>
-                <ListItemText primary="No category data found." />
-              </ListItem>
+      {/* Bottom Sections */}
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: { xs: "1fr", md: "repeat(2, 1fr)" },
+          gap: 3,
+        }}
+      >
+        {/* Pending Events Section */}
+        <Link
+          component={RouterLink}
+          to="/admin/events"
+          sx={{
+            textDecoration: "none",
+            cursor: "pointer",
+            "&:hover": {
+              opacity: 0.8,
+            },
+          }}
+        >
+          <Card
+            sx={{
+              p: 2.5,
+              borderRadius: 2,
+              height: "100%",
+              backgroundColor: "#fafafa",
+              transition: "all 0.3s ease",
+              "&:hover": {
+                backgroundColor: "#f0f0f0",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+              },
+            }}
+          >
+            <Typography variant="h6" sx={{ mb: 1, fontWeight: 600, fontSize: "1.1rem", color: "#000" }}>
+              Pending Events
+            </Typography>
+            <Typography color="textSecondary" variant="body2" sx={{ mb: 2 }}>
+              Review and approve event submissions
+            </Typography>
+
+            {loading ? (
+              <Box sx={{ py: 3, display: "flex", justifyContent: "center" }}>
+                <CircularProgress size={24} />
+              </Box>
+            ) : (
+              <Typography color="primary" sx={{ fontWeight: 600, fontSize: "0.95rem" }}>
+                {stats.pending_approval} waiting →
+              </Typography>
             )}
-          </List>
-        )}
-      </Paper>
+          </Card>
+        </Link>
+
+        {/* Categories Section */}
+        <Link
+          component={RouterLink}
+          to="/admin/categories"
+          sx={{
+            textDecoration: "none",
+            cursor: "pointer",
+            "&:hover": {
+              opacity: 0.8,
+            },
+          }}
+        >
+          <Card
+            sx={{
+              p: 2.5,
+              borderRadius: 2,
+              height: "100%",
+              backgroundColor: "#fafafa",
+              transition: "all 0.3s ease",
+              "&:hover": {
+                backgroundColor: "#f0f0f0",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+              },
+            }}
+          >
+            <Typography variant="h6" sx={{ mb: 1, fontWeight: 600, fontSize: "1.1rem", color: "#000" }}>
+              Categories
+            </Typography>
+            <Typography color="textSecondary" variant="body2" sx={{ mb: 2 }}>
+              Manage event categories and tags
+            </Typography>
+
+            {loading ? (
+              <Box sx={{ py: 3, display: "flex", justifyContent: "center" }}>
+                <CircularProgress size={24} />
+              </Box>
+            ) : (
+              <Typography color="primary" sx={{ fontWeight: 600, fontSize: "0.95rem" }}>
+                {stats.active_categories} active →
+              </Typography>
+            )}
+          </Card>
+        </Link>
+      </Box>
     </Box>
   );
 };
