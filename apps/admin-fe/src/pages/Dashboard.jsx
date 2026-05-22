@@ -81,22 +81,41 @@ const Dashboard = () => {
         </Alert>
       )}
 
-      <Grid container spacing={2} sx={{ mb: 3 }}>
+     <Box
+        sx={{
+          display: "flex",
+          gap: 3,
+          mb: 3,
+          width: "100%",
+        }}
+      >
         {cards.map((card) => (
-          <Grid item xs={12} sm={6} md={3} key={card.label}>
-            <Card>
-              <CardContent>
-                <Typography color="text.secondary" variant="body2">
-                  {card.label}
-                </Typography>
-                <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                  {loading ? "-" : card.value}
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
+          <Card
+            key={card.label}
+            sx={{
+              flex: 1,
+              borderRadius: 3,
+              boxShadow: "0 2px 10px rgba(0,0,0,0.06)",
+            }}
+          >
+            <CardContent>
+              <Typography
+                color="text.secondary"
+                variant="body2"
+              >
+                {card.label}
+              </Typography>
+
+              <Typography
+                variant="h4"
+                sx={{ fontWeight: 700 }}
+              >
+                {loading ? "-" : card.value}
+              </Typography>
+            </CardContent>
+          </Card>
         ))}
-      </Grid>
+      </Box>
 
       <Paper sx={{ p: 2 }}>
         <Typography variant="h6" sx={{ mb: 1 }}>
