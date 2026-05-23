@@ -93,7 +93,7 @@ export default function Footer() {
             gap: 2,
           }}
         >
-          <Typography sx={{ color: "#9CA3AF", fontSize: 14 }}>© 2026 Event Platform. All rights reserved.</Typography>
+          <Typography sx={{ color: "#9CA3AF", fontSize: 14 }}>(c) 2026 Event Platform. All rights reserved.</Typography>
 
           <Box sx={{ display: "flex", gap: { xs: 2.5, md: 4 }, flexWrap: "wrap" }}>
             {bottomLinks.map((text) => (
