@@ -37,6 +37,10 @@ Route::prefix('attendee')->group(function () {
 
 // Admin Routes
 Route::middleware(['auth:api', 'role:admin'])->prefix('admin')->group(function () {
+    // Dashboard
+    Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
+    Route::get('/dashboard/overview', [DashboardController::class, 'overview']);
+
     // Category Management
     Route::prefix('categories')->group(function () {
         Route::get('/', [CategoryController::class, 'index']);
