@@ -32,20 +32,25 @@ export const useEventDetails = (eventId) => {
         capacity: 0,
         registered: 0,
         available: 0,
+        progress: 0,
         rating: "0.0",
         reviews: 0,
+        waitlistCount: 0,
       };
     }
 
     const capacity = Number(event.capacity || 0);
     const registered = Number(event.registered || 0);
+    const available = Math.max(0, capacity - registered);
 
     return {
       capacity,
       registered,
-      available: Math.max(0, capacity - registered),
+      available,
+      progress: capacity > 0 ? Math.min(100, Math.round((registered / capacity) * 100)) : 0,
       rating: Number(event.rating || 0).toFixed(1),
       reviews: Number(event.reviews || 0),
+      waitlistCount: Number(event.waitlist_count || 0),
     };
   }, [event]);
 
