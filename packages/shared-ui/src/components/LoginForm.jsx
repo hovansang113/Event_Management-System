@@ -23,8 +23,30 @@ import {
   Google,
 } from "@mui/icons-material";
 
+const loginRoleCopy = {
+  attendee: {
+    label: "Attendee access",
+    title: "Welcome back",
+    backdropTitle: "Find your next event",
+    backdropText: "A focused space for discovering, saving, and joining events.",
+  },
+  organizer: {
+    label: "Organizer access",
+    title: "Manage your events",
+    backdropTitle: "Build memorable event days",
+    backdropText: "Tools for publishing events, tracking status, and managing audiences.",
+  },
+  admin: {
+    label: "Admin access",
+    title: "Admin sign in",
+    backdropTitle: "Platform control center",
+    backdropText: "Secure access for reviewing activity and keeping operations consistent.",
+  },
+};
+
 export const LoginForm = ({ role, onSuccess, showRegisterLink = true }) => {
   const [showPassword, setShowPassword] = useState(false);
+  const roleCopy = loginRoleCopy[role] || loginRoleCopy.attendee;
 
   const {
     formData,
@@ -40,17 +62,46 @@ export const LoginForm = ({ role, onSuccess, showRegisterLink = true }) => {
   };
 
   return (
-    <Box className="login-form-container">
+    <Box
+      className={`login-form-container auth-shell auth-shell--${role}`}
+      data-auth-role={roleCopy.label}
+    >
+      <Box className="auth-backdrop-copy">
+        <Typography className="auth-backdrop-kicker">
+          <Box component="span" className="auth-brand-word">
+            EVENT
+          </Box>
+          <Box component="span" className="auth-brand-word auth-brand-word--now">
+            NOW
+          </Box>
+        </Typography>
+        <Typography component="h1" className="auth-backdrop-title">
+          {roleCopy.backdropTitle}
+        </Typography>
+        <Typography className="auth-backdrop-text">
+          {roleCopy.backdropText}
+        </Typography>
+      </Box>
+
       <Paper
         elevation={3}
         className="login-form-paper"
       >
+        <Typography className="auth-role-chip" align="center">
+          {roleCopy.label}
+        </Typography>
+
         <Typography
           variant="h3"
           align="center"
           className="login-form-brand"
         >
-          EVENTNOW
+          <Box component="span" className="auth-brand-word">
+            EVENT
+          </Box>
+          <Box component="span" className="auth-brand-word auth-brand-word--now">
+            NOW
+          </Box>
         </Typography>
 
         <Typography
@@ -58,7 +109,7 @@ export const LoginForm = ({ role, onSuccess, showRegisterLink = true }) => {
           align="center"
           className="login-form-title"
         >
-          Login
+          {roleCopy.title}
         </Typography>
 
         <Box component="form" onSubmit={handleSubmit}>

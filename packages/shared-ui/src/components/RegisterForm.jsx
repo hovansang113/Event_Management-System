@@ -20,9 +20,25 @@ import {
   VisibilityOff,
 } from "@mui/icons-material";
 
+const registerRoleCopy = {
+  attendee: {
+    label: "Attendee signup",
+    title: "Create attendee account",
+    backdropTitle: "Start joining events",
+    backdropText: "Create a personal account for browsing, registering, and following event updates.",
+  },
+  organizer: {
+    label: "Organizer signup",
+    title: "Create organizer account",
+    backdropTitle: "Launch your event space",
+    backdropText: "Set up an organizer profile for creating events and managing registrations.",
+  },
+};
+
 export const RegisterForm = ({ role, onSuccess }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const roleCopy = registerRoleCopy[role] || registerRoleCopy.attendee;
 
   const {
     formData,
@@ -33,17 +49,46 @@ export const RegisterForm = ({ role, onSuccess }) => {
   } = useAuthRegister(role, onSuccess);
 
   return (
-    <Box className="register-form-container">
+    <Box
+      className={`register-form-container auth-shell auth-shell--${role}`}
+      data-auth-role={roleCopy.label}
+    >
+      <Box className="auth-backdrop-copy">
+        <Typography className="auth-backdrop-kicker">
+          <Box component="span" className="auth-brand-word">
+            EVENT
+          </Box>
+          <Box component="span" className="auth-brand-word auth-brand-word--now">
+            NOW
+          </Box>
+        </Typography>
+        <Typography component="h1" className="auth-backdrop-title">
+          {roleCopy.backdropTitle}
+        </Typography>
+        <Typography className="auth-backdrop-text">
+          {roleCopy.backdropText}
+        </Typography>
+      </Box>
+
       <Paper
         elevation={3}
         className="register-form-paper"
       >
+        <Typography className="auth-role-chip" align="center">
+          {roleCopy.label}
+        </Typography>
+
         <Typography
           variant="h3"
           align="center"
           className="register-form-brand"
         >
-          EVENTNOW
+          <Box component="span" className="auth-brand-word">
+            EVENT
+          </Box>
+          <Box component="span" className="auth-brand-word auth-brand-word--now">
+            NOW
+          </Box>
         </Typography>
 
         <Typography
@@ -51,7 +96,7 @@ export const RegisterForm = ({ role, onSuccess }) => {
           align="center"
           className="register-form-title"
         >
-          Create Account
+          {roleCopy.title}
         </Typography>
 
         <Box component="form" onSubmit={handleSubmit}>
