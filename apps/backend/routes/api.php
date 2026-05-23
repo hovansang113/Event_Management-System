@@ -3,6 +3,7 @@
 use App\Http\Controllers\api\AuthController;
 use App\Http\Controllers\api\admin\CategoryController;
 use App\Http\Controllers\api\admin\AdminEventController;
+use App\Http\Controllers\api\attendee\EventController as AttendeeEventController;
 use App\Http\Controllers\api\organizer\EventController;
 use Illuminate\Support\Facades\Route;
 
@@ -26,6 +27,13 @@ Route::prefix('auth')->group(function () {
 });
 
 Route::middleware('auth:api')->get('/categories', [CategoryController::class, 'index']);
+
+// Attendee/Public Routes
+Route::prefix('attendee')->group(function () {
+    Route::get('/events', [AttendeeEventController::class, 'index']);
+    Route::get('/events/{id}', [AttendeeEventController::class, 'show']);
+    Route::get('/categories', [AttendeeEventController::class, 'categories']);
+});
 
 // Admin Routes
 Route::middleware(['auth:api', 'role:admin'])->prefix('admin')->group(function () {

@@ -1,163 +1,106 @@
-import {
-  Box,
-  Container,
-  Grid,
-  Typography,
-  IconButton,
-  Link,
-} from "@mui/material";
+import { Box, Container, Typography, Link } from "@mui/material";
 
-import FacebookIcon from "@mui/icons-material/Facebook";
-import TwitterIcon from "@mui/icons-material/Twitter";
-import InstagramIcon from "@mui/icons-material/Instagram";
-import LinkedInIcon from "@mui/icons-material/LinkedIn";
+const companyLinks = ["About Us", "Contact", "Careers", "Press"];
+const legalLinks = ["Privacy Policy", "Terms of Service", "Cookie Policy", "Guidelines"];
+const bottomLinks = ["Help Center", "Status", "Accessibility"];
 
 export default function Footer() {
   return (
     <Box
+      component="footer"
       sx={{
-        bgcolor: "#1f1f1f",
+        background: "#222222",
         color: "#fff",
-        pt: 8,
-        pb: 4,
+        py: "48px",
       }}
     >
-      <Container maxWidth="lg">
-        <Grid container spacing={6}>
-          
-          
-          {/* Logo + Description */}
-          <Grid item xs={12} md={4}>
-            <Box display="flex" alignItems="center" gap={1} mb={2}>
-
-
-              <Typography fontWeight={700} fontSize={28}>
-                EVENTNOW
-              </Typography>
-            </Box>
-
-            <Typography
-              sx={{
-                color: "#b0b0b0",
-                lineHeight: 1.8,
-                maxWidth: 320,
-              }}
-            >
-              Your premier destination for discovering and joining amazing
-              local events.
+      <Container maxWidth={false} sx={{ maxWidth: "1200px", px: "24px" }}>
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr", md: "repeat(4, 1fr)" },
+            gap: { xs: 4, md: 6 },
+          }}
+        >
+          <Box>
+            <Typography sx={{ fontWeight: 700, fontSize: 20, lineHeight: 1, mb: 2 }}>
+              EVENTNOW
             </Typography>
-          </Grid>
-
-          {/* Company */}
-          <Grid item xs={6} md={2}>
-            <Typography fontWeight={700} mb={2}>
-              Company
+            <Typography sx={{ color: "#9CA3AF", maxWidth: 360, lineHeight: 1.7, fontSize: 14 }}>
+              Your premier destination for discovering and joining amazing local events.
             </Typography>
+          </Box>
 
-            <Box display="flex" flexDirection="column" gap={1.2}>
-              <Link display="block" href="#" underline="none" color="#b0b0b0">
-                About Us
-              </Link>
-
-              <Link display="block" href="#" underline="none" color="#b0b0b0">
-                Contact
-              </Link>
-
-              <Link display="block" href="#" underline="none" color="#b0b0b0">
-                Careers
-              </Link>
-
-              <Link display="block" href="#" underline="none" color="#b0b0b0">
-                Press
-              </Link>
-            </Box>
-          </Grid>
-
-          {/* Legal */}
-          <Grid item xs={6} md={3}>
-            <Typography fontWeight={700} mb={2}>
-              Legal
-            </Typography>
-
-            <Box display="flex" flexDirection="column" gap={1.2}>
-              <Link display="block" href="#" underline="none" color="#b0b0b0">
-                Privacy Policy
-              </Link>
-
-              <Link display="block" href="#" underline="none" color="#b0b0b0">
-                Terms of Service
-              </Link>
-
-              <Link display="block" href="#" underline="none" color="#b0b0b0">
-                Cookie Policy
-              </Link>
-
-              <Link display="block" href="#" underline="none" color="#b0b0b0">
-                Guidelines
-              </Link>
-            </Box>
-          </Grid>
-
-          {/* Social */}
-          <Grid item xs={12} md={3}>
-            <Typography fontWeight={700} mb={2}>
-              Follow Us
-            </Typography>
-
-            <Box display="flex" gap={2}>
-              {[
-                <FacebookIcon />,
-                <TwitterIcon />,
-                <InstagramIcon />,
-                <LinkedInIcon />,
-              ].map((icon, index) => (
-                <IconButton
-                  key={index}
-                  sx={{
-                    bgcolor: "#2d3b55",
-                    color: "#fff",
-                    width: 48,
-                    height: 48,
-                    "&:hover": {
-                      bgcolor: "#3f4f70",
-                    },
-                  }}
-                >
-                  {icon}
-                </IconButton>
+          <Box>
+            <Typography sx={{ fontWeight: 700, color: "#fff", mb: "16px" }}>Company</Typography>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1.1 }}>
+              {companyLinks.map((text) => (
+                <Link key={text} href="#" underline="none" sx={{ color: "#9CA3AF", fontSize: 14, "&:hover": { color: "#fff" } }}>
+                  {text}
+                </Link>
               ))}
             </Box>
-          </Grid>
-        </Grid>
+          </Box>
 
-        {/* Bottom */}
+          <Box>
+            <Typography sx={{ fontWeight: 700, color: "#fff", mb: "16px" }}>Legal</Typography>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1.1 }}>
+              {legalLinks.map((text) => (
+                <Link key={text} href="#" underline="none" sx={{ color: "#9CA3AF", fontSize: 14, "&:hover": { color: "#fff" } }}>
+                  {text}
+                </Link>
+              ))}
+            </Box>
+          </Box>
+
+          <Box>
+            <Typography sx={{ fontWeight: 700, color: "#fff", mb: "16px" }}>Follow Us</Typography>
+            <Box sx={{ display: "flex", gap: 1.4, flexWrap: "wrap" }}>
+              {["F", "T", "I", "L"].map((item) => (
+                <Box
+                  key={item}
+                  sx={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: "50%",
+                    bgcolor: "#374151",
+                    color: "#fff",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 14,
+                    fontWeight: 700,
+                    transition: "background-color 220ms ease",
+                    "&:hover": { bgcolor: "#4B5563" },
+                  }}
+                >
+                  {item}
+                </Box>
+              ))}
+            </Box>
+          </Box>
+        </Box>
+
         <Box
-          mt={6}
-          pt={3}
           sx={{
-            borderTop: "1px solid #3a3a3a",
+            mt: { xs: 4, md: 5 },
+            pt: 3,
+            borderTop: "1px solid #374151",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: 2,
           }}
-          display="flex"
-          justifyContent="space-between"
-          flexWrap="wrap"
-          gap={2}
         >
-          <Typography color="#b0b0b0">
-            Â© 2026 Event Platform. All rights reserved.
-          </Typography>
+          <Typography sx={{ color: "#9CA3AF", fontSize: 14 }}>© 2026 Event Platform. All rights reserved.</Typography>
 
-          <Box display="flex" flexWrap="wrap" gap={4}>
-            <Link display="block" href="#" underline="none" color="#b0b0b0">
-              Help Center
-            </Link>
-
-            <Link display="block" href="#" underline="none" color="#b0b0b0">
-              Status
-            </Link>
-
-            <Link display="block" href="#" underline="none" color="#b0b0b0">
-              Accessibility
-            </Link>
+          <Box sx={{ display: "flex", gap: { xs: 2.5, md: 4 }, flexWrap: "wrap" }}>
+            {bottomLinks.map((text) => (
+              <Link key={text} href="#" underline="none" sx={{ color: "#9CA3AF", fontSize: 14, "&:hover": { color: "#fff" } }}>
+                {text}
+              </Link>
+            ))}
           </Box>
         </Box>
       </Container>
