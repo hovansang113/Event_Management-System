@@ -1,25 +1,25 @@
-
-
-import { Box, Typography } from "@mui/material";
+﻿import { Box } from "@mui/material";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
+import { HeroSection, WhyChooseSection } from "../components/sections";
+import { FeaturedEventsSection } from "../components/event";
+import { ExploreCategorySection } from "../components/category";
 
 export default function HomePage() {
   return (
-    <Box display="flex" flexDirection="column" minHeight="100vh">
+    <Box display="flex" flexDirection="column" minHeight="100dvh">
       <Header />
 
-      <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-        <Typography variant="h4" gutterBottom>
-          Trang chủ
-        </Typography>
-        <Typography variant="body1">
-          Chào mừng bạn đến với EventNextDay!
-        </Typography>
+      <Box component="main" sx={{ flexGrow: 1, pt: "70px" }}>
+        <HeroSection />
+        <FeaturedEventsSection />
+        <ExploreCategorySection />
+        <WhyChooseSection />
       </Box>
 
-      <Footer />
+      <Box sx={{ mt: "auto" }}>
+        <Footer />
+      </Box>
     </Box>
   );
 }
-

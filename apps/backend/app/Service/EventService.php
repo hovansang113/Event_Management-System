@@ -4,6 +4,7 @@ namespace App\Service;
 
 use App\Exceptions\ApiException;
 use App\Repositories\EventRepository;
+use App\Repositories\CategoryRepository;
 use App\Mail\EventCancelledMail;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
@@ -11,10 +12,12 @@ use Illuminate\Http\UploadedFile;
 class EventService
 {
     protected $eventRepository;
+    protected $categoryRepository;
 
-    public function __construct(EventRepository $eventRepository)
+    public function __construct(EventRepository $eventRepository, CategoryRepository $categoryRepository)
     {
         $this->eventRepository = $eventRepository;
+        $this->categoryRepository = $categoryRepository;
     }
 
     public function createEvent(array $data)
@@ -155,5 +158,20 @@ class EventService
         ]);
 
         return $event->refresh();
+    }
+
+    public function getAttendeeEvents(array $filters)
+    {
+        return $this->eventRepository->getPublishedForAttendee($filters);
+    }
+
+    public function getAttendeeEventById(int $id)
+    {
+        return $this->eventRepository->findPublishedByIdForAttendee($id);
+    }
+
+    public function getActiveCategories()
+    {
+        return $this->categoryRepository->getActive();
     }
 }

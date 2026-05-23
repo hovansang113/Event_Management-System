@@ -106,6 +106,65 @@ class EventRepository
         return $query->paginate($filters['per_page'] ?? 10);
     }
 
+    public function getPublishedForAttendee(array $filters = []): LengthAwarePaginator
+    {
+        $query = Event::query()
+            ->with(['category:id,name,slug', 'organizer:id,name,email'])
+            ->withCount([
+                'registrations as confirmed_count' => fn($q) => $q->where('status', 'Confirmed'),
+            ])
+            ->where('status', 'Published')
+            ->whereHas('category', fn($q) => $q->where('is_active', true));
+
+        if (!empty($filters['category'])) {
+            $category = $filters['category'];
+            $query->whereHas('category', function ($q) use ($category) {
+                $q->where('slug', $category)->orWhere('id', $category);
+            });
+        }
+
+        if (!empty($filters['search'])) {
+            $search = trim((string) $filters['search']);
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhere('location', 'like', "%{$search}%");
+            });
+        }
+
+        if (!empty($filters['date_from'])) {
+            $query->whereDate('event_date', '>=', $filters['date_from']);
+        }
+
+        if (!empty($filters['date_to'])) {
+            $query->whereDate('event_date', '<=', $filters['date_to']);
+        }
+
+        $sort = $filters['sort'] ?? 'newest';
+        if ($sort === 'event_date_asc') {
+            $query->orderBy('event_date', 'asc')->orderBy('event_time', 'asc');
+        } elseif ($sort === 'popular') {
+            $query->orderByDesc('confirmed_count')->orderByDesc('created_at');
+        } else {
+            $query->orderByDesc('created_at');
+        }
+
+        $perPage = min((int) ($filters['per_page'] ?? 3), 100);
+        return $query->paginate($perPage);
+    }
+
+    public function findPublishedByIdForAttendee(int $id): ?Event
+    {
+        return Event::query()
+            ->with(['category:id,name,slug', 'organizer:id,name,email'])
+            ->withCount([
+                'registrations as confirmed_count' => fn($q) => $q->where('status', 'Confirmed'),
+            ])
+            ->where('status', 'Published')
+            ->whereHas('category', fn($q) => $q->where('is_active', true))
+            ->find($id);
+    }
+
     public function getAdminStatistics(): array
     {
         $today = now()->toDateString();
