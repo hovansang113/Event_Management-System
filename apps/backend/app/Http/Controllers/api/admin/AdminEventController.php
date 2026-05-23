@@ -8,7 +8,8 @@ use App\Http\Resources\Event\EventResource;
 use App\Repositories\EventRepository;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\Mail;
+use App\Mail\EventRejectionMail;
 class AdminEventController extends Controller
 {
     use ApiResponse;
@@ -44,11 +45,9 @@ class AdminEventController extends Controller
         }
     }
 
-    public function show($id)
-    {
+    public function show($id){
         try {
             $event = $this->eventRepository->findById($id);
-
             if (!$event) {
                 return $this->error('Event not found', 404);
             }
@@ -59,11 +58,9 @@ class AdminEventController extends Controller
         }
     }
 
-    public function approve($id)
-    {
+    public function approve($id){
         try {
             $event = $this->eventRepository->findById($id);
-
             if (!$event) {
                 return $this->error('Event not found', 404);
             }
@@ -102,7 +99,7 @@ class AdminEventController extends Controller
             ]);
             $event->refresh();
 
-            // TODO: Send email to organizer with reason
+            Mail::to($event->organizer->email)->send(new EventRejectionMail($event));
 
             return $this->success(new EventResource($event), 'Event rejected successfully');
         } catch (\Exception $e) {
