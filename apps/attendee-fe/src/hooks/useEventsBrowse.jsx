@@ -20,7 +20,7 @@ const mapEventData = (apiEvent) => ({
   location: apiEvent.location || apiEvent.venue || "Unknown Location",
   category: apiEvent.category?.name || apiEvent.category || "General",
   image: apiEvent.image || apiEvent.image_url || "https://via.placeholder.com/1200x700",
-  rating: Number(apiEvent.rating || 4.5),
+  rating: Number(apiEvent.rating || 0),
   reviews: Number(apiEvent.reviews || apiEvent.review_count || 0),
   registered: Number(apiEvent.confirmed_count || apiEvent.registered || 0),
   capacity: Number(apiEvent.capacity || 100),
@@ -118,19 +118,21 @@ export const useEventsBrowse = () => {
     });
   }, [events, search, selectedCategories, location, fromDate, toDate, onlyAvailable]);
 
-  const paginatedEvents = useMemo(() => {
-    const start = (page - 1) * PAGE_SIZE;
-    return filteredEvents.slice(start, start + PAGE_SIZE);
-  }, [filteredEvents, page]);
-
   const totalPages = Math.max(1, Math.ceil(filteredEvents.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const paginatedEvents = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return filteredEvents.slice(start, start + PAGE_SIZE);
+  }, [filteredEvents, currentPage]);
   const hasFilters = Boolean(search || selectedCategories.length || fromDate || toDate || location || onlyAvailable);
 
   const handleToggleCategory = (name) => {
+    setPage(1);
     setSelectedCategories((prev) => (prev.includes(name) ? prev.filter((item) => item !== name) : [...prev, name]));
   };
 
   const clearAllFilters = () => {
+    setPage(1);
     setSearch("");
     setSelectedCategories([]);
     setFromDate("");
@@ -139,32 +141,39 @@ export const useEventsBrowse = () => {
     setOnlyAvailable(false);
   };
 
-  useEffect(() => {
-    setPage(1);
-  }, [search, selectedCategories, fromDate, toDate, location, onlyAvailable]);
-
-  useEffect(() => {
-    if (page > totalPages) setPage(totalPages);
-  }, [page, totalPages]);
-
   return {
     loading,
     apiError,
-    page,
+    page: currentPage,
     setPage,
     viewMode,
     setViewMode,
     search,
-    setSearch,
+    setSearch: (value) => {
+      setPage(1);
+      setSearch(value);
+    },
     selectedCategories,
     fromDate,
     toDate,
     location,
     onlyAvailable,
-    setFromDate,
-    setToDate,
-    setLocation,
-    setOnlyAvailable,
+    setFromDate: (value) => {
+      setPage(1);
+      setFromDate(value);
+    },
+    setToDate: (value) => {
+      setPage(1);
+      setToDate(value);
+    },
+    setLocation: (value) => {
+      setPage(1);
+      setLocation(value);
+    },
+    setOnlyAvailable: (value) => {
+      setPage(1);
+      setOnlyAvailable(value);
+    },
     categories,
     filteredEvents,
     paginatedEvents,

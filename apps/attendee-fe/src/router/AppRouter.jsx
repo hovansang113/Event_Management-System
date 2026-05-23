@@ -4,6 +4,8 @@ import LoginPage from "../pages/LoginPage";
 import GoogleCallback from "../pages/GoogleCallback";
 import HomePage from "../pages/HomePage";
 import EventsPage from "../pages/EventsPage";
+import EventDetailPage from "../pages/EventDetailPage";
+import AttendeeLayout from "../components/layout/AttendeeLayout";
 
 
 export default function AppRouter() {
@@ -14,9 +16,11 @@ export default function AppRouter() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/auth/callback" element={<GoogleCallback />} />
         <Route path="/home" element={<Navigate to="/" replace />} />
-        <Route path="/" element={<HomePage />} />
-        <Route path="/events" element={<EventsPage />} />
-        <Route path="/events/:id" element={<EventDetailPage />} />
+        <Route element={<AttendeeLayout />}>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/events" element={<EventsPage />} />
+          <Route path="/events/:id" element={<EventDetailPage />} />
+        </Route>
       </Routes>
     </BrowserRouter>
   );
