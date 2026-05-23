@@ -19,7 +19,7 @@ export default function EventCard({ event }) {
   const safeCapacity = event.capacity > 0 ? event.capacity : 1;
   const progress = Math.min(100, Math.round((event.registered / safeCapacity) * 100));
   const full = event.registered >= safeCapacity;
-  const goToDetail = () => navigate(`/events/${event.id}`);
+  const goToDetail = () => navigate(`/events/${event.id}`, { state: { event } });
 
   return (
     <Card

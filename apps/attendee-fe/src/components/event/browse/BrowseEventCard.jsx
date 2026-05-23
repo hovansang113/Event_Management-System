@@ -17,7 +17,7 @@ export default function BrowseEventCard({ event, viewMode = "grid" }) {
   const remainRatio = Math.max(0, (safeCapacity - event.registered) / safeCapacity);
   const fill = Math.min(100, Math.round((event.registered / safeCapacity) * 100));
   const full = event.registered >= safeCapacity;
-  const goToDetail = () => navigate(`/events/${event.id}`);
+  const goToDetail = () => navigate(`/events/${event.id}`, { state: { event } });
 
   if (viewMode === "list") {
     return (

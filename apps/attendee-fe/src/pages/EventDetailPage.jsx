@@ -11,7 +11,8 @@ import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined
 import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
 import PlaceOutlinedIcon from "@mui/icons-material/PlaceOutlined";
 import GroupsOutlinedIcon from "@mui/icons-material/GroupsOutlined";
-import { useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { STORAGE_KEYS } from "@eventnextday/shared-ui";
 import { useEventDetails } from "../hooks/useEventDetails";
 
 const formatDate = (value) => {
@@ -36,9 +37,37 @@ const DetailItem = ({ icon, label, value }) => (
   </Box>
 );
 
+const getCurrentUser = () => {
+  const token = localStorage.getItem(STORAGE_KEYS.TOKEN);
+  const rawUser = localStorage.getItem(STORAGE_KEYS.USER);
+
+  if (!token || !rawUser) return null;
+
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    const isExpired = payload.exp && payload.exp * 1000 < Date.now();
+    if (isExpired) {
+      localStorage.removeItem(STORAGE_KEYS.TOKEN);
+      localStorage.removeItem(STORAGE_KEYS.USER);
+      return null;
+    }
+
+    return JSON.parse(rawUser);
+  } catch {
+    localStorage.removeItem(STORAGE_KEYS.TOKEN);
+    localStorage.removeItem(STORAGE_KEYS.USER);
+    return null;
+  }
+};
+
 export default function EventDetailPage() {
   const { id } = useParams();
-  const { event, error, eventStats } = useEventDetails(id);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const initialEvent = location.state?.event || null;
+  const { event, error, eventStats } = useEventDetails(id, initialEvent);
+  const currentUser = getCurrentUser();
+  const isLoggedIn = Boolean(currentUser);
 
   if (error) {
     return (
@@ -135,8 +164,15 @@ export default function EventDetailPage() {
               </Typography>
             </Box>
 
-            <Button fullWidth variant="contained" sx={{ bgcolor: "#007BFF", borderRadius: "6px", py: 1.25, mb: 3, textTransform: "none", fontWeight: 800, "&:hover": { bgcolor: "#0056B3" } }}>
-              Login to Register
+            <Button
+              fullWidth
+              variant="contained"
+              onClick={() => {
+                if (!isLoggedIn) navigate("/login");
+              }}
+              sx={{ bgcolor: "#007BFF", borderRadius: "6px", py: 1.25, textTransform: "none", fontWeight: 800, "&:hover": { bgcolor: "#0056B3" } }}
+            >
+              {isLoggedIn ? "Register" : "Login to Register"}
             </Button>
           </Box>
         </Box>

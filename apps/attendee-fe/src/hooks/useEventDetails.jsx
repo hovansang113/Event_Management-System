@@ -1,8 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { eventService } from '../services/eventService';
 
-export const useEventDetails = (eventId) => {
-  const [event, setEvent] = useState(null);
+export const useEventDetails = (eventId, initialEvent = null) => {
+  const [event, setEvent] = useState(() => initialEvent || eventService.peekById(eventId)?.data || null);
   const [error, setError] = useState(null);
 
   useEffect(() => {

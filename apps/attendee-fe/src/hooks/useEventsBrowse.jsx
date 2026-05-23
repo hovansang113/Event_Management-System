@@ -34,10 +34,22 @@ const extractArray = (payload) => {
   return [];
 };
 
+const eventBrowseFilters = { sort: "newest", per_page: 60 };
+
+const getInitialEvents = () => {
+  const cached = eventService.peekAll(eventBrowseFilters);
+  return extractArray(cached).map(mapEventData);
+};
+
+const getInitialCategories = () => {
+  const cached = categoryService.peekAll();
+  return extractArray(cached).map((item) => ({ id: item.id, name: item.name }));
+};
+
 export const useEventsBrowse = () => {
-  const [events, setEvents] = useState([]);
-  const [allCategories, setAllCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [events, setEvents] = useState(getInitialEvents);
+  const [allCategories, setAllCategories] = useState(getInitialCategories);
+  const [loading, setLoading] = useState(events.length === 0);
   const [apiError, setApiError] = useState("");
   const [page, setPage] = useState(1);
   const [viewMode, setViewMode] = useState("grid");
@@ -52,9 +64,9 @@ export const useEventsBrowse = () => {
     const loadEvents = async () => {
       setApiError("");
       try {
-        setLoading(true);
+        if (events.length === 0) setLoading(true);
         const [eventResult, categoryResult] = await Promise.allSettled([
-          eventService.getAll({ sort: "newest", per_page: 60 }),
+          eventService.getAll(eventBrowseFilters),
           categoryService.getAll(),
         ]);
 
@@ -82,7 +94,7 @@ export const useEventsBrowse = () => {
     };
 
     loadEvents();
-  }, []);
+  }, [events.length]);
 
   const categories = useMemo(() => {
     const counts = events.reduce((acc, item) => {

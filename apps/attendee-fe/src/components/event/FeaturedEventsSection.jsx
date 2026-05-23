@@ -20,15 +20,23 @@ const mapEventData = (apiEvent) => {
   };
 };
 
+const featuredEventFilters = { sort: "newest" };
+
+const getInitialEvents = () => {
+  const cached = eventService.peekAll(featuredEventFilters);
+  const data = cached?.data?.data || cached?.data || [];
+  return Array.isArray(data) ? data.map(mapEventData) : [];
+};
+
 export default function FeaturedEventsSection() {
-  const [events, setEvents] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [events, setEvents] = useState(getInitialEvents);
+  const [loading, setLoading] = useState(events.length === 0);
 
   useEffect(() => {
     const loadEvents = async () => {
       try {
-        setLoading(true);
-        const response = await eventService.getAll({ sort: "newest" });
+        if (events.length === 0) setLoading(true);
+        const response = await eventService.getAll(featuredEventFilters);
         const data = response?.data?.data || response?.data || [];
         const mappedEvents = Array.isArray(data) ? data.map(mapEventData) : [];
         setEvents(mappedEvents);
@@ -41,7 +49,7 @@ export default function FeaturedEventsSection() {
     };
 
     loadEvents();
-  }, []);
+  }, [events.length]);
 
   return (
     <Box sx={{ bgcolor: "#fff", py: "64px", px: "24px" }}>

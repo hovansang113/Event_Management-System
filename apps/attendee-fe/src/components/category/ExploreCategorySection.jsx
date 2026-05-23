@@ -23,15 +23,43 @@ const iconMap = {
   technology: "💻"
 };
 
+const categoryEventFilters = { per_page: 200, sort: "newest" };
+
+const mapCategories = (rows, events) => {
+  if (!Array.isArray(rows) || rows.length === 0) return [];
+
+  const countByCategoryId = events.reduce((acc, event) => {
+    const cid = event?.category?.id;
+    if (!cid) return acc;
+    acc[cid] = (acc[cid] || 0) + 1;
+    return acc;
+  }, {});
+
+  return rows.slice(0, 6).map((item, index) => ({
+    id: item.id,
+    name: item.name,
+    icon: item.icon || iconMap[(item.slug || item.name || "").toLowerCase()] || fallbackCategories[index % fallbackCategories.length].icon,
+    events_count: Number(countByCategoryId[item.id] ?? item.events_count ?? 0)
+  }));
+};
+
+const getInitialCategories = () => {
+  const categoryResp = categoryService.peekAll();
+  const eventResp = eventService.peekAll(categoryEventFilters);
+  const rows = categoryResp?.data ?? [];
+  const events = eventResp?.data?.data ?? [];
+  return mapCategories(rows, events);
+};
+
 export default function ExploreCategorySection() {
-  const [categories, setCategories] = useState([]);
+  const [categories, setCategories] = useState(getInitialCategories);
 
   useEffect(() => {
     const loadCategories = async () => {
       try {
         const [categoryResp, eventResp] = await Promise.all([
           categoryService.getAll(),
-          eventService.getAll({ per_page: 200, sort: "newest" })
+          eventService.getAll(categoryEventFilters)
         ]);
 
         const rows = categoryResp?.data ?? [];
@@ -42,21 +70,7 @@ export default function ExploreCategorySection() {
           return;
         }
 
-        const countByCategoryId = events.reduce((acc, event) => {
-          const cid = event?.category?.id;
-          if (!cid) return acc;
-          acc[cid] = (acc[cid] || 0) + 1;
-          return acc;
-        }, {});
-
-        const mapped = rows.slice(0, 6).map((item, index) => ({
-          id: item.id,
-          name: item.name,
-          icon: item.icon || iconMap[(item.slug || item.name || "").toLowerCase()] || fallbackCategories[index % fallbackCategories.length].icon,
-          events_count: Number(countByCategoryId[item.id] ?? item.events_count ?? 0)
-        }));
-
-        setCategories(mapped);
+        setCategories(mapCategories(rows, events));
       } catch {
         setCategories(fallbackCategories);
       }
