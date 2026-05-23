@@ -16,6 +16,7 @@ export default function AppRouter() {
         <Route path="/home" element={<Navigate to="/" replace />} />
         <Route path="/" element={<HomePage />} />
         <Route path="/events" element={<EventsPage />} />
+        <Route path="/events/:id" element={<EventDetailPage />} />
       </Routes>
     </BrowserRouter>
   );
