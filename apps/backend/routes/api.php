@@ -3,6 +3,7 @@
 use App\Http\Controllers\api\AuthController;
 use App\Http\Controllers\api\admin\CategoryController;
 use App\Http\Controllers\api\admin\AdminEventController;
+use App\Http\Controllers\api\admin\DashboardController;
 use App\Http\Controllers\api\attendee\EventController as AttendeeEventController;
 use App\Http\Controllers\api\admin\DashboardController;
 use App\Http\Controllers\api\organizer\EventController;
