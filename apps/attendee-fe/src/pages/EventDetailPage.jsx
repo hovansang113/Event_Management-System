@@ -97,7 +97,7 @@ export default function EventDetailPage() {
         component="img"
         src={event.image || "https://via.placeholder.com/1600x500"}
         alt={event.title}
-        sx={{ width: "100%", height: { xs: 220, md: 250 }, objectFit: "cover", display: "block" }}
+        sx={{ width: "100%", height: { xs: 400, md: 530 }, objectFit: "cover", display: "block" }}
       />
 
       <Container maxWidth={false} sx={{ maxWidth: "1370px", px: { xs: "20px", md: "48px" }, pt: 3.5 }}>
