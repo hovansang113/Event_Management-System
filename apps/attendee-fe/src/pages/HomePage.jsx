@@ -13,6 +13,7 @@ export default function HomePage() {
       <Box component="main" sx={{ flexGrow: 1, pt: "70px" }}>
         <HeroSection />
         <FeaturedEventsSection />
+        
         <ExploreCategorySection />
         <WhyChooseSection />
       </Box>

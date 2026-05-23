@@ -5,6 +5,7 @@ import GoogleCallback from "../pages/GoogleCallback";
 import HomePage from "../pages/HomePage";
 import EventsPage from "../pages/EventsPage";
 
+
 export default function AppRouter() {
   return (
     <BrowserRouter>
