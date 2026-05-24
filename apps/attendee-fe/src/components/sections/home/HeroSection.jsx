@@ -29,9 +29,9 @@ export default function HeroSection() {
       sx={{
         position: "relative",
         overflow: "hidden",
-        minHeight: "560px",
-        py: "96px",
-        px: "32px",
+        minHeight: { xs: "auto", md: "560px" },
+        py: { xs: "56px", sm: "72px", md: "96px" },
+        px: { xs: "18px", sm: "24px", md: "32px" },
         background: "linear-gradient(135deg, #007BFF 0%, #0056B3 100%)",
         color: "#fff",
       }}
@@ -41,8 +41,8 @@ export default function HeroSection() {
           position: "absolute",
           right: -140,
           top: -170,
-          width: 520,
-          height: 520,
+          width: { xs: 300, md: 520 },
+          height: { xs: 300, md: 520 },
           borderRadius: "50%",
           bgcolor: "rgba(255, 255, 255, 0.08)",
         }}
@@ -52,8 +52,8 @@ export default function HeroSection() {
           position: "absolute",
           left: "22%",
           bottom: -180,
-          width: 300,
-          height: 300,
+          width: { xs: 180, md: 300 },
+          height: { xs: 180, md: 300 },
           borderRadius: "50%",
           bgcolor: "rgba(255, 255, 255, 0.06)",
         }}
@@ -65,9 +65,9 @@ export default function HeroSection() {
             sx={{
               maxWidth: "680px",
               fontWeight: 800,
-              fontSize: { xs: 44, md: 62 },
+              fontSize: { xs: 40, sm: 48, md: 62 },
               lineHeight: 1.05,
-              letterSpacing: "-1px",
+              letterSpacing: 0,
               mb: 0,
             }}
           >
@@ -80,8 +80,8 @@ export default function HeroSection() {
             sx={{
               maxWidth: 500,
               color: "rgba(255,255,255,0.80)",
-              fontSize: 18,
-              lineHeight: 1.7,
+              fontSize: { xs: 16, md: 18 },
+              lineHeight: 1.65,
             }}
           >
             From music festivals to tech workshops - discover, register, and
@@ -98,9 +98,9 @@ export default function HeroSection() {
                 color: "#007BFF",
                 textTransform: "none",
                 borderRadius: "16px",
-                px: "28px",
-                py: "16px",
-                fontSize: 16,
+                px: { xs: "20px", sm: "28px" },
+                py: { xs: "13px", sm: "16px" },
+                fontSize: { xs: 15, sm: 16 },
                 fontWeight: 700,
                 boxShadow: "none",
                 "&:hover": { bgcolor: "#f1f7ff", boxShadow: "none" },
@@ -118,9 +118,9 @@ export default function HeroSection() {
                 color: "#fff",
                 textTransform: "none",
                 borderRadius: "16px",
-                px: "28px",
-                py: "16px",
-                fontSize: 16,
+                px: { xs: "20px", sm: "28px" },
+                py: { xs: "13px", sm: "16px" },
+                fontSize: { xs: 15, sm: 16 },
                 fontWeight: 700,
                 boxShadow: "none",
                 "&:hover": {

@@ -12,11 +12,14 @@
 } from "@mui/material";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import PlaceOutlinedIcon from "@mui/icons-material/PlaceOutlined";
+import { useNavigate } from "react-router-dom";
 
 export default function EventCard({ event }) {
+  const navigate = useNavigate();
   const safeCapacity = event.capacity > 0 ? event.capacity : 1;
   const progress = Math.min(100, Math.round((event.registered / safeCapacity) * 100));
   const full = event.registered >= safeCapacity;
+  const goToDetail = () => navigate(`/events/${event.id}`, { state: { event } });
 
   return (
     <Card
@@ -36,7 +39,9 @@ export default function EventCard({ event }) {
         "&:hover .event-card-image": {
           transform: "scale(1.04)",
         },
+        cursor: "pointer",
       }}
+      onClick={goToDetail}
     >
       <Box sx={{ position: "relative", overflow: "hidden" }}>
         <CardMedia
@@ -88,11 +93,11 @@ export default function EventCard({ event }) {
         />
 
         <Box sx={{ display: "grid", gridTemplateColumns: full ? "1fr auto" : "1fr 1fr", gap: 1.2 }}>
-          <Button variant="outlined" sx={{ textTransform: "none", borderRadius: 2, fontSize: 12, fontWeight: 600 }}>View</Button>
+          <Button variant="outlined" onClick={goToDetail} sx={{ textTransform: "none", borderRadius: 2, fontSize: 12, fontWeight: 600 }}>View</Button>
           {full ? (
             <Typography sx={{ alignSelf: "center", textAlign: "center", color: "#a1a1aa", fontWeight: 600, fontSize: 12 }}>Full</Typography>
           ) : (
-            <Button variant="contained" sx={{ textTransform: "none", borderRadius: 2, fontSize: 12, fontWeight: 600 }}>Register</Button>
+            <Button variant="contained" onClick={(event) => event.stopPropagation()} sx={{ textTransform: "none", borderRadius: 2, fontSize: 12, fontWeight: 600 }}>Register</Button>
           )}
         </Box>
       </CardContent>

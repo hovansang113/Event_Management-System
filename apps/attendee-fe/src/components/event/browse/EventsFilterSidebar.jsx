@@ -52,14 +52,15 @@ export default function EventsFilterSidebar(props) {
   return (
     <Box
       sx={{
-        width: 300,
+        width: { xs: "100%", lg: 300 },
+        boxSizing: "border-box",
         position: { lg: "sticky" },
         top: { lg: "90px" },
         alignSelf: "start",
         bgcolor: "#fff",
         border: "1px solid #E0E0E0",
         borderRadius: "12px",
-        p: "24px",
+        p: { xs: "18px", sm: "24px" },
       }}
     >
       <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
@@ -71,7 +72,7 @@ export default function EventsFilterSidebar(props) {
       <TextField fullWidth size="small" placeholder="Search events..." value={search} onChange={(e) => onSearchChange(e.target.value)} sx={{ ...inputSx, mb: 2.5 }} />
 
       <Typography sx={{ fontSize: 14, fontWeight: 600, color: "#333333", mb: 1.5 }}>Category</Typography>
-      <Box sx={{ maxHeight: 256, overflowY: "auto", mb: 2.5 }}>
+      <Box sx={{ maxHeight: { xs: 210, lg: 256 }, overflowY: "auto", mb: 2.5 }}>
         {categories.map((category) => {
           const checked = selectedCategories.includes(category.name);
           const Icon = categoryIconMap[category.name] || LocalOfferRoundedIcon;

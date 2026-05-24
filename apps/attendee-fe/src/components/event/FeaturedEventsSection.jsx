@@ -20,15 +20,23 @@ const mapEventData = (apiEvent) => {
   };
 };
 
+const featuredEventFilters = { sort: "newest" };
+
+const getInitialEvents = () => {
+  const cached = eventService.peekAll(featuredEventFilters);
+  const data = cached?.data?.data || cached?.data || [];
+  return Array.isArray(data) ? data.map(mapEventData) : [];
+};
+
 export default function FeaturedEventsSection() {
-  const [events, setEvents] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [events, setEvents] = useState(getInitialEvents);
+  const [loading, setLoading] = useState(events.length === 0);
 
   useEffect(() => {
     const loadEvents = async () => {
       try {
-        setLoading(true);
-        const response = await eventService.getAll({ sort: "newest" });
+        if (events.length === 0) setLoading(true);
+        const response = await eventService.getAll(featuredEventFilters);
         const data = response?.data?.data || response?.data || [];
         const mappedEvents = Array.isArray(data) ? data.map(mapEventData) : [];
         setEvents(mappedEvents);
@@ -41,14 +49,14 @@ export default function FeaturedEventsSection() {
     };
 
     loadEvents();
-  }, []);
+  }, [events.length]);
 
   return (
-    <Box sx={{ bgcolor: "#fff", py: "64px", px: "24px" }}>
+    <Box sx={{ bgcolor: "#fff", py: { xs: "48px", md: "64px" }, px: { xs: "18px", sm: "24px" } }}>
       <Container maxWidth={false} sx={{ maxWidth: "1200px", px: 0 }}>
         <Box>
           <Box sx={{ mb: 2.5 }}>
-            <Typography sx={{ fontSize: 36, fontWeight: 700, color: "#333333" }}>
+            <Typography sx={{ fontSize: { xs: 30, md: 36 }, lineHeight: 1.15, fontWeight: 700, color: "#333333" }}>
               Featured Events
             </Typography>
             <Typography sx={{ color: "#666666", fontSize: 14, mt: 0.7 }}>

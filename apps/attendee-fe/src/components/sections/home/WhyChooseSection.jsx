@@ -32,11 +32,11 @@ const features = [
 export default function WhyChooseSection() {
   return (
     <Box>
-      <Box sx={{ bgcolor: "#ffffff", py: "64px", px: "24px" }}>
+      <Box sx={{ bgcolor: "#ffffff", py: { xs: "48px", md: "64px" }, px: { xs: "18px", sm: "24px" } }}>
         <Container maxWidth={false} sx={{ maxWidth: "1200px", px: 0 }}>
           <Box>
             <Box sx={{ textAlign: "center", mb: { xs: 4, md: 5 } }}>
-              <Typography sx={{ fontSize: 36, fontWeight: 700, color: "#333333" }}>
+              <Typography sx={{ fontSize: { xs: 30, md: 36 }, lineHeight: 1.15, fontWeight: 700, color: "#333333" }}>
                 Why Choose Event Platform?
               </Typography>
               <Typography sx={{ color: "#666666", fontSize: 14, mt: 1 }}>
@@ -48,7 +48,7 @@ export default function WhyChooseSection() {
               sx={{
                 display: "grid",
                 gridTemplateColumns: { xs: "1fr", md: "repeat(3, 1fr)" },
-                gap: "32px",
+                gap: { xs: "18px", md: "32px" },
               }}
             >
               {features.map((item) => {
@@ -95,8 +95,8 @@ export default function WhyChooseSection() {
         </Container>
       </Box>
 
-      <Box sx={{ background: "linear-gradient(135deg, #007BFF 0%, #0056B3 100%)", py: "80px" }}>
-        <Container maxWidth={false} sx={{ maxWidth: "1200px", px: "24px" }}>
+      <Box sx={{ background: "linear-gradient(135deg, #007BFF 0%, #0056B3 100%)", py: { xs: "56px", md: "80px" } }}>
+        <Container maxWidth={false} sx={{ maxWidth: "1200px", px: { xs: "18px", sm: "24px" } }}>
           <Box sx={{ textAlign: "center" }}>
             <Typography sx={{ color: "#fff", fontSize: { xs: 34, md: 42 }, fontWeight: 700 }}>
               Ready to Join?
@@ -127,8 +127,8 @@ export default function WhyChooseSection() {
                   color: "#007BFF",
                   textTransform: "none",
                   borderRadius: "12px",
-                  px: "40px",
-                  py: "16px",
+                  px: { xs: "28px", sm: "40px" },
+                  py: { xs: "13px", sm: "16px" },
                   fontWeight: 700,
                   fontSize: 16,
                   boxShadow: "none",
@@ -145,8 +145,8 @@ export default function WhyChooseSection() {
                   color: "#fff",
                   textTransform: "none",
                   borderRadius: "12px",
-                  px: "40px",
-                  py: "16px",
+                  px: { xs: "28px", sm: "40px" },
+                  py: { xs: "13px", sm: "16px" },
                   fontWeight: 700,
                   fontSize: 16,
                   boxShadow: "none",
