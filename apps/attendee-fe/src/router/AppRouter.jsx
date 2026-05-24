@@ -7,7 +7,6 @@ import EventsPage from "../pages/EventsPage";
 import EventDetailPage from "../pages/EventDetailPage";
 import AttendeeLayout from "../components/layout/AttendeeLayout";
 
-
 export default function AppRouter() {
   return (
     <BrowserRouter>

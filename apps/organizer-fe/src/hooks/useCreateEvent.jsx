@@ -2,8 +2,12 @@ import { useState, useEffect } from "react";
 import { eventService } from "../services/eventService";
 import api from "../../../../packages/shared-ui/src/services/api";
 
-export const useCreateEvent = (onSuccess, eventId = null) => {  // ← Thêm eventId param
+// Simple global cache for categories
+let categoriesCache = null;
+
+export const useCreateEvent = (onSuccess, eventId = null) => {
   const [loading, setLoading] = useState(false);
+  const [isFetching, setIsFetching] = useState(false); // Trạng thái tải dữ liệu chi tiết
   const [error, setError] = useState(null);
   const [categories, setCategories] = useState([]);
   const [imageFile, setImageFile] = useState(null);
@@ -22,24 +26,28 @@ export const useCreateEvent = (onSuccess, eventId = null) => {  // ← Thêm eve
   useEffect(() => {
     if (eventId) {
       const fetchEvent = async () => {
+        setIsFetching(true);
         try {
           const res = await eventService.getDetail(eventId);
           const event = res.data;
           setFormData({
             title: event.title || "",
             description: event.description || "",
-            category_id: event.category_id || "",
+            category_id: event.category?.id || event.category_id || "",
             location: event.location || "",
-            event_date: event.event_date || "",
-            event_time: event.event_time || "",
+            event_date: event.date || event.event_date || "", // Sửa mapping date
+            event_time: event.time || event.event_time || "", // Sửa mapping time
             capacity: event.capacity || "",
             image: event.image || "",
           });
           if (event.image) {
             setImagePreview(event.image);
           }
-        } catch {
+        } catch (err) {
           setError("Failed to load event data");
+          console.error(err);
+        } finally {
+          setIsFetching(false);
         }
       };
       fetchEvent();
@@ -48,10 +56,16 @@ export const useCreateEvent = (onSuccess, eventId = null) => {  // ← Thêm eve
 
   useEffect(() => {
     const fetchCategories = async () => {
+      if (categoriesCache) {
+        setCategories(categoriesCache);
+        return;
+      }
       try {
         const res = await api.get("/categories");
         const cats = Array.isArray(res.data?.data) ? res.data.data : [];
-        setCategories(cats.filter(c => c.is_active && !c.deleted_at));
+        const filteredCats = cats.filter(c => c.is_active && !c.deleted_at);
+        categoriesCache = filteredCats;
+        setCategories(filteredCats);
       } catch (err) {
         console.error("Failed to fetch categories", err);
       }
@@ -77,7 +91,6 @@ export const useCreateEvent = (onSuccess, eventId = null) => {  // ← Thêm eve
     }
   };
 
-  // ← THÊM: Handle Update
   const handleUpdate = async () => {
     setLoading(true);
     setError(null);
@@ -102,7 +115,7 @@ export const useCreateEvent = (onSuccess, eventId = null) => {  // ← Thêm eve
     setError(null);
 
     try {
-const submitData = { ...formData, status: "draft" };
+      const submitData = { ...formData, status: "draft" };
       if (imageFile) {
         submitData.image = imageFile;
       }
@@ -154,6 +167,7 @@ const submitData = { ...formData, status: "draft" };
   return {
     formData,
     loading,
+    isFetching, // Trả về thêm isFetching
     error,
     categories,
     imageFile,
@@ -162,7 +176,7 @@ const submitData = { ...formData, status: "draft" };
     handleImageChange,
     handleSaveDraft,
     handleSubmitReview,
-    handleUpdate,  // ← THÊM
+    handleUpdate,
     resetForm,
   };
 };

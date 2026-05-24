@@ -1,3 +1,4 @@
+import { memo, useState } from "react";
 import { Box, Button, Card, CardContent, CardMedia, Chip, LinearProgress, Typography } from "@mui/material";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import PlaceOutlinedIcon from "@mui/icons-material/PlaceOutlined";
@@ -5,14 +6,24 @@ import GroupOutlinedIcon from "@mui/icons-material/GroupOutlined";
 import StarRoundedIcon from "@mui/icons-material/StarRounded";
 import { useNavigate } from "react-router-dom";
 
+const DEFAULT_IMAGE = "https://via.placeholder.com/600x400?text=Event+Image";
+
 const progressColor = (ratio) => {
   if (ratio > 0.3) return "#28A745";
   if (ratio > 0.1) return "#FFC107";
   return "#DC3545";
 };
 
-export default function BrowseEventCard({ event, viewMode = "grid" }) {
+const BrowseEventCard = memo(({ event, viewMode = "grid" }) => {
   const navigate = useNavigate();
+  const [imgSrc, setImgSrc] = useState(event.image || DEFAULT_IMAGE);
+  
+  const handleImgError = () => {
+    if (imgSrc !== DEFAULT_IMAGE) {
+      setImgSrc(DEFAULT_IMAGE);
+    }
+  };
+
   const safeCapacity = event.capacity > 0 ? event.capacity : 1;
   const remainRatio = Math.max(0, (safeCapacity - event.registered) / safeCapacity);
   const fill = Math.min(100, Math.round((event.registered / safeCapacity) * 100));
@@ -23,7 +34,14 @@ export default function BrowseEventCard({ event, viewMode = "grid" }) {
     return (
       <Card onClick={goToDetail} sx={{ bgcolor: "#fff", border: "1px solid #E0E0E0", borderRadius: "12px", p: { xs: 1.5, sm: 2 }, boxShadow: "none", cursor: "pointer", transition: "box-shadow 300ms", "&:hover": { boxShadow: "0 18px 30px rgba(16,24,40,0.16)" } }}>
         <Box sx={{ display: "flex", gap: 2, flexDirection: { xs: "column", md: "row" } }}>
-          <CardMedia component="img" image={event.image} alt={event.title} sx={{ width: { xs: "100%", md: 192 }, height: { xs: 180, md: 128 }, borderRadius: "8px", objectFit: "cover" }} />
+          <CardMedia 
+            component="img" 
+            image={imgSrc} 
+            onError={handleImgError}
+            loading="lazy"
+            alt={event.title} 
+            sx={{ width: { xs: "100%", md: 192 }, height: { xs: 180, md: 128 }, borderRadius: "8px", objectFit: "cover" }} 
+          />
           <Box sx={{ flex: 1 }}>
             <Typography sx={{ fontSize: 18, fontWeight: 700, color: "#333333" }}>{event.title}</Typography>
             <Typography sx={{ fontSize: 12, color: "#666666", mb: 1.2 }}>by {event.author}</Typography>
@@ -62,7 +80,15 @@ export default function BrowseEventCard({ event, viewMode = "grid" }) {
       onClick={goToDetail}
     >
       <Box sx={{ position: "relative", overflow: "hidden" }}>
-        <CardMedia className="event-media" component="img" image={event.image} alt={event.title} sx={{ height: { xs: 180, sm: 192 }, objectFit: "cover", transition: "transform 300ms ease" }} />
+        <CardMedia 
+          className="event-media" 
+          component="img" 
+          image={imgSrc} 
+          onError={handleImgError}
+          loading="lazy"
+          alt={event.title} 
+          sx={{ height: { xs: 180, sm: 192 }, objectFit: "cover", transition: "transform 300ms ease" }} 
+        />
         <Box className="event-overlay" sx={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.5), rgba(0,0,0,0))", opacity: 0, transition: "opacity 300ms ease" }} />
         <Chip label={event.category} size="small" sx={{ position: "absolute", top: 12, left: 12, bgcolor: "#dbeafe", color: "#007BFF", fontSize: 12 }} />
       </Box>
@@ -105,4 +131,6 @@ export default function BrowseEventCard({ event, viewMode = "grid" }) {
       </CardContent>
     </Card>
   );
-}
+});
+
+export default BrowseEventCard;

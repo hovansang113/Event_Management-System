@@ -26,7 +26,10 @@ const Dashboard = () => {
     let cancelled = false;
 
     const loadDashboard = async () => {
-      setLoading(true);
+      // Chỉ hiện loading nếu chưa có dữ liệu stats thực tế (tránh nháy trắng trang khi quay lại)
+      const isInitial = stats.total_users === 0 && stats.total_events === 0;
+      if (isInitial) setLoading(true);
+      
       setError(null);
       try {
         const dashboardResult = await dashboardService.getOverview();
