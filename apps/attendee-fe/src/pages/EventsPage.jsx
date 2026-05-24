@@ -32,9 +32,9 @@ export default function EventsPage() {
 
   return (
     <Box component="main" sx={{ flexGrow: 1, pt: "70px", pb: 6 }}>
-      <Container maxWidth={false} sx={{ maxWidth: "1400px", px: "24px", pt: 4 }}>
-        <Typography sx={{ fontSize: { xs: 36, md: 48 }, fontWeight: 800, color: "#333333", mb: 0.8 }}>Browse Events</Typography>
-        <Typography sx={{ fontSize: 14, color: "#666666", mb: 3.5 }}>Discover events that match your interests</Typography>
+      <Container maxWidth={false} sx={{ maxWidth: "1400px", px: { xs: "18px", sm: "24px" }, pt: { xs: 3, md: 4 } }}>
+        <Typography sx={{ fontSize: { xs: 34, md: 48 }, lineHeight: 1.12, fontWeight: 800, color: "#333333", mb: 0.8 }}>Browse Events</Typography>
+        <Typography sx={{ fontSize: 14, color: "#666666", mb: { xs: 2.5, md: 3.5 } }}>Discover events that match your interests</Typography>
 
         <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", lg: "300px 1fr" }, gap: 3, alignItems: "start" }}>
           <EventsFilterSidebar
@@ -60,7 +60,7 @@ export default function EventsPage() {
             {apiError ? <Alert severity="warning" sx={{ mb: 2 }}>{apiError}</Alert> : null}
 
             {!loading && filteredEvents.length === 0 ? (
-              <Box sx={{ bgcolor: "#fff", border: "1px solid #E0E0E0", borderRadius: "12px", textAlign: "center", p: 5 }}>
+              <Box sx={{ bgcolor: "#fff", border: "1px solid #E0E0E0", borderRadius: "12px", textAlign: "center", p: { xs: 3, md: 5 } }}>
                 <Typography sx={{ fontSize: 48, mb: 1 }}>??</Typography>
                 <Typography sx={{ fontWeight: 700, color: "#333333", mb: 0.8 }}>No events found</Typography>
                 <Typography sx={{ fontSize: 14, color: "#666666", mb: 2 }}>Try adjusting your filters to see more events.</Typography>
@@ -69,7 +69,7 @@ export default function EventsPage() {
                 </Button>
               </Box>
             ) : (
-              <Box sx={{ display: "grid", gridTemplateColumns: viewMode === "grid" ? { xs: "1fr", lg: "repeat(2,1fr)", xl: "repeat(3,1fr)" } : "1fr", gap: "24px" }}>
+              <Box sx={{ display: "grid", gridTemplateColumns: viewMode === "grid" ? { xs: "1fr", lg: "repeat(2,1fr)", xl: "repeat(3,1fr)" } : "1fr", gap: { xs: "18px", md: "24px" } }}>
                 {loading ? <Typography sx={{ color: "#666666", fontSize: 16 }}>Loading events...</Typography> : paginatedEvents.map((event) => <BrowseEventCard key={event.id} event={event} viewMode={viewMode} />)}
               </Box>
             )}

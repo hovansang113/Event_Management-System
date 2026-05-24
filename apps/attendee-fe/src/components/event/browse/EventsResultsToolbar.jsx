@@ -9,19 +9,20 @@ export default function EventsResultsToolbar({ count, viewMode, onViewModeChange
         bgcolor: "#fff",
         border: "1px solid #E0E0E0",
         borderRadius: "12px",
-        p: "16px",
-        mb: "24px",
+        p: { xs: "14px", sm: "16px" },
+        mb: { xs: "18px", md: "24px" },
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
+        gap: 2,
       }}
     >
       <Box>
-        <Typography sx={{ fontSize: 18, fontWeight: 700, color: "#333333" }}>{count} Events Found</Typography>
-        <Typography sx={{ fontSize: 14, color: "#666666" }}>Browse and register for upcoming events</Typography>
+        <Typography sx={{ fontSize: { xs: 16, sm: 18 }, fontWeight: 700, color: "#333333" }}>{count} Events Found</Typography>
+        <Typography sx={{ fontSize: { xs: 12.5, sm: 14 }, color: "#666666" }}>Browse and register for upcoming events</Typography>
       </Box>
 
-      <Box sx={{ display: "flex", gap: 1 }}>
+      <Box sx={{ display: "flex", gap: 1, flexShrink: 0 }}>
         <IconButton
           onClick={() => onViewModeChange("grid")}
           sx={{

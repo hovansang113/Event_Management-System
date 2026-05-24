@@ -21,7 +21,7 @@ export default function BrowseEventCard({ event, viewMode = "grid" }) {
 
   if (viewMode === "list") {
     return (
-      <Card onClick={goToDetail} sx={{ bgcolor: "#fff", border: "1px solid #E0E0E0", borderRadius: "12px", p: 2, boxShadow: "none", cursor: "pointer", transition: "box-shadow 300ms", "&:hover": { boxShadow: "0 18px 30px rgba(16,24,40,0.16)" } }}>
+      <Card onClick={goToDetail} sx={{ bgcolor: "#fff", border: "1px solid #E0E0E0", borderRadius: "12px", p: { xs: 1.5, sm: 2 }, boxShadow: "none", cursor: "pointer", transition: "box-shadow 300ms", "&:hover": { boxShadow: "0 18px 30px rgba(16,24,40,0.16)" } }}>
         <Box sx={{ display: "flex", gap: 2, flexDirection: { xs: "column", md: "row" } }}>
           <CardMedia component="img" image={event.image} alt={event.title} sx={{ width: { xs: "100%", md: 192 }, height: { xs: 180, md: 128 }, borderRadius: "8px", objectFit: "cover" }} />
           <Box sx={{ flex: 1 }}>
@@ -33,7 +33,7 @@ export default function BrowseEventCard({ event, viewMode = "grid" }) {
               <Box sx={{ display: "inline-flex", alignItems: "center", gap: 0.5 }}><StarRoundedIcon sx={{ fontSize: 14, color: "#FFC107" }} />{event.rating.toFixed(1)} ({event.reviews})</Box>
               <Box sx={{ display: "inline-flex", alignItems: "center", gap: 0.5 }}><GroupOutlinedIcon sx={{ fontSize: 14, color: "#007BFF" }} />{event.registered} / {event.capacity}</Box>
             </Box>
-            <Box sx={{ display: "flex", gap: 1, mt: 1.5 }}>
+            <Box sx={{ display: "flex", gap: 1, mt: 1.5, flexWrap: { xs: "wrap", sm: "nowrap" } }}>
               <Button variant="outlined" onClick={goToDetail} sx={{ textTransform: "none", borderRadius: "8px" }}>View</Button>
               <Button disabled={full} variant="contained" onClick={(event) => event.stopPropagation()} sx={{ textTransform: "none", borderRadius: "8px", bgcolor: "#007BFF", "&:hover": { bgcolor: "#0056B3" }, "&.Mui-disabled": { bgcolor: "#eef2f7", color: "#9CA3AF" } }}>
                 {full ? "Full" : "Register"}
@@ -62,7 +62,7 @@ export default function BrowseEventCard({ event, viewMode = "grid" }) {
       onClick={goToDetail}
     >
       <Box sx={{ position: "relative", overflow: "hidden" }}>
-        <CardMedia className="event-media" component="img" image={event.image} alt={event.title} sx={{ height: 192, objectFit: "cover", transition: "transform 300ms ease" }} />
+        <CardMedia className="event-media" component="img" image={event.image} alt={event.title} sx={{ height: { xs: 180, sm: 192 }, objectFit: "cover", transition: "transform 300ms ease" }} />
         <Box className="event-overlay" sx={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.5), rgba(0,0,0,0))", opacity: 0, transition: "opacity 300ms ease" }} />
         <Chip label={event.category} size="small" sx={{ position: "absolute", top: 12, left: 12, bgcolor: "#dbeafe", color: "#007BFF", fontSize: 12 }} />
       </Box>

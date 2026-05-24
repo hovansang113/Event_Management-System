@@ -2,6 +2,7 @@
 
 @mixin form-container {
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -156,12 +157,22 @@
       background:
         linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.88) 48%),
         linear-gradient(135deg, var(--auth-primary) 0%, var(--auth-secondary) 100%);
+      overflow-y: auto;
     }
 
     &.auth-shell::before,
     &.auth-shell::after,
     .auth-backdrop-copy {
       display: none;
+    }
+  }
+
+  @media (max-width: 480px) {
+    padding: 16px;
+    align-items: flex-start;
+
+    &.auth-shell {
+      min-height: 100dvh;
     }
   }
 }
@@ -274,6 +285,46 @@
     .#{$prefix}-form-footer.#{$prefix}-form-footer {
       margin-top: 24px;
       color: $text-secondary;
+    }
+
+    @media (max-width: 480px) {
+      padding: 20px;
+      border-radius: 14px;
+
+      .auth-role-chip.auth-role-chip {
+        margin-bottom: 12px;
+        font-size: 12px;
+      }
+
+      .#{$prefix}-form-brand.#{$prefix}-form-brand {
+        margin-bottom: 6px;
+        font-size: 24px;
+      }
+
+      .#{$prefix}-form-title.#{$prefix}-form-title {
+        margin-bottom: 22px;
+        font-size: 22px;
+        line-height: 1.2;
+      }
+
+      .#{$prefix}-form-label.#{$prefix}-form-label {
+        margin-bottom: 6px;
+        font-size: 14px;
+      }
+
+      .#{$prefix}-form-input.#{$prefix}-form-input {
+        margin-bottom: 16px;
+      }
+
+      .#{$prefix}-form-submit-btn.#{$prefix}-form-submit-btn {
+        padding-top: 10px;
+        padding-bottom: 10px;
+      }
+
+      .#{$prefix}-form-footer.#{$prefix}-form-footer {
+        margin-top: 18px;
+        font-size: 14px;
+      }
     }
   }
 }

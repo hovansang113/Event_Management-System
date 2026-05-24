@@ -52,11 +52,11 @@ export default function FeaturedEventsSection() {
   }, [events.length]);
 
   return (
-    <Box sx={{ bgcolor: "#fff", py: "64px", px: "24px" }}>
+    <Box sx={{ bgcolor: "#fff", py: { xs: "48px", md: "64px" }, px: { xs: "18px", sm: "24px" } }}>
       <Container maxWidth={false} sx={{ maxWidth: "1200px", px: 0 }}>
         <Box>
           <Box sx={{ mb: 2.5 }}>
-            <Typography sx={{ fontSize: 36, fontWeight: 700, color: "#333333" }}>
+            <Typography sx={{ fontSize: { xs: 30, md: 36 }, lineHeight: 1.15, fontWeight: 700, color: "#333333" }}>
               Featured Events
             </Typography>
             <Typography sx={{ color: "#666666", fontSize: 14, mt: 0.7 }}>

@@ -97,13 +97,13 @@ export default function EventDetailPage() {
         component="img"
         src={event.image || "https://via.placeholder.com/1600x500"}
         alt={event.title}
-        sx={{ width: "100%", height: { xs: 400, md: 530 }, objectFit: "cover", display: "block" }}
+        sx={{ width: "100%", height: { xs: 260, sm: 360, md: 530 }, objectFit: "cover", display: "block" }}
       />
 
-      <Container maxWidth={false} sx={{ maxWidth: "1370px", px: { xs: "20px", md: "48px" }, pt: 3.5 }}>
+      <Container maxWidth={false} sx={{ maxWidth: "1370px", px: { xs: "18px", sm: "24px", md: "48px" }, pt: { xs: 2.5, md: 3.5 } }}>
         <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", lg: "1fr 350px" }, gap: { xs: 3, lg: 4 }, alignItems: "start" }}>
           <Box>
-            <Typography sx={{ fontSize: { xs: 34, md: 42 }, lineHeight: 1.15, fontWeight: 800, color: "#202633", mb: 3 }}>
+            <Typography sx={{ fontSize: { xs: 30, sm: 34, md: 42 }, lineHeight: 1.15, fontWeight: 800, color: "#202633", mb: { xs: 2.2, md: 3 } }}>
               {event.title}
             </Typography>
 
@@ -117,7 +117,7 @@ export default function EventDetailPage() {
               </Box>
             </Box>
 
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3, flexWrap: "wrap" }}>
               <Rating value={Number(eventStats.rating)} precision={0.5} readOnly size="small" />
               <Typography sx={{ color: "#111827", fontSize: 14, fontWeight: 700 }}>{eventStats.rating}</Typography>
               <Typography sx={{ color: "#4B5563", fontSize: 14 }}>({eventStats.reviews} reviews)</Typography>
@@ -142,7 +142,7 @@ export default function EventDetailPage() {
             </Box>
           </Box>
 
-          <Box sx={{ bgcolor: "#fff", border: "1px solid #DADDE3", borderRadius: "10px", p: 2.5, mt: { xs: 0, lg: 3.5 }, boxShadow: "0 10px 28px rgba(15, 23, 42, 0.06)" }}>
+          <Box sx={{ bgcolor: "#fff", border: "1px solid #DADDE3", borderRadius: "10px", p: { xs: 2, sm: 2.5 }, mt: { xs: 0, lg: 3.5 }, boxShadow: "0 10px 28px rgba(15, 23, 42, 0.06)" }}>
             <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>
               <Typography sx={{ color: "#111827", fontSize: 14, fontWeight: 700 }}>Availability</Typography>
               <Typography sx={{ color: "#16A34A", fontSize: 14, fontWeight: 800 }}>
