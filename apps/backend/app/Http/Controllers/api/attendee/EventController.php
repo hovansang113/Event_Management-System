@@ -1,10 +1,12 @@
 <?php
+
 namespace App\Http\Controllers\api\attendee;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Category\CategoryResource;
 use App\Http\Resources\Event\EventResource;
-use App\Service\EventService;
+use App\Http\Resources\Event\EventCollection;
+use App\Services\EventService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -30,15 +32,7 @@ class EventController extends Controller
         ]);
         $paginator = $this->eventService->getAttendeeEvents($filters);
 
-        return $this->success([
-            'data' => EventResource::collection($paginator->items()),
-            'meta' => [
-                'current_page' => $paginator->currentPage(),
-                'last_page' => $paginator->lastPage(),
-                'per_page' => $paginator->perPage(),
-                'total' => $paginator->total(),
-            ],
-        ], 'Events retrieved successfully');
+        return $this->success(new EventCollection($paginator), 'Events retrieved successfully');
     }
 
     public function show(int $id): JsonResponse

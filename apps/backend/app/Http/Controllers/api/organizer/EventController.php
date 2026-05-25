@@ -7,44 +7,38 @@ use App\Http\Requests\Event\CancelEventRequest;
 use App\Http\Requests\Event\StoreEventRequest;
 use App\Http\Requests\Event\UpdateEventRequest;
 use App\Http\Resources\Event\EventResource;
-use App\Service\EventService;
+use App\Http\Resources\Event\EventCollection;
+use App\Services\EventService;
 use App\Traits\ApiResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class EventController extends Controller
 {
     use ApiResponse;
 
-    protected $eventService;
+    protected EventService $eventService;
 
     public function __construct(EventService $eventService)
     {
         $this->eventService = $eventService;
     }
 
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         $filters = $request->only(['status', 'sort', 'per_page', 'page']);
         $paginator = $this->eventService->getOrganizerDashboard($filters);
         
-        return $this->success([
-            'data' => EventResource::collection($paginator->items()),
-            'meta' => [
-                'current_page' => $paginator->currentPage(),
-                'last_page'    => $paginator->lastPage(),
-                'per_page'     => $paginator->perPage(),
-                'total'        => $paginator->total(),
-            ],
-        ], 'Events retrieved successfully');
+        return $this->success(new EventCollection($paginator), 'Events retrieved successfully');
     }
 
-    public function store(StoreEventRequest $request)
+    public function store(StoreEventRequest $request): JsonResponse
     {
         $event = $this->eventService->createEvent($request->validated());
         return $this->success(new EventResource($event), 'Event created successfully', 201);
     }
 
-    public function show($id)
+    public function show($id): JsonResponse
     {
         $event = $this->eventService->getEventById($id);
         
@@ -55,7 +49,8 @@ class EventController extends Controller
         return $this->success(new EventResource($event), 'Event retrieved successfully');
     }
 
-    public function update(UpdateEventRequest $request, $id){
+    public function update(UpdateEventRequest $request, $id): JsonResponse
+    {
         try {
             $event = $this->eventService->updateEvent($id, $request->validated());
             if (!$event) {
@@ -67,7 +62,7 @@ class EventController extends Controller
         }
     }
 
-    public function submitForApproval($id)
+    public function submitForApproval($id): JsonResponse
     {
         $result = $this->eventService->submitForApproval($id);
         
@@ -78,7 +73,7 @@ class EventController extends Controller
         return $this->success(null, 'Event submitted for approval successfully');
     }
 
-    public function cancel(CancelEventRequest $request, $id)
+    public function cancel(CancelEventRequest $request, $id): JsonResponse
     {
         $result = $this->eventService->cancelEvent($id, $request->cancellation_reason);
         
@@ -89,7 +84,7 @@ class EventController extends Controller
         return $this->success(null, 'Event cancelled successfully');
     }
 
-    public function statistics()
+    public function statistics(): JsonResponse
     {
         $stats = $this->eventService->getOrganizerStats();
         return $this->success($stats, 'Dashboard statistics retrieved successfully');

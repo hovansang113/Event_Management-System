@@ -1,31 +1,42 @@
 <?php
 
-namespace App\Service;
+namespace App\Services;
 
+use App\Enums\EventStatus;
 use App\Exceptions\ApiException;
-use App\Repositories\EventRepository;
-use App\Repositories\CategoryRepository;
+use App\Repositories\Interfaces\EventRepositoryInterface;
+use App\Repositories\Interfaces\CategoryRepositoryInterface;
 use App\Mail\EventCancelledMail;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\UploadedFile;
-class EventService
-{
-    protected $eventRepository;
-    protected $categoryRepository;
+use Illuminate\Pagination\LengthAwarePaginator;
+use App\Models\Event;
 
-    public function __construct(EventRepository $eventRepository, CategoryRepository $categoryRepository)
-    {
+class EventService extends BaseService
+{
+    protected EventRepositoryInterface $eventRepository;
+    protected CategoryRepositoryInterface $categoryRepository;
+
+    public function __construct(
+        EventRepositoryInterface $eventRepository, 
+        CategoryRepositoryInterface $categoryRepository
+    ) {
+        parent::__construct($eventRepository);
         $this->eventRepository = $eventRepository;
         $this->categoryRepository = $categoryRepository;
     }
 
-    public function createEvent(array $data)
+    public function getActiveCategories()
+    {
+        return $this->categoryRepository->getActive();
+    }
+
+    public function createEvent(array $data): Event
     {
         $data['organizer_id'] = auth('api')->id();
-        $data['status'] = $data['status'] ?? 'Draft';
+        $data['status'] = $data['status'] ?? EventStatus::DRAFT->value;
 
-        // Handle image upload
         if (isset($data['image']) && $data['image'] instanceof UploadedFile) {
             $path = $data['image']->store('events', 'public');
             $data['image'] = Storage::url($path);
@@ -36,19 +47,19 @@ class EventService
         return $event->load(['category', 'organizer']);
     }
 
-    public function getOrganizerDashboard(array $filters)
+    public function getOrganizerDashboard(array $filters): LengthAwarePaginator
     {
         $organizerId = auth('api')->id();
         return $this->eventRepository->getOrganizerEvents($organizerId, $filters);
     }
 
-    public function getOrganizerStats()
+    public function getOrganizerStats(): array
     {
         $organizerId = auth('api')->id();
         return $this->eventRepository->getOrganizerStatistics($organizerId);
     }
 
-    public function getEventById($id)
+    public function getEventById($id): ?Event
     {
         $event = $this->eventRepository->findById($id);
         
@@ -59,32 +70,30 @@ class EventService
         return $event;
     }
 
-    public function submitForApproval($id)
+    public function submitForApproval($id): bool
     {
         $event = $this->getEventById($id);
-        if (!$event || !in_array($event->status, ['Draft', 'Rejected'])) {
+        if (!$event || !in_array($event->status, [EventStatus::DRAFT->value, EventStatus::REJECTED->value])) {
             return false;
         }
-        return $this->eventRepository->update($id, ['status' => 'Pending']);
+        return $this->eventRepository->update($id, ['status' => EventStatus::PENDING->value]);
     }
 
-    public function cancelEvent($id, $reason)
+    public function cancelEvent($id, $reason): bool
     {
         $event = $this->getEventById($id);
-        if (!$event || $event->status !== 'Published') {
+        if (!$event || $event->status !== EventStatus::PUBLISHED->value) {
             return false;
         }
 
-        $result =  $this->eventRepository->update($id, [
-            'status' => 'Cancelled',
+        $result = $this->eventRepository->update($id, [
+            'status' => EventStatus::CANCELLED->value,
             'cancellation_reason' => $reason,
             'cancelled_at' => now(),
         ]);
 
-        if($result){
-            // Refresh event để lấy cancellation_reason mới
+        if ($result) {
             $event->refresh();
-            
             $registrations = $event->registrations()->where('status', 'Confirmed')->get();
             foreach ($registrations as $registration) {
                 Mail::to($registration->user->email)->send(new EventCancelledMail($event));
@@ -94,13 +103,13 @@ class EventService
         return $result;
     }
 
-    public function updateEvent($id, array $data){
+    public function updateEvent($id, array $data): ?Event
+    {
         $event = $this->getEventById($id);
-        if (!$event || in_array($event->status, ['Pending', 'Published'])) {
+        if (!$event || in_array($event->status, [EventStatus::PENDING->value, EventStatus::PUBLISHED->value])) {
             return null;
         }
 
-        // Validate capacity không thể giảm xuống dưới số đăng ký hiện tại
         if (isset($data['capacity'])) {
             $confirmedCount = $event->registrations()->where('status', 'Confirmed')->count();
             if ($data['capacity'] < $confirmedCount) {
@@ -111,9 +120,7 @@ class EventService
             }
         }
 
-        // Handle image upload
         if (isset($data['image']) && $data['image'] instanceof UploadedFile) {
-            // Xóa ảnh cũ nếu có
             if ($event->image) {
                 $oldPath = str_replace('/storage/', '', $event->image);
                 Storage::disk('public')->delete($oldPath);
@@ -127,51 +134,58 @@ class EventService
         return $this->eventRepository->findById($id);
     }
 
-    public function approveEvent($id){
+    public function approveEvent($id): Event
+    {
         $event = $this->eventRepository->findById($id);
         
-        if (!$event){
+        if (!$event) {
             throw new ApiException('Event not found', 404);
         }
-        if ($event->status !== 'Pending') {
+        if ($event->status !== EventStatus::PENDING->value) {
             throw new ApiException('Only pending events can be approved', 400);
         }
 
-        $this->eventRepository->update($id, ['status' => 'Published']);
+        $this->eventRepository->update($id, ['status' => EventStatus::PUBLISHED->value]);
 
         return $event->refresh();
     }
 
-    public function rejectEvent($id, $reason){
+    public function rejectEvent($id, $reason): Event
+    {
         $event = $this->eventRepository->findById($id);
         
-        if (!$event){
+        if (!$event) {
             throw new ApiException('Event not found', 404);
         }
-        if ($event->status !== 'Pending') {
+        if ($event->status !== EventStatus::PENDING->value) {
             throw new ApiException('Only pending events can be rejected', 400);
         }
 
         $this->eventRepository->update($id, [
-            'status' => 'Rejected',
+            'status' => EventStatus::REJECTED->value,
             'rejection_reason' => $reason,
         ]);
 
         return $event->refresh();
     }
 
-    public function getAttendeeEvents(array $filters)
+    public function getAttendeeEvents(array $filters): LengthAwarePaginator
     {
         return $this->eventRepository->getPublishedForAttendee($filters);
     }
 
-    public function getAttendeeEventById(int $id)
+    public function getAttendeeEventById(int $id): ?Event
     {
         return $this->eventRepository->findPublishedByIdForAttendee($id);
     }
 
-    public function getActiveCategories()
+    public function getAdminEvents(array $filters): LengthAwarePaginator
     {
-        return $this->categoryRepository->getActive();
+        return $this->eventRepository->getAllForAdmin($filters);
+    }
+
+    public function getAdminStats(): array
+    {
+        return $this->eventRepository->getAdminStatistics();
     }
 }

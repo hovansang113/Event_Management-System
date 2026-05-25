@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Service;
+namespace App\Services;
 
 use App\Mail\VerificationMail;
 use App\Models\User;
-use App\Repositories\UserRepository;
+use App\Repositories\Interfaces\UserRepositoryInterface;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
@@ -13,14 +13,14 @@ use Exception;
 
 class AuthService
 {
-    protected $userRepository;
+    protected UserRepositoryInterface $userRepository;
 
-    public function __construct(UserRepository $userRepository)
+    public function __construct(UserRepositoryInterface $userRepository)
     {
         $this->userRepository = $userRepository;
     }
 
-    public function register(array $data)
+    public function register(array $data): User
     {
         $token = Str::random(64);
 
@@ -38,7 +38,7 @@ class AuthService
         return $user;
     }
 
-    public function login(array $credentials)
+    public function login(array $credentials): array
     {
         $user = $this->userRepository->findByEmail($credentials['email']);
 
@@ -67,7 +67,7 @@ class AuthService
         ];
     }
 
-    public function verifyEmail(string $token)
+    public function verifyEmail(string $token): bool
     {
         $user = $this->userRepository->findByVerificationToken($token);
 
@@ -79,7 +79,7 @@ class AuthService
             throw new Exception('Link has expired. Please request a new one.');
         }
 
-        return $this->userRepository->update($user, [
+        return $this->userRepository->update($user->id, [
             'email_verified' => true,
             'email_verified_at' => now(),
             'verification_token' => null,
@@ -87,7 +87,7 @@ class AuthService
         ]);
     }
 
-    public function resendVerification(string $email)
+    public function resendVerification(string $email): bool
     {
         $user = $this->userRepository->findByEmail($email);
 
@@ -97,7 +97,7 @@ class AuthService
 
         $token = Str::random(64);
         
-        $this->userRepository->update($user, [
+        $this->userRepository->update($user->id, [
             'verification_token' => $token,
             'verification_token_expires_at' => now()->addHours(24),
         ]);
@@ -107,7 +107,7 @@ class AuthService
         return true;
     }
 
-    public function logout()
+    public function logout(): void
     {
         try {
             $token = JWTAuth::getToken();
@@ -115,24 +115,18 @@ class AuthService
                 JWTAuth::invalidate($token);
             }
         } catch (\Exception $e) {
-            // Token expired or invalid, no further action needed
+            // Token expired or invalid
         }
     }
 
-    public function handleSocialLogin(string $provider, $socialUser)
+    public function handleSocialLogin(string $provider, $socialUser): array
     {
         $email = $socialUser->getEmail();
         $googleId = $socialUser->getId();
 
-        \Illuminate\Support\Facades\Log::info("--- Bắt đầu xử lý Social Login ---", [
-            'email' => $email,
-            'google_id' => $googleId
-        ]);
-
         $user = $this->userRepository->findByEmail($email);
 
         if (!$user) {
-            \Illuminate\Support\Facades\Log::info("Tạo user mới cho attendee");
             $user = $this->userRepository->create([
                 'name' => $socialUser->getName() ?? 'User',
                 'email' => $email,
@@ -143,26 +137,18 @@ class AuthService
                 'google_id' => $googleId,
             ]);
         } else {
-            \Illuminate\Support\Facades\Log::info("Tìm thấy user cũ", ['role' => $user->role]);
-            
             if ($user->role !== 'attendee') {
-                \Illuminate\Support\Facades\Log::warning("Từ chối login vì role không phải attendee");
                 throw new Exception('Social login is only available for regular users.', 403);
             }
 
-            // Cập nhật google_id nếu chưa có hoặc khác
-            $user->google_id = $googleId;
-            $user->email_verified = true;
-            if (!$user->email_verified_at) {
-                $user->email_verified_at = now();
-            }
-            
-            $user->save(); // Ép buộc lưu vào DB
-            \Illuminate\Support\Facades\Log::info("Đã cập nhật google_id cho user cũ");
+            $this->userRepository->update($user->id, [
+                'google_id' => $googleId,
+                'email_verified' => true,
+                'email_verified_at' => $user->email_verified_at ?? now(),
+            ]);
         }
 
         $token = JWTAuth::fromUser($user);
-        \Illuminate\Support\Facades\Log::info("Tạo JWT Token thành công");
 
         return [
             'token' => $token,

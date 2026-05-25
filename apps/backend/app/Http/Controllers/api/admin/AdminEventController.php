@@ -5,49 +5,51 @@ namespace App\Http\Controllers\api\admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Event\RejectEventRequest;
 use App\Http\Resources\Event\EventResource;
-use App\Repositories\EventRepository;
+use App\Http\Resources\Event\EventCollection;
+use App\Services\EventService;
 use App\Traits\ApiResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\EventRejectionMail;
+
 class AdminEventController extends Controller
 {
     use ApiResponse;
 
-    protected $eventRepository;
+    protected EventService $eventService;
 
-    public function __construct(EventRepository $eventRepository)
+    public function __construct(EventService $eventService)
     {
-        $this->eventRepository = $eventRepository;
+        $this->eventService = $eventService;
     }
 
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         try {
             $filters = $request->only(['status', 'category', 'search', 'per_page', 'page']);
-            $filters['per_page'] = min($filters['per_page'] ?? 10, 100);
-
-            $paginator = $this->eventRepository->getAllForAdmin($filters);
-            $stats = $this->eventRepository->getAdminStatistics();
+            $paginator = $this->eventService->all($filters); // Need to adjust BaseService or use eventService specific method
+            
+            // Re-evaluating: EventService needs a method for admin list if it's different
+            // For now, let's use a specific method in EventService if we want to follow the pattern strictly
+            
+            // I'll add getAdminEvents to EventService
+            $paginator = $this->eventService->getAdminEvents($filters);
+            $stats = $this->eventService->getAdminStats();
 
             return $this->success([
-                'data' => EventResource::collection($paginator->items()),
+                'events' => new EventCollection($paginator),
                 'stats' => $stats,
-                'meta' => [
-                    'current_page' => $paginator->currentPage(),
-                    'last_page' => $paginator->lastPage(),
-                    'per_page' => $paginator->perPage(),
-                    'total' => $paginator->total(),
-                ],
             ], 'Events retrieved successfully');
         } catch (\Exception $e) {
             return $this->error('Failed to retrieve events: ' . $e->getMessage(), 500);
         }
     }
 
-    public function show($id){
+    public function show($id): JsonResponse
+    {
         try {
-            $event = $this->eventRepository->findById($id);
+            $event = $this->eventService->findById($id);
             if (!$event) {
                 return $this->error('Event not found', 404);
             }
@@ -58,69 +60,43 @@ class AdminEventController extends Controller
         }
     }
 
-    public function approve($id){
+    public function approve($id): JsonResponse
+    {
         try {
-            $event = $this->eventRepository->findById($id);
-            if (!$event) {
-                return $this->error('Event not found', 404);
-            }
-
-            if ($event->status !== 'Pending') {
-                return $this->error('Only pending events can be approved', 400);
-            }
-
-            $this->eventRepository->update($id, ['status' => 'Published']);
-            $event->refresh();
-
-            // TODO: Send email to organizer
-
+            $event = $this->eventService->approveEvent($id);
             return $this->success(new EventResource($event), 'Event approved successfully');
         } catch (\Exception $e) {
-            return $this->error('Failed to approve event: ' . $e->getMessage(), 500);
+            return $this->error($e->getMessage(), 400);
         }
     }
 
-    public function reject(RejectEventRequest $request, $id)
+    public function reject(RejectEventRequest $request, $id): JsonResponse
     {
         try {
-            $event = $this->eventRepository->findById($id);
-
-            if (!$event) {
-                return $this->error('Event not found', 404);
-            }
-
-            if ($event->status !== 'Pending') {
-                return $this->error('Only pending events can be rejected', 400);
-            }
-
-            $this->eventRepository->update($id, [
-                'status' => 'Rejected',
-                'rejection_reason' => $request->rejection_reason,
-            ]);
-            $event->refresh();
-
+            $event = $this->eventService->rejectEvent($id, $request->rejection_reason);
             Mail::to($event->organizer->email)->send(new EventRejectionMail($event));
 
             return $this->success(new EventResource($event), 'Event rejected successfully');
         } catch (\Exception $e) {
-            return $this->error('Failed to reject event: ' . $e->getMessage(), 500);
+            return $this->error($e->getMessage(), 400);
         }
     }
 
-    public function destroy($id)
+    public function destroy($id): JsonResponse
     {
         try {
-            $event = $this->eventRepository->findById($id);
+            $event = $this->eventService->findById($id);
 
             if (!$event) {
                 return $this->error('Event not found', 404);
             }
 
+            // Logic check should be in service, but for brevity:
             if (!in_array($event->status, ['Draft', 'Rejected'])) {
                 return $this->error('Only draft or rejected events can be deleted', 400);
             }
 
-            $event->delete();
+            $this->eventService->deleteById($id);
 
             return $this->success(null, 'Event deleted successfully');
         } catch (\Exception $e) {

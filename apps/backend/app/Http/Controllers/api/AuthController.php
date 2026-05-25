@@ -5,7 +5,7 @@ namespace App\Http\Controllers\api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
-use App\Service\AuthService;
+use App\Services\AuthService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use Laravel\Socialite\Facades\Socialite;

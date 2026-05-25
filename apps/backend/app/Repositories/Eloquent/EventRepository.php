@@ -1,18 +1,22 @@
 <?php
-namespace App\Repositories;
+
+namespace App\Repositories\Eloquent;
+
+use App\Enums\EventStatus;
 use App\Models\Event;
+use App\Repositories\Interfaces\EventRepositoryInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
 
-class EventRepository
+class EventRepository extends BaseRepository implements EventRepositoryInterface
 {
-    public function create(array $data): Event
+    public function __construct(Event $model)
     {
-        return Event::create($data);
+        parent::__construct($model);
     }
 
-    public function findById(int $id): ?Event
+    public function findById(int|string $id, array $columns = ['*'], array $relations = ['category', 'organizer'], array $appends = []): ?Event
     {
-        return Event::with(['category', 'organizer'])
+        return $this->model->with($relations)
             ->withCount([
                 'registrations as confirmed_count' => fn($q) => $q->where('status', 'Confirmed'),
                 'registrations as waitlist_count'  => fn($q) => $q->where('status', 'Waitlist'),
@@ -20,25 +24,13 @@ class EventRepository
             ->find($id);
     }
 
-    public function update(int $id, array $data): bool
-    {
-        $event = Event::find($id);
-        if (!$event) return false;
-        return $event->update($data);
-    }
-
     public function getOrganizerEvents(int $organizerId, array $filters = []): LengthAwarePaginator
     {
-        $query = Event::where('organizer_id', $organizerId)
-            ->select(['id', 'organizer_id', 'category_id', 'title', 'location', 'event_date', 'event_time', 'capacity', 'status', 'rejection_reason', 'cancellation_reason', 'cancelled_at', 'created_at', 'updated_at'])
+        $query = $this->model->where('organizer_id', $organizerId)
             ->with(['category:id,name'])
             ->withCount([
-                'registrations as confirmed_count' => function ($query) {
-                    $query->where('status', 'Confirmed');
-                },
-                'registrations as waitlist_count' => function ($query) {
-                    $query->where('status', 'Waitlist');
-                }
+                'registrations as confirmed_count' => fn($q) => $q->where('status', 'Confirmed'),
+                'registrations as waitlist_count' => fn($q) => $q->where('status', 'Waitlist')
             ]);
 
         if (!empty($filters['status']) && $filters['status'] !== 'All') {
@@ -46,11 +38,7 @@ class EventRepository
         }
 
         $sort = $filters['sort'] ?? 'newest';
-        if ($sort === 'newest') {
-            $query->orderBy('created_at', 'desc');
-        } else {
-            $query->orderBy('created_at', 'asc');
-        }
+        $query->orderBy('created_at', $sort === 'newest' ? 'desc' : 'asc');
 
         return $query->paginate($filters['per_page'] ?? 10);
     }
@@ -58,15 +46,13 @@ class EventRepository
     public function getOrganizerStatistics(int $organizerId): array
     {
         $today = now()->toDateString();
-
-        // 1 query lấy tất cả events của organizer
-        $events = Event::where('organizer_id', $organizerId)
+        $events = $this->model->where('organizer_id', $organizerId)
             ->withCount(['registrations as confirmed_count' => fn($q) => $q->where('status', 'Confirmed')])
             ->get();
 
         return [
             'total_events'    => $events->count(),
-            'published_count' => $events->where('status', 'Published')->count(),
+            'published_count' => $events->where('status', EventStatus::PUBLISHED->value)->count(),
             'total_attendees' => $events->sum('confirmed_count'),
             'upcoming_events' => $events->where('event_date', '>=', $today)->count(),
         ];
@@ -74,23 +60,20 @@ class EventRepository
 
     public function getAllForAdmin(array $filters = []): LengthAwarePaginator
     {
-        $query = Event::query()
+        $query = $this->model->query()
             ->with(['category:id,name,slug', 'organizer:id,name,email'])
             ->withCount([
                 'registrations as registered' => fn($q) => $q->where('status', 'Confirmed'),
             ]);
 
-        // Status filter
         if (!empty($filters['status']) && $filters['status'] !== 'all') {
             $query->where('status', $filters['status']);
         }
 
-        // Category filter
         if (!empty($filters['category'])) {
             $query->whereHas('category', fn($q) => $q->where('slug', $filters['category']));
         }
 
-        // Search filter
         if (!empty($filters['search'])) {
             $search = $filters['search'];
             $query->where(function ($q) use ($search) {
@@ -100,7 +83,6 @@ class EventRepository
             });
         }
 
-        // Sorting
         $query->orderBy('created_at', 'desc');
 
         return $query->paginate($filters['per_page'] ?? 10);
@@ -108,19 +90,17 @@ class EventRepository
 
     public function getPublishedForAttendee(array $filters = []): LengthAwarePaginator
     {
-        $query = Event::query()
+        $query = $this->model->query()
             ->with(['category:id,name,slug', 'organizer:id,name,email'])
             ->withCount([
                 'registrations as confirmed_count' => fn($q) => $q->where('status', 'Confirmed'),
             ])
-            ->where('status', 'Published')
+            ->where('status', EventStatus::PUBLISHED->value)
             ->whereHas('category', fn($q) => $q->where('is_active', true));
 
         if (!empty($filters['category'])) {
             $category = $filters['category'];
-            $query->whereHas('category', function ($q) use ($category) {
-                $q->where('slug', $category)->orWhere('id', $category);
-            });
+            $query->whereHas('category', fn($q) => $q->where('slug', $category)->orWhere('id', $category));
         }
 
         if (!empty($filters['search'])) {
@@ -149,18 +129,17 @@ class EventRepository
             $query->orderByDesc('created_at');
         }
 
-        $perPage = min((int) ($filters['per_page'] ?? 3), 100);
-        return $query->paginate($perPage);
+        return $query->paginate(min((int) ($filters['per_page'] ?? 3), 100));
     }
 
     public function findPublishedByIdForAttendee(int $id): ?Event
     {
-        return Event::query()
+        return $this->model->query()
             ->with(['category:id,name,slug', 'organizer:id,name,email'])
             ->withCount([
                 'registrations as confirmed_count' => fn($q) => $q->where('status', 'Confirmed'),
             ])
-            ->where('status', 'Published')
+            ->where('status', EventStatus::PUBLISHED->value)
             ->whereHas('category', fn($q) => $q->where('is_active', true))
             ->find($id);
     }
@@ -169,23 +148,12 @@ class EventRepository
     {
         $today = now()->toDateString();
 
-        $totalEvents = Event::count();
-        $pendingEvents = Event::where('status', 'Pending')->count();
-        $publishedEvents = Event::where('status', 'Published')->count();
-        $rejectedEvents = Event::where('status', 'Rejected')->count();
-        $approvedToday = Event::where('status', 'Published')
-            ->whereDate('updated_at', $today)
-            ->count();
-        $rejectedToday = Event::where('status', 'Rejected')
-            ->whereDate('updated_at', $today)
-            ->count();
-
         return [
-            'total_pending' => $pendingEvents,
-            'total_published' => $publishedEvents,
-            'total_rejected' => $rejectedEvents,
-            'approved_today' => $approvedToday,
-            'rejected_today' => $rejectedToday,
+            'total_pending'   => $this->model->where('status', EventStatus::PENDING->value)->count(),
+            'total_published' => $this->model->where('status', EventStatus::PUBLISHED->value)->count(),
+            'total_rejected'  => $this->model->where('status', EventStatus::REJECTED->value)->count(),
+            'approved_today'  => $this->model->where('status', EventStatus::PUBLISHED->value)->whereDate('updated_at', $today)->count(),
+            'rejected_today'  => $this->model->where('status', EventStatus::REJECTED->value)->whereDate('updated_at', $today)->count(),
         ];
     }
 }
