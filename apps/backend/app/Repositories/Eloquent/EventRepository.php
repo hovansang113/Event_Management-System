@@ -94,6 +94,7 @@ class EventRepository extends BaseRepository implements EventRepositoryInterface
             ->with(['category:id,name,slug', 'organizer:id,name,email'])
             ->withCount([
                 'registrations as confirmed_count' => fn($q) => $q->where('status', 'Confirmed'),
+                'registrations as waitlist_count' => fn($q) => $q->where('status', 'Waitlist'),
             ])
             ->where('status', EventStatus::PUBLISHED->value)
             ->whereHas('category', fn($q) => $q->where('is_active', true));
@@ -135,9 +136,10 @@ class EventRepository extends BaseRepository implements EventRepositoryInterface
     public function findPublishedByIdForAttendee(int $id): ?Event
     {
         return $this->model->query()
-            ->with(['category:id,name,slug', 'organizer:id,name,email'])
+            ->with(['category:id,name,slug', 'organizer:id,name,email', 'registrations'])
             ->withCount([
                 'registrations as confirmed_count' => fn($q) => $q->where('status', 'Confirmed'),
+                'registrations as waitlist_count' => fn($q) => $q->where('status', 'Waitlist'),
             ])
             ->where('status', EventStatus::PUBLISHED->value)
             ->whereHas('category', fn($q) => $q->where('is_active', true))

@@ -7,13 +7,15 @@ import {
   Rating,
   Typography,
 } from "@mui/material";
+import { useState, useEffect } from "react";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
 import PlaceOutlinedIcon from "@mui/icons-material/PlaceOutlined";
 import GroupsOutlinedIcon from "@mui/icons-material/GroupsOutlined";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { STORAGE_KEYS } from "@eventnextday/shared-ui";
+import { useAuth } from "@eventnextday/shared-ui";
 import { useEventDetails } from "../hooks/useEventDetails";
+import { eventService } from "../services/eventService";
 
 const formatDate = (value) => {
   if (!value) return "TBD";
@@ -37,37 +39,60 @@ const DetailItem = ({ icon, label, value }) => (
   </Box>
 );
 
-const getCurrentUser = () => {
-  const token = localStorage.getItem(STORAGE_KEYS.TOKEN);
-  const rawUser = localStorage.getItem(STORAGE_KEYS.USER);
-
-  if (!token || !rawUser) return null;
-
-  try {
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    const isExpired = payload.exp && payload.exp * 1000 < Date.now();
-    if (isExpired) {
-      localStorage.removeItem(STORAGE_KEYS.TOKEN);
-      localStorage.removeItem(STORAGE_KEYS.USER);
-      return null;
-    }
-
-    return JSON.parse(rawUser);
-  } catch {
-    localStorage.removeItem(STORAGE_KEYS.TOKEN);
-    localStorage.removeItem(STORAGE_KEYS.USER);
-    return null;
-  }
-};
-
 export default function EventDetailPage() {
   const { id } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
   const initialEvent = location.state?.event || null;
   const { event, error, eventStats } = useEventDetails(id, initialEvent);
-  const currentUser = getCurrentUser();
-  const isLoggedIn = Boolean(currentUser);
+  const { isLoggedIn, user } = useAuth();
+  const [registering, setRegistering] = useState(false);
+  const [userRegistration, setUserRegistration] = useState(null);
+
+  useEffect(() => {
+    if (isLoggedIn && user && event) {
+      const existing = event.registrations?.find(r => r.user_id === user.id && ['Confirmed', 'Waitlist'].includes(r.status));
+      setUserRegistration(existing || null);
+    }
+  }, [isLoggedIn, user, event]);
+
+  const handleRegister = async () => {
+    if (!isLoggedIn) {
+      navigate("/login");
+      return;
+    }
+
+    if (userRegistration) {
+        alert("You are already registered for this event.");
+        return;
+    }
+
+    setRegistering(true);
+    try {
+      const response = await eventService.register(id);
+      alert(response.message || "Registration successful!");
+      window.location.reload(); 
+    } catch (err) {
+      alert(err.response?.data?.message || "Registration failed");
+    } finally {
+      setRegistering(false);
+    }
+  };
+
+  const handleCancel = async () => {
+    if (!userRegistration) return;
+    
+    setRegistering(true);
+    try {
+        await eventService.cancel(userRegistration.id);
+        alert("Registration cancelled successfully!");
+        window.location.reload();
+    } catch (err) {
+        alert(err.response?.data?.message || "Cancellation failed");
+    } finally {
+        setRegistering(false);
+    }
+  };
 
   if (error) {
     return (
@@ -166,13 +191,20 @@ export default function EventDetailPage() {
 
             <Button
               fullWidth
-              variant="contained"
-              onClick={() => {
-                if (!isLoggedIn) navigate("/login");
+              variant={userRegistration ? "outlined" : "contained"}
+              onClick={userRegistration ? handleCancel : handleRegister}
+              disabled={registering || (!userRegistration && eventStats.available === 0)}
+              sx={{ 
+                bgcolor: userRegistration ? "transparent" : "#007BFF", 
+                borderRadius: "6px", 
+                py: 1.25, 
+                textTransform: "none", 
+                fontWeight: 800, 
+                "&:hover": { bgcolor: userRegistration ? "#fee2e2" : "#0056B3", color: userRegistration ? "#dc2626" : "inherit" },
+                color: userRegistration ? "#dc2626" : "inherit"
               }}
-              sx={{ bgcolor: "#007BFF", borderRadius: "6px", py: 1.25, textTransform: "none", fontWeight: 800, "&:hover": { bgcolor: "#0056B3" } }}
             >
-              {isLoggedIn ? "Register" : "Login to Register"}
+              {registering ? "Processing..." : (userRegistration ? "Cancel Registration" : (eventStats.available === 0 ? "Event Full" : (isLoggedIn ? "Register Now" : "Login to Register")))}
             </Button>
           </Box>
         </Box>
