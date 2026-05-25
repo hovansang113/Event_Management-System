@@ -14,6 +14,11 @@ import {
   ListItemIcon,
   ListItemText,
   Divider,
+  Avatar,
+  Menu,
+  MenuItem,
+  Tooltip,
+  Fade,
 } from "@mui/material";
 import {
   Menu as MenuIcon,
@@ -23,13 +28,17 @@ import {
   PersonAddOutlined as PersonAddIcon,
   Close as CloseIcon,
   LogoutOutlined as LogoutIcon,
+  AccountCircleOutlined as ProfileIcon,
+  KeyboardArrowDown as ArrowDownIcon,
 } from "@mui/icons-material";
-import { Link as RouterLink, useLocation } from "react-router-dom";
+import { Link as RouterLink, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@eventnextday/shared-ui";
 
 export default function Header() {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(null);
   const { isLoggedIn, user, logout } = useAuth();
 
   const isHome = pathname === "/";
@@ -39,23 +48,61 @@ export default function Header() {
     setMobileOpen(!mobileOpen);
   };
 
+  const handleOpenUserMenu = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleCloseUserMenu = () => {
+    setAnchorEl(null);
+  };
+
+  const handleLogout = () => {
+    handleCloseUserMenu();
+    logout();
+    navigate("/");
+  };
+
   const navItems = [
     { label: "Home", path: "/", icon: <HomeIcon />, active: isHome },
     { label: "Events", path: "/events", icon: <EventIcon />, active: isEvents },
   ];
 
   const drawer = (
-    <Box sx={{ width: 280, height: "100%", bgcolor: "#FFFFFF" }}>
+    <Box sx={{ width: 280, height: "100%", bgcolor: "#FFFFFF", display: "flex", flexDirection: "column" }}>
       <Box sx={{ p: 2, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <Typography sx={{ fontWeight: 800, fontSize: 20 }} color="#007BFF">
           <Box component="span" sx={{ color: "#111827" }}>EVENT</Box> NOW
         </Typography>
-        <IconButton onClick={handleDrawerToggle}>
-          <CloseIcon />
+        <IconButton onClick={handleDrawerToggle} sx={{ bgcolor: "#F3F4F6" }}>
+          <CloseIcon fontSize="small" />
         </IconButton>
       </Box>
-      <Divider sx={{ mb: 1 }} />
-      <List sx={{ px: 2 }}>
+      <Divider />
+      
+      {isLoggedIn && (
+        <Box sx={{ p: 2, bgcolor: "#F9FAFB" }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
+            <Avatar 
+              sx={{ 
+                width: 45, 
+                height: 45, 
+                bgcolor: "#007BFF", 
+                fontSize: 18, 
+                fontWeight: 700,
+                boxShadow: "0 4px 12px rgba(0,123,255,0.2)"
+              }}
+            >
+              {user?.name?.charAt(0).toUpperCase()}
+            </Avatar>
+            <Box>
+              <Typography sx={{ fontWeight: 700, fontSize: 15, color: "#111827" }}>{user?.name}</Typography>
+              <Typography sx={{ fontSize: 12, color: "#6B7280" }}>{user?.email}</Typography>
+            </Box>
+          </Box>
+        </Box>
+      )}
+
+      <List sx={{ px: 2, py: 2, flexGrow: 1 }}>
         {navItems.map((item) => (
           <ListItem key={item.label} disablePadding sx={{ mb: 1 }}>
             <ListItemButton
@@ -64,9 +111,9 @@ export default function Header() {
               onClick={handleDrawerToggle}
               sx={{
                 borderRadius: "12px",
-                bgcolor: item.active ? "#eef4ff" : "transparent",
+                bgcolor: item.active ? "#EEF4FF" : "transparent",
                 color: item.active ? "#007BFF" : "#4B5563",
-                "&:hover": { bgcolor: "#f3f4f6" },
+                "&:hover": { bgcolor: "#F3F4F6" },
               }}
             >
               <ListItemIcon sx={{ color: item.active ? "#007BFF" : "#4B5563", minWidth: 40 }}>
@@ -74,51 +121,71 @@ export default function Header() {
               </ListItemIcon>
               <ListItemText 
                 primary={item.label} 
-                primaryTypographyProps={{ fontWeight: item.active ? 600 : 500 }} 
+                primaryTypographyProps={{ fontWeight: item.active ? 700 : 500, fontSize: 15 }} 
               />
             </ListItemButton>
           </ListItem>
         ))}
       </List>
-      <Box sx={{ position: "absolute", bottom: 0, left: 0, right: 0, p: 2, borderTop: "1px solid #E5E7EB" }}>
+
+      <Box sx={{ p: 2, borderTop: "1px solid #E5E7EB" }}>
         {isLoggedIn ? (
           <Button
             fullWidth
-            onClick={() => {
-              logout();
-              handleDrawerToggle();
-            }}
+            onClick={handleLogout}
             variant="outlined"
             color="error"
             startIcon={<LogoutIcon />}
             sx={{
-              py: 1.5,
-              borderRadius: "12px",
+              py: 1.2,
+              borderRadius: "10px",
               textTransform: "none",
-              fontWeight: 600,
+              fontWeight: 700,
+              borderWidth: "2px",
+              "&:hover": { borderWidth: "2px" }
             }}
           >
             Logout
           </Button>
         ) : (
-          <Button
-            fullWidth
-            component={RouterLink}
-            to="/register"
-            variant="contained"
-            startIcon={<PersonAddIcon />}
-            onClick={handleDrawerToggle}
-            sx={{
-              py: 1.5,
-              borderRadius: "12px",
-              textTransform: "none",
-              bgcolor: "#007BFF",
-              boxShadow: "none",
-              fontWeight: 600,
-            }}
-          >
-            Create Account
-          </Button>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+            <Button
+              fullWidth
+              component={RouterLink}
+              to="/login"
+              onClick={handleDrawerToggle}
+              variant="outlined"
+              sx={{
+                py: 1.2,
+                borderRadius: "10px",
+                textTransform: "none",
+                fontWeight: 700,
+                borderColor: "#E5E7EB",
+                color: "#374151",
+                "&:hover": { borderColor: "#D1D5DB", bgcolor: "#F9FAFB" }
+              }}
+            >
+              Login
+            </Button>
+            <Button
+              fullWidth
+              component={RouterLink}
+              to="/register"
+              onClick={handleDrawerToggle}
+              variant="contained"
+              sx={{
+                py: 1.2,
+                borderRadius: "10px",
+                textTransform: "none",
+                bgcolor: "#007BFF",
+                boxShadow: "0 4px 14px 0 rgba(0,118,255,0.39)",
+                fontWeight: 700,
+                "&:hover": { bgcolor: "#0062CC", boxShadow: "0 6px 20px rgba(0,118,255,0.23)" }
+              }}
+            >
+              Create Account
+            </Button>
+          </Box>
         )}
       </Box>
     </Box>
@@ -130,11 +197,12 @@ export default function Header() {
         position="fixed"
         elevation={0}
         sx={{
-          bgcolor: "rgba(255, 255, 255, 0.8)",
-          backdropFilter: "blur(8px)",
-          borderBottom: "1px solid #E5E7EB",
-          height: { xs: "64px", md: "72px" },
+          bgcolor: "rgba(255, 255, 255, 0.9)",
+          backdropFilter: "blur(12px)",
+          borderBottom: "1px solid #F1F5F9",
+          height: { xs: "64px", md: "80px" },
           justifyContent: "center",
+          zIndex: (theme) => theme.zIndex.drawer + 1,
         }}
       >
         <Container maxWidth="xl">
@@ -148,10 +216,12 @@ export default function Header() {
                   textDecoration: "none",
                   display: "inline-flex",
                   alignItems: "center",
+                  transition: "transform 0.2s",
+                  "&:hover": { transform: "scale(1.02)" }
                 }}
               >
-                <Typography sx={{ fontWeight: 800, fontSize: { xs: 20, md: 22 } }}>
-                  <Box component="span" sx={{ color: "#111827" }}>EVENT</Box>
+                <Typography sx={{ fontWeight: 900, fontSize: { xs: 20, md: 24 }, letterSpacing: "-0.5px" }}>
+                  <Box component="span" sx={{ color: "#0F172A" }}>EVENT</Box>
                   <Box component="span" sx={{ color: "#007BFF" }}>NOW</Box>
                 </Typography>
               </Box>
@@ -164,7 +234,7 @@ export default function Header() {
                 display: { xs: "none", md: "flex" },
                 alignItems: "center",
                 justifyContent: "center",
-                gap: 1,
+                gap: 1.5,
               }}
             >
               {navItems.map((item) => (
@@ -174,13 +244,18 @@ export default function Header() {
                   to={item.path}
                   sx={{
                     textTransform: "none",
-                    color: item.active ? "#007BFF" : "#4B5563",
-                    bgcolor: item.active ? "#eef4ff" : "transparent",
-                    borderRadius: "10px",
-                    px: 2.5,
-                    fontWeight: 600,
+                    color: item.active ? "#007BFF" : "#64748B",
+                    bgcolor: item.active ? "rgba(0, 123, 255, 0.08)" : "transparent",
+                    borderRadius: "12px",
+                    px: 3,
+                    py: 1,
+                    fontWeight: 700,
                     fontSize: 15,
-                    "&:hover": { bgcolor: "#f3f4f6" },
+                    transition: "all 0.2s",
+                    "&:hover": { 
+                      bgcolor: item.active ? "rgba(0, 123, 255, 0.12)" : "#F1F5F9",
+                      color: item.active ? "#007BFF" : "#0F172A"
+                    },
                   }}
                 >
                   {item.label}
@@ -194,55 +269,118 @@ export default function Header() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "flex-end",
-                gap: { xs: 1, md: 1.5 },
+                gap: { xs: 1, md: 2 },
               }}
             >
               {isLoggedIn ? (
-                <>
-                  <Typography
-                    sx={{
-                      display: { xs: "none", sm: "block" },
-                      color: "#4B5563",
-                      fontWeight: 600,
-                      fontSize: 14,
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <Tooltip title="Account settings">
+                    <Button
+                      onClick={handleOpenUserMenu}
+                      sx={{
+                        p: 0.5,
+                        pr: 1.5,
+                        borderRadius: "50px",
+                        bgcolor: "#F8FAFC",
+                        border: "1px solid #E2E8F0",
+                        textTransform: "none",
+                        transition: "all 0.2s",
+                        "&:hover": { 
+                          bgcolor: "#F1F5F9",
+                          borderColor: "#CBD5E1"
+                        }
+                      }}
+                    >
+                      <Avatar 
+                        sx={{ 
+                          width: 36, 
+                          height: 36, 
+                          bgcolor: "#007BFF", 
+                          fontSize: 14, 
+                          fontWeight: 700,
+                          mr: 1.2
+                        }}
+                      >
+                        {user?.name?.charAt(0).toUpperCase()}
+                      </Avatar>
+                      <Typography
+                        sx={{
+                          display: { xs: "none", lg: "block" },
+                          color: "#1E293B",
+                          fontWeight: 700,
+                          fontSize: 14,
+                          mr: 0.5
+                        }}
+                      >
+                        {user?.name?.split(" ")[0]}
+                      </Typography>
+                      <ArrowDownIcon sx={{ color: "#64748B", fontSize: 18 }} />
+                    </Button>
+                  </Tooltip>
+                  <Menu
+                    anchorEl={anchorEl}
+                    open={Boolean(anchorEl)}
+                    onClose={handleCloseUserMenu}
+                    TransitionComponent={Fade}
+                    PaperProps={{
+                      elevation: 0,
+                      sx: {
+                        overflow: "visible",
+                        filter: "drop-shadow(0px 8px 24px rgba(0,0,0,0.12))",
+                        mt: 1.5,
+                        minWidth: 200,
+                        borderRadius: "12px",
+                        border: "1px solid #F1F5F9",
+                        "& .MuiMenuItem-root": {
+                          px: 2,
+                          py: 1.2,
+                          borderRadius: "8px",
+                          mx: 1,
+                          my: 0.5,
+                          fontSize: 14,
+                          fontWeight: 600,
+                          color: "#475569",
+                          "&:hover": { bgcolor: "#F1F5F9", color: "#0F172A" },
+                        },
+                      },
                     }}
+                    transformOrigin={{ horizontal: "right", vertical: "top" }}
+                    anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
                   >
-                    Hi, {user?.name?.split(" ")[0]}
-                  </Typography>
-                  <Button
-                    onClick={logout}
-                    variant="text"
-                    color="inherit"
-                    startIcon={<LogoutIcon />}
-                    sx={{
-                      textTransform: "none",
-                      color: "#374151",
-                      fontWeight: 600,
-                      fontSize: { xs: 14, md: 15 },
-                      px: { xs: 1, md: 2 },
-                      "&:hover": { bgcolor: "#fee2e2", color: "#dc2626" },
-                    }}
-                  >
-                    Logout
-                  </Button>
-                </>
+                    <Box sx={{ px: 2, py: 1.5, mb: 0.5 }}>
+                      <Typography sx={{ fontWeight: 800, fontSize: 14, color: "#0F172A" }}>{user?.name}</Typography>
+                      <Typography sx={{ fontSize: 12, color: "#94A3B8" }}>{user?.email}</Typography>
+                    </Box>
+                    <Divider sx={{ my: 0.5, mx: 1 }} />
+                    <MenuItem onClick={handleCloseUserMenu} component={RouterLink} to="/profile">
+                      <ListItemIcon><ProfileIcon fontSize="small" /></ListItemIcon>
+                      My Profile
+                    </MenuItem>
+                    <Divider sx={{ my: 0.5, mx: 1 }} />
+                    <MenuItem onClick={handleLogout} sx={{ color: "#EF4444 !important", "&:hover": { bgcolor: "#FEF2F2 !important" } }}>
+                      <ListItemIcon><LogoutIcon fontSize="small" sx={{ color: "#EF4444" }} /></ListItemIcon>
+                      Logout
+                    </MenuItem>
+                  </Menu>
+                </Box>
               ) : (
                 <>
                   <Button
                     component={RouterLink}
                     to="/login"
                     variant="text"
-                    startIcon={<LoginIcon sx={{ display: { xs: "none", sm: "block" } }} />}
                     sx={{
                       textTransform: "none",
-                      color: "#374151",
-                      fontWeight: 600,
-                      fontSize: { xs: 14, md: 15 },
-                      px: { xs: 1, md: 2 },
-                      "&:hover": { bgcolor: "#f3f4f6" },
+                      color: "#64748B",
+                      fontWeight: 700,
+                      fontSize: 15,
+                      px: 2.5,
+                      borderRadius: "10px",
+                      transition: "all 0.2s",
+                      "&:hover": { bgcolor: "#F1F5F9", color: "#0F172A" },
                     }}
                   >
-                    Login
+                    Sign In
                   </Button>
 
                   <Button
@@ -250,17 +388,24 @@ export default function Header() {
                     to="/register"
                     variant="contained"
                     sx={{
-                      display: { xs: "none", md: "flex" },
+                      display: { xs: "none", sm: "flex" },
                       textTransform: "none",
-                      borderRadius: "10px",
-                      px: 3,
+                      borderRadius: "12px",
+                      px: 3.5,
+                      py: 1,
                       bgcolor: "#007BFF",
-                      fontWeight: 600,
-                      boxShadow: "none",
-                      "&:hover": { bgcolor: "#0056B3", boxShadow: "none" },
+                      fontWeight: 700,
+                      fontSize: 15,
+                      boxShadow: "0 4px 14px 0 rgba(0,118,255,0.3)",
+                      transition: "all 0.3s",
+                      "&:hover": { 
+                        bgcolor: "#0062CC", 
+                        boxShadow: "0 6px 20px rgba(0,118,255,0.4)",
+                        transform: "translateY(-1px)"
+                      },
                     }}
                   >
-                    Sign Up
+                    Join for Free
                   </Button>
                 </>
               )}
@@ -272,10 +417,11 @@ export default function Header() {
                 onClick={handleDrawerToggle}
                 sx={{ 
                   display: { md: "none" },
-                  color: "#111827",
-                  bgcolor: "#f3f4f6",
-                  ml: 0.5,
-                  "&:hover": { bgcolor: "#e5e7eb" }
+                  color: "#0F172A",
+                  bgcolor: "#F1F5F9",
+                  p: 1,
+                  borderRadius: "10px",
+                  "&:hover": { bgcolor: "#E2E8F0" }
                 }}
               >
                 <MenuIcon />
@@ -293,7 +439,12 @@ export default function Header() {
         ModalProps={{ keepMounted: true }}
         sx={{
           display: { xs: "block", md: "none" },
-          "& .MuiDrawer-paper": { boxSizing: "border-box", width: 280, border: "none" },
+          "& .MuiDrawer-paper": { 
+            boxSizing: "border-box", 
+            width: 280, 
+            border: "none",
+            boxShadow: "-10px 0 25px rgba(0,0,0,0.05)"
+          },
         }}
       >
         {drawer}

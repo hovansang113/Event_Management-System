@@ -22,13 +22,13 @@ import {
 
 const registerRoleCopy = {
   attendee: {
-    label: "Attendee signup",
+    label: "Attendee Sign Up",
     title: "Create attendee account",
     backdropTitle: "Start joining events",
     backdropText: "Create a personal account for browsing, registering, and following event updates.",
   },
   organizer: {
-    label: "Organizer signup",
+    label: "Organizer Sign Up",
     title: "Create organizer account",
     backdropTitle: "Launch your event space",
     backdropText: "Set up an organizer profile for creating events and managing registrations.",
@@ -211,7 +211,7 @@ export const RegisterForm = ({ role, onSuccess }) => {
             {loading ? (
               <CircularProgress size={24} color="inherit" />
             ) : (
-              "Register"
+              "Sign Up"
             )}
           </Button>
 
@@ -221,7 +221,7 @@ export const RegisterForm = ({ role, onSuccess }) => {
           >
             Already have an account?{" "}
             <Link href="/login" underline="hover">
-              Login
+              Sign In
             </Link>
           </Typography>
         </Box>
