@@ -92,4 +92,9 @@ class RegistrationService extends BaseService
             }
         });
     }
+
+    public function getUserRegistrations(int $userId)
+    {
+        return $this->repo->getByUser($userId);
+    }
 }

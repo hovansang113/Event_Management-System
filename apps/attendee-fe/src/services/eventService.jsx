@@ -39,6 +39,11 @@ export const eventService = {
     return await api.post(API_ENDPOINTS.ATTENDEE.EVENTS.REGISTER(id));
   },
 
+  getMyRegistrations: async () => {
+    const response = await api.get(API_ENDPOINTS.ATTENDEE.EVENTS.REGISTRATIONS);
+    return response.data;
+  },
+
   cancel: async (registrationId) => {
     return await api.delete(API_ENDPOINTS.ATTENDEE.EVENTS.CANCEL(registrationId));
   },

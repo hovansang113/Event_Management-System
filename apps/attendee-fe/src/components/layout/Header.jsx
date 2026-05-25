@@ -352,9 +352,9 @@ export default function Header() {
                       <Typography sx={{ fontSize: 12, color: "#94A3B8" }}>{user?.email}</Typography>
                     </Box>
                     <Divider sx={{ my: 0.5, mx: 1 }} />
-                    <MenuItem onClick={handleCloseUserMenu} component={RouterLink} to="/profile">
+                    <MenuItem onClick={handleCloseUserMenu} component={RouterLink} to="/dashboard">
                       <ListItemIcon><ProfileIcon fontSize="small" /></ListItemIcon>
-                      My Profile
+                      My Dashboard
                     </MenuItem>
                     <Divider sx={{ my: 0.5, mx: 1 }} />
                     <MenuItem onClick={handleLogout} sx={{ color: "#EF4444 !important", "&:hover": { bgcolor: "#FEF2F2 !important" } }}>
