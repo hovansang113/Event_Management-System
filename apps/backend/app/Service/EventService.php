@@ -96,7 +96,7 @@ class EventService
 
     public function updateEvent($id, array $data){
         $event = $this->getEventById($id);
-        if (!$event || $event->status === 'Pending') {
+        if (!$event || in_array($event->status, ['Pending', 'Published'])) {
             return null;
         }
 

@@ -100,7 +100,6 @@ class AuthController extends Controller
             /** @var \Laravel\Socialite\Two\AbstractProvider $driver */
             $driver = Socialite::driver('google');
 
-            // Bỏ qua kiểm tra SSL trên localhost để tránh lỗi "cURL error 60"
             if (config('app.env') === 'local') {
                 $driver->setHttpClient(new \GuzzleHttp\Client(['verify' => false]));
             }
@@ -114,9 +113,7 @@ class AuthController extends Controller
 
             $data = $this->authService->handleSocialLogin('google', $googleUser);
             
-            // Redirect to the correct frontend based on role
-            // Attendee: http://localhost:3002
-            // Organizer: http://localhost:3001
+
             $role = $data['user']['role'];
             $frontendUrl = 'http://localhost:3002'; // Default for attendee
 

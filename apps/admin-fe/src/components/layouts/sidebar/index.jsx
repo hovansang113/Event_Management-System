@@ -53,8 +53,9 @@ const Sidebar = () => {
     >
       {/* Logo */}
       <Box sx={{ px: 2.5, height: 56, display: "flex", alignItems: "center" }}>
-        <Typography sx={{ fontSize: 18, letterSpacing: 1, fontWeight: 800, color: "#1170e4" }}>
-          EVENTNOW
+        <Typography sx={{ fontSize: 19, fontWeight: 800, letterSpacing: 0.5 }}>
+          <Box component="span" sx={{ color: "#111827" }}>EVENT</Box>
+          <Box component="span" sx={{ color: "#007BFF" }}>NOW</Box>
         </Typography>
       </Box>
 

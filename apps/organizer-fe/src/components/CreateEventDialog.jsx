@@ -209,6 +209,12 @@ const CreateEventDialog = ({ open, onClose, onSuccess, eventId = null }) => {
               )}
             </Box>
 
+            {isEditMode && ["pending", "published"].includes(formData.status?.toLowerCase()) && (
+              <Alert severity="warning" className="info-alert">
+                This event is <strong>{formData.status}</strong> and cannot be edited.
+              </Alert>
+            )}
+
             {!isEditMode && (
               <Alert severity="info" className="info-alert">
                 <strong>How it works:</strong> Save as Draft to continue editing later, or Submit for Review to send to admin for approval. You cannot edit an event while it's under review.
@@ -235,7 +241,7 @@ const CreateEventDialog = ({ open, onClose, onSuccess, eventId = null }) => {
                 <Button
                   variant="contained"
                   onClick={handleUpdate}
-                  disabled={loading}
+                  disabled={loading || ["pending", "published"].includes(formData.status?.toLowerCase())}
                   startIcon={loading ? <CircularProgress size={14} /> : null}
                   className="btn"
                 >

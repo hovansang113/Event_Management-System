@@ -21,6 +21,7 @@ export const useCreateEvent = (onSuccess, eventId = null) => {
     event_time: "",
     capacity: "",
     image: "",
+    status: "",
   });
 
   useEffect(() => {
@@ -39,6 +40,7 @@ export const useCreateEvent = (onSuccess, eventId = null) => {
             event_time: event.time || event.event_time || "", // Sửa mapping time
             capacity: event.capacity || "",
             image: event.image || "",
+            status: event.status || "",
           });
           if (event.image) {
             setImagePreview(event.image);
@@ -96,10 +98,17 @@ export const useCreateEvent = (onSuccess, eventId = null) => {
     setError(null);
 
     try {
+      // Chỉ gửi các trường thực sự cần thiết và đã thay đổi
       const submitData = { ...formData };
+      
+      // Nếu không có file ảnh mới, xóa trường image khỏi data gửi đi 
+      // để tránh lỗi validation 'image' của Laravel (vì hiện tại nó là URL string)
       if (imageFile) {
         submitData.image = imageFile;
+      } else {
+        delete submitData.image;
       }
+
       await eventService.update(eventId, submitData);
       resetForm();
       onSuccess?.();
@@ -158,6 +167,7 @@ export const useCreateEvent = (onSuccess, eventId = null) => {
       event_time: "",
       capacity: "",
       image: "",
+      status: "",
     });
     setImageFile(null);
     setImagePreview(null);

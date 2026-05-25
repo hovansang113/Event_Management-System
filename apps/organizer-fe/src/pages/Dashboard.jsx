@@ -19,14 +19,11 @@ import {
   TrendingUp,
   Groups2Outlined,
   EventAvailableOutlined,
-  RemoveRedEyeOutlined,
   EditOutlined,
-  GroupOutlined,
   SendOutlined,
   CancelOutlined,
 } from "@mui/icons-material";
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useDashboard } from "../hooks/useDashboard";
 import { eventService } from "../services/eventService";
 import CreateEventDialog from "../components/CreateEventDialog";
@@ -59,7 +56,6 @@ const formatDateTime = (event) => {
 };
 
 const Dashboard = () => {
-  const navigate = useNavigate();
   const { stats, events, loading, filters, handleFilterChange, fetchEvents } = useDashboard();
   const [tab, setTab] = useState("All");
   const [openCreateDialog, setOpenCreateDialog] = useState(false);
@@ -67,6 +63,7 @@ const Dashboard = () => {
   const [openCancelDialog, setOpenCancelDialog] = useState(false);
   const [cancelEventId, setCancelEventId] = useState(null);
   const [cancelLoading, setCancelLoading] = useState(false);
+  
   const filteredEvents = useMemo(() => {
     if (tab === "All") return events;
     return events.filter((e) => e.status === tab);
@@ -178,17 +175,11 @@ const Dashboard = () => {
                     sx={{ fontWeight: 600, fontSize: 11, height: 22, ...statusChipSx[event.status] || statusChipSx.Draft }}
                   />
                   <Stack direction="row" spacing={0.3}>
-                    <IconButton size="small" sx={{ color: "#1170e4", p: 0.5 }} onClick={() => navigate(`/organizer/events/${event.id}`)}>
-                      <RemoveRedEyeOutlined sx={{ fontSize: 16 }} />
-                    </IconButton>
-                    {event.status?.toLowerCase() !== "pending" && (
+                    {!["pending", "published"].includes(event.status?.toLowerCase()) && (
                       <IconButton size="small" sx={{ color: "#1170e4", p: 0.5 }} onClick={() => { setEditEventId(event.id); setOpenCreateDialog(true); }}>
                         <EditOutlined sx={{ fontSize: 16 }} />
                       </IconButton>
                     )}
-                    <IconButton size="small" sx={{ color: "#1170e4", p: 0.5 }}>
-                      <GroupOutlined sx={{ fontSize: 16 }} />
-                    </IconButton>
                     {(event.status?.toLowerCase() === "rejected" || event.status?.toLowerCase() === "draft") && (
                       <IconButton size="small" sx={{ color: "#16a34a", p: 0.5 }} onClick={async () => { await eventService.submit(event.id); fetchEvents(); }}>
                         <SendOutlined sx={{ fontSize: 16 }} />

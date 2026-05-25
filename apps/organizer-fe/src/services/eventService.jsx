@@ -42,7 +42,12 @@ export const eventService = {
                 formData.append(key, data[key]);
             }
         });
-        const response = await api.put(API_ENDPOINTS.ORGANIZER.EVENTS.UPDATE(id), formData, {
+        
+        // Laravel workaround: PHP cannot parse multipart/form-data on PUT requests.
+        // We use POST and add _method: PUT to fake it.
+        formData.append('_method', 'PUT');
+
+        const response = await api.post(API_ENDPOINTS.ORGANIZER.EVENTS.UPDATE(id), formData, {
             headers: { 'Content-Type': 'multipart/form-data' }
         });
         return response.data;
