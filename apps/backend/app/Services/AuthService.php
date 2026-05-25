@@ -137,10 +137,6 @@ class AuthService
                 'google_id' => $googleId,
             ]);
         } else {
-            if ($user->role !== 'attendee') {
-                throw new Exception('Social login is only available for regular users.', 403);
-            }
-
             $this->userRepository->update($user->id, [
                 'google_id' => $googleId,
                 'email_verified' => true,

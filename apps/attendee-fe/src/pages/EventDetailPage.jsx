@@ -7,13 +7,15 @@ import {
   Rating,
   Typography,
 } from "@mui/material";
+import { useState, useEffect } from "react";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
 import PlaceOutlinedIcon from "@mui/icons-material/PlaceOutlined";
 import GroupsOutlinedIcon from "@mui/icons-material/GroupsOutlined";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { STORAGE_KEYS } from "@eventnextday/shared-ui";
+import { useAuth } from "@eventnextday/shared-ui";
 import { useEventDetails } from "../hooks/useEventDetails";
+import { eventService } from "../services/eventService";
 
 const formatDate = (value) => {
   if (!value) return "TBD";
@@ -37,37 +39,60 @@ const DetailItem = ({ icon, label, value }) => (
   </Box>
 );
 
-const getCurrentUser = () => {
-  const token = localStorage.getItem(STORAGE_KEYS.TOKEN);
-  const rawUser = localStorage.getItem(STORAGE_KEYS.USER);
-
-  if (!token || !rawUser) return null;
-
-  try {
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    const isExpired = payload.exp && payload.exp * 1000 < Date.now();
-    if (isExpired) {
-      localStorage.removeItem(STORAGE_KEYS.TOKEN);
-      localStorage.removeItem(STORAGE_KEYS.USER);
-      return null;
-    }
-
-    return JSON.parse(rawUser);
-  } catch {
-    localStorage.removeItem(STORAGE_KEYS.TOKEN);
-    localStorage.removeItem(STORAGE_KEYS.USER);
-    return null;
-  }
-};
-
-export default function EventDetailPage() {
+function EventDetailPage() {
   const { id } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
   const initialEvent = location.state?.event || null;
   const { event, error, eventStats } = useEventDetails(id, initialEvent);
-  const currentUser = getCurrentUser();
-  const isLoggedIn = Boolean(currentUser);
+  const { isLoggedIn, user } = useAuth();
+  const [registering, setRegistering] = useState(false);
+  const [userRegistration, setUserRegistration] = useState(null);
+
+  useEffect(() => {
+    if (isLoggedIn && user && event) {
+      const existing = event.registrations?.find(r => r.user_id === user.id && ['Confirmed', 'Waitlist'].includes(r.status));
+      setUserRegistration(existing || null);
+    }
+  }, [isLoggedIn, user, event]);
+
+  const handleRegister = async () => {
+    if (!isLoggedIn) {
+      navigate("/login");
+      return;
+    }
+
+    if (userRegistration) {
+        alert("You are already registered for this event.");
+        return;
+    }
+
+    setRegistering(true);
+    try {
+      const response = await eventService.register(id);
+      alert(response.message || "Registration successful!");
+      window.location.reload(); 
+    } catch (err) {
+      alert(err.response?.data?.message || "Registration failed");
+    } finally {
+      setRegistering(false);
+    }
+  };
+
+  const handleCancel = async () => {
+    if (!userRegistration) return;
+    
+    setRegistering(true);
+    try {
+        await eventService.cancel(userRegistration.id);
+        alert("Registration cancelled successfully!");
+        window.location.reload();
+    } catch (err) {
+        alert(err.response?.data?.message || "Cancellation failed");
+    } finally {
+        setRegistering(false);
+    }
+  };
 
   if (error) {
     return (
@@ -141,21 +166,22 @@ export default function EventDetailPage() {
               </Typography>
             </Box>
           </Box>
+          
 
           <Box sx={{ bgcolor: "#fff", border: "1px solid #DADDE3", borderRadius: "10px", p: { xs: 2, sm: 2.5 }, mt: { xs: 0, lg: 3.5 }, boxShadow: "0 10px 28px rgba(15, 23, 42, 0.06)" }}>
             <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>
               <Typography sx={{ color: "#111827", fontSize: 14, fontWeight: 700 }}>Availability</Typography>
-              <Typography sx={{ color: "#16A34A", fontSize: 14, fontWeight: 800 }}>
-                {eventStats.available}/{eventStats.capacity}
+              <Typography sx={{ color: eventStats.available === 0 ? "#DC3545" : "#16A34A", fontSize: 14, fontWeight: 800 }}>
+                {eventStats.registered}/{eventStats.capacity}
               </Typography>
             </Box>
             <LinearProgress
               variant="determinate"
               value={eventStats.progress}
-              sx={{ height: 6, borderRadius: 999, bgcolor: "#E5E7EB", mb: 1.1, "& .MuiLinearProgress-bar": { bgcolor: "#28A745" } }}
+              sx={{ height: 6, borderRadius: 999, bgcolor: "#E5E7EB", mb: 1.1, "& .MuiLinearProgress-bar": { bgcolor: eventStats.available === 0 ? "#DC3545" : "#28A745" } }}
             />
             <Typography sx={{ color: "#4B5563", fontSize: 12, mb: 2.5 }}>
-              {eventStats.available} spots available
+              {eventStats.available === 0 ? "No spots available" : `${eventStats.available} spots available`}
             </Typography>
 
             <Box sx={{ bgcolor: "#FFF4CC", border: "1px solid #F6B300", borderRadius: "8px", px: 1.5, py: 1.2, mb: 2.5 }}>
@@ -166,13 +192,35 @@ export default function EventDetailPage() {
 
             <Button
               fullWidth
-              variant="contained"
-              onClick={() => {
-                if (!isLoggedIn) navigate("/login");
+              variant={userRegistration ? "outlined" : "contained"}
+              onClick={userRegistration ? handleCancel : handleRegister}
+              disabled={registering}
+              sx={{ 
+                bgcolor: userRegistration 
+                  ? "transparent" 
+                  : (!isLoggedIn || eventStats.available > 0 ? "#007BFF" : "#FFC107"), 
+                borderRadius: "6px", 
+                py: 1.25, 
+                textTransform: "none", 
+                fontWeight: 800, 
+                "&:hover": { 
+                  bgcolor: userRegistration 
+                    ? "#fee2e2" 
+                    : (!isLoggedIn || eventStats.available > 0 ? "#0056B3" : "#E5AE00"), 
+                  color: userRegistration ? "#dc2626" : "inherit" 
+                },
+                color: userRegistration 
+                  ? "#dc2626" 
+                  : (isLoggedIn && eventStats.available === 0 ? "#202633" : "inherit")
               }}
-              sx={{ bgcolor: "#007BFF", borderRadius: "6px", py: 1.25, textTransform: "none", fontWeight: 800, "&:hover": { bgcolor: "#0056B3" } }}
             >
-              {isLoggedIn ? "Register" : "Login to Register"}
+              {registering ? "Processing..." : (
+                userRegistration 
+                ? (userRegistration.status === 'Waitlist' ? "Leave Waitlist" : "Cancel Registration")
+                : (!isLoggedIn 
+                   ? "Login to Register" 
+                   : (eventStats.available === 0 ? "Join Waitlist" : "Register Now"))
+              )}
             </Button>
           </Box>
         </Box>
@@ -180,3 +228,5 @@ export default function EventDetailPage() {
     </Box>
   );
 }
+
+export default EventDetailPage;

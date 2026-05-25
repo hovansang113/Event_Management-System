@@ -90,10 +90,18 @@ class EventRepository extends BaseRepository implements EventRepositoryInterface
 
     public function getPublishedForAttendee(array $filters = []): LengthAwarePaginator
     {
+        $userId = auth()->id();
         $query = $this->model->query()
-            ->with(['category:id,name,slug', 'organizer:id,name,email'])
+            ->with([
+                'category:id,name,slug', 
+                'organizer:id,name,email',
+                'registrations' => function ($q) use ($userId) {
+                    $q->where('user_id', $userId);
+                }
+            ])
             ->withCount([
                 'registrations as confirmed_count' => fn($q) => $q->where('status', 'Confirmed'),
+                'registrations as waitlist_count' => fn($q) => $q->where('status', 'Waitlist'),
             ])
             ->where('status', EventStatus::PUBLISHED->value)
             ->whereHas('category', fn($q) => $q->where('is_active', true));
@@ -134,10 +142,18 @@ class EventRepository extends BaseRepository implements EventRepositoryInterface
 
     public function findPublishedByIdForAttendee(int $id): ?Event
     {
+        $userId = auth()->id();
         return $this->model->query()
-            ->with(['category:id,name,slug', 'organizer:id,name,email'])
+            ->with([
+                'category:id,name,slug', 
+                'organizer:id,name,email', 
+                'registrations' => function ($q) use ($userId) {
+                    $q->where('user_id', $userId);
+                }
+            ])
             ->withCount([
                 'registrations as confirmed_count' => fn($q) => $q->where('status', 'Confirmed'),
+                'registrations as waitlist_count' => fn($q) => $q->where('status', 'Waitlist'),
             ])
             ->where('status', EventStatus::PUBLISHED->value)
             ->whereHas('category', fn($q) => $q->where('is_active', true))

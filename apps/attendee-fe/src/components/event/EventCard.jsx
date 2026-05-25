@@ -1,4 +1,4 @@
-﻿import {
+import {
   Box,
   Button,
   Card,
@@ -13,13 +13,32 @@
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import PlaceOutlinedIcon from "@mui/icons-material/PlaceOutlined";
 import { useNavigate } from "react-router-dom";
+import { eventService } from "../../services/eventService";
+import { useState } from "react";
 
 export default function EventCard({ event }) {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
   const safeCapacity = event.capacity > 0 ? event.capacity : 1;
   const progress = Math.min(100, Math.round((event.registered / safeCapacity) * 100));
   const full = event.registered >= safeCapacity;
-  const goToDetail = () => navigate(`/events/${event.id}`, { state: { event } });
+  const goToDetail = () => {
+    eventService.seedDetail(event);
+    navigate(`/events/${event.id}`, { state: { event } });
+  };
+
+  const handleRegister = async (e) => {
+    e.stopPropagation();
+    setLoading(true);
+    try {
+      await eventService.register(event.id);
+      alert(full ? "Joined waitlist successfully!" : "Registered successfully!");
+    } catch (err) {
+      alert("Failed to register: " + (err.response?.data?.message || err.message));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <Card
@@ -92,13 +111,16 @@ export default function EventCard({ event }) {
           sx={{ height: 3.5, borderRadius: 999, bgcolor: "#e5e7eb", my: 1.2, "& .MuiLinearProgress-bar": { bgcolor: event.progressColor } }}
         />
 
-        <Box sx={{ display: "grid", gridTemplateColumns: full ? "1fr auto" : "1fr 1fr", gap: 1.2 }}>
+        <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1.2 }}>
           <Button variant="outlined" onClick={goToDetail} sx={{ textTransform: "none", borderRadius: 2, fontSize: 12, fontWeight: 600 }}>View</Button>
-          {full ? (
-            <Typography sx={{ alignSelf: "center", textAlign: "center", color: "#a1a1aa", fontWeight: 600, fontSize: 12 }}>Full</Typography>
-          ) : (
-            <Button variant="contained" onClick={(event) => event.stopPropagation()} sx={{ textTransform: "none", borderRadius: 2, fontSize: 12, fontWeight: 600 }}>Register</Button>
-          )}
+          <Button
+            variant="contained"
+            disabled={loading}
+            onClick={handleRegister}
+            sx={{ textTransform: "none", borderRadius: 2, fontSize: 12, fontWeight: 600 }}
+          >
+            {loading ? "Processing..." : (full ? "Join Waitlist" : "Register")}
+          </Button>
         </Box>
       </CardContent>
     </Card>

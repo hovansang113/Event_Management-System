@@ -4,7 +4,7 @@ import LoginPage from "../pages/LoginPage";
 import GoogleCallback from "../pages/GoogleCallback";
 import HomePage from "../pages/HomePage";
 import EventsPage from "../pages/EventsPage";
-import EventDetailPage from "../pages/EventDetailPage";
+import EventDetailPage from "../pages/EventDetailPage.jsx";
 import AttendeeLayout from "../components/layout/AttendeeLayout";
 
 export default function AppRouter() {
