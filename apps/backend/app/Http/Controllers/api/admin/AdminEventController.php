@@ -28,12 +28,7 @@ class AdminEventController extends Controller
     {
         try {
             $filters = $request->only(['status', 'category', 'search', 'per_page', 'page']);
-            $paginator = $this->eventService->all($filters); // Need to adjust BaseService or use eventService specific method
             
-            // Re-evaluating: EventService needs a method for admin list if it's different
-            // For now, let's use a specific method in EventService if we want to follow the pattern strictly
-            
-            // I'll add getAdminEvents to EventService
             $paginator = $this->eventService->getAdminEvents($filters);
             $stats = $this->eventService->getAdminStats();
 
