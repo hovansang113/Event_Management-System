@@ -40,7 +40,7 @@ export const useEventDetails = (eventId, initialEvent = null) => {
     }
 
     const capacity = Number(event.capacity || 0);
-    const registered = Number(event.registered || 0);
+    const registered = Number(event.confirmed_count || event.registered || 0);
     const available = Math.max(0, capacity - registered);
 
     return {

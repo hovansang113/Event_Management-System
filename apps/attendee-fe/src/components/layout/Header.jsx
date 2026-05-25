@@ -22,12 +22,15 @@ import {
   Login as LoginIcon,
   PersonAddOutlined as PersonAddIcon,
   Close as CloseIcon,
+  LogoutOutlined as LogoutIcon,
 } from "@mui/icons-material";
 import { Link as RouterLink, useLocation } from "react-router-dom";
+import { useAuth } from "@eventnextday/shared-ui";
 
 export default function Header() {
   const { pathname } = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { isLoggedIn, user, logout } = useAuth();
 
   const isHome = pathname === "/";
   const isEvents = pathname.startsWith("/events");
@@ -78,24 +81,45 @@ export default function Header() {
         ))}
       </List>
       <Box sx={{ position: "absolute", bottom: 0, left: 0, right: 0, p: 2, borderTop: "1px solid #E5E7EB" }}>
-        <Button
-          fullWidth
-          component={RouterLink}
-          to="/register"
-          variant="contained"
-          startIcon={<PersonAddIcon />}
-          onClick={handleDrawerToggle}
-          sx={{
-            py: 1.5,
-            borderRadius: "12px",
-            textTransform: "none",
-            bgcolor: "#007BFF",
-            boxShadow: "none",
-            fontWeight: 600,
-          }}
-        >
-          Create Account
-        </Button>
+        {isLoggedIn ? (
+          <Button
+            fullWidth
+            onClick={() => {
+              logout();
+              handleDrawerToggle();
+            }}
+            variant="outlined"
+            color="error"
+            startIcon={<LogoutIcon />}
+            sx={{
+              py: 1.5,
+              borderRadius: "12px",
+              textTransform: "none",
+              fontWeight: 600,
+            }}
+          >
+            Logout
+          </Button>
+        ) : (
+          <Button
+            fullWidth
+            component={RouterLink}
+            to="/register"
+            variant="contained"
+            startIcon={<PersonAddIcon />}
+            onClick={handleDrawerToggle}
+            sx={{
+              py: 1.5,
+              borderRadius: "12px",
+              textTransform: "none",
+              bgcolor: "#007BFF",
+              boxShadow: "none",
+              fontWeight: 600,
+            }}
+          >
+            Create Account
+          </Button>
+        )}
       </Box>
     </Box>
   );
@@ -173,40 +197,73 @@ export default function Header() {
                 gap: { xs: 1, md: 1.5 },
               }}
             >
-              <Button
-                component={RouterLink}
-                to="/login"
-                variant="text"
-                startIcon={<LoginIcon sx={{ display: { xs: "none", sm: "block" } }} />}
-                sx={{
-                  textTransform: "none",
-                  color: "#374151",
-                  fontWeight: 600,
-                  fontSize: { xs: 14, md: 15 },
-                  px: { xs: 1, md: 2 },
-                  "&:hover": { bgcolor: "#f3f4f6" },
-                }}
-              >
-                Login
-              </Button>
+              {isLoggedIn ? (
+                <>
+                  <Typography
+                    sx={{
+                      display: { xs: "none", sm: "block" },
+                      color: "#4B5563",
+                      fontWeight: 600,
+                      fontSize: 14,
+                    }}
+                  >
+                    Hi, {user?.name?.split(" ")[0]}
+                  </Typography>
+                  <Button
+                    onClick={logout}
+                    variant="text"
+                    color="inherit"
+                    startIcon={<LogoutIcon />}
+                    sx={{
+                      textTransform: "none",
+                      color: "#374151",
+                      fontWeight: 600,
+                      fontSize: { xs: 14, md: 15 },
+                      px: { xs: 1, md: 2 },
+                      "&:hover": { bgcolor: "#fee2e2", color: "#dc2626" },
+                    }}
+                  >
+                    Logout
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button
+                    component={RouterLink}
+                    to="/login"
+                    variant="text"
+                    startIcon={<LoginIcon sx={{ display: { xs: "none", sm: "block" } }} />}
+                    sx={{
+                      textTransform: "none",
+                      color: "#374151",
+                      fontWeight: 600,
+                      fontSize: { xs: 14, md: 15 },
+                      px: { xs: 1, md: 2 },
+                      "&:hover": { bgcolor: "#f3f4f6" },
+                    }}
+                  >
+                    Login
+                  </Button>
 
-              <Button
-                component={RouterLink}
-                to="/register"
-                variant="contained"
-                sx={{
-                  display: { xs: "none", md: "flex" },
-                  textTransform: "none",
-                  borderRadius: "10px",
-                  px: 3,
-                  bgcolor: "#007BFF",
-                  fontWeight: 600,
-                  boxShadow: "none",
-                  "&:hover": { bgcolor: "#0056B3", boxShadow: "none" },
-                }}
-              >
-                Sign Up
-              </Button>
+                  <Button
+                    component={RouterLink}
+                    to="/register"
+                    variant="contained"
+                    sx={{
+                      display: { xs: "none", md: "flex" },
+                      textTransform: "none",
+                      borderRadius: "10px",
+                      px: 3,
+                      bgcolor: "#007BFF",
+                      fontWeight: 600,
+                      boxShadow: "none",
+                      "&:hover": { bgcolor: "#0056B3", boxShadow: "none" },
+                    }}
+                  >
+                    Sign Up
+                  </Button>
+                </>
+              )}
 
               <IconButton
                 color="inherit"

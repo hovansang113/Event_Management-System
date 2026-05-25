@@ -5,6 +5,8 @@ import PlaceOutlinedIcon from "@mui/icons-material/PlaceOutlined";
 import GroupOutlinedIcon from "@mui/icons-material/GroupOutlined";
 import StarRoundedIcon from "@mui/icons-material/StarRounded";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@eventnextday/shared-ui";
+import { eventService } from "../../../services/eventService";
 
 const DEFAULT_IMAGE = "https://via.placeholder.com/600x400?text=Event+Image";
 
@@ -16,7 +18,9 @@ const progressColor = (ratio) => {
 
 const BrowseEventCard = memo(({ event, viewMode = "grid" }) => {
   const navigate = useNavigate();
+  const { isLoggedIn } = useAuth();
   const [imgSrc, setImgSrc] = useState(event.image || DEFAULT_IMAGE);
+  const [loading, setLoading] = useState(false);
   
   const handleImgError = () => {
     if (imgSrc !== DEFAULT_IMAGE) {
@@ -28,7 +32,67 @@ const BrowseEventCard = memo(({ event, viewMode = "grid" }) => {
   const remainRatio = Math.max(0, (safeCapacity - event.registered) / safeCapacity);
   const fill = Math.min(100, Math.round((event.registered / safeCapacity) * 100));
   const full = event.registered >= safeCapacity;
-  const goToDetail = () => navigate(`/events/${event.id}`, { state: { event } });
+  const userReg = event.userRegistration;
+  
+  const goToDetail = (e) => {
+    e.stopPropagation();
+    navigate(`/events/${event.id}`, { state: { event } });
+  };
+
+  const handleAction = async (e) => {
+    e.stopPropagation();
+    if (!isLoggedIn) {
+      navigate("/login");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      if (userReg) {
+        await eventService.cancel(userReg.id);
+        alert("Action successful!");
+      } else {
+        const response = await eventService.register(event.id);
+        alert(response.message || "Action successful!");
+      }
+      window.location.reload();
+    } catch (err) {
+      alert(err.response?.data?.message || "Action failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const ActionButton = () => {
+    const isWaitlist = userReg?.status === 'Waitlist';
+    const label = loading ? "..." : (userReg ? (isWaitlist ? "Leave" : "Cancel") : (full ? "Waitlist" : "Register"));
+    
+    return (
+      <Button 
+        variant={userReg ? "outlined" : "contained"}
+        onClick={handleAction} 
+        disabled={loading}
+        sx={{ 
+          flex: 1, 
+          textTransform: "none", 
+          borderRadius: "8px", 
+          bgcolor: userReg 
+            ? "transparent" 
+            : (full ? "#FFC107" : "#007BFF"), 
+          "&:hover": { 
+            bgcolor: userReg 
+              ? "#fee2e2" 
+              : (full ? "#E5AE00" : "#0056B3"),
+            color: userReg ? "#dc2626" : "inherit"
+          },
+          color: userReg ? "#dc2626" : (full ? "#202633" : "inherit"),
+          borderColor: userReg ? "#dc2626" : "transparent"
+        }}
+      >
+        {label}
+      </Button>
+    );
+  };
 
   if (viewMode === "list") {
     return (
@@ -53,9 +117,7 @@ const BrowseEventCard = memo(({ event, viewMode = "grid" }) => {
             </Box>
             <Box sx={{ display: "flex", gap: 1, mt: 1.5, flexWrap: { xs: "wrap", sm: "nowrap" } }}>
               <Button variant="outlined" onClick={goToDetail} sx={{ textTransform: "none", borderRadius: "8px" }}>View</Button>
-              <Button disabled={full} variant="contained" onClick={(event) => event.stopPropagation()} sx={{ textTransform: "none", borderRadius: "8px", bgcolor: "#007BFF", "&:hover": { bgcolor: "#0056B3" }, "&.Mui-disabled": { bgcolor: "#eef2f7", color: "#9CA3AF" } }}>
-                {full ? "Full" : "Register"}
-              </Button>
+              <ActionButton />
             </Box>
           </Box>
         </Box>
@@ -124,9 +186,7 @@ const BrowseEventCard = memo(({ event, viewMode = "grid" }) => {
 
         <Box sx={{ display: "flex", gap: 1 }}>
           <Button variant="outlined" onClick={goToDetail} sx={{ flex: 1, textTransform: "none", borderRadius: "8px", borderColor: "#E0E0E0", color: "#333333" }}>View</Button>
-          <Button disabled={full} variant="contained" onClick={(event) => event.stopPropagation()} sx={{ flex: 1, textTransform: "none", borderRadius: "8px", bgcolor: "#007BFF", "&:hover": { bgcolor: "#0056B3" }, "&.Mui-disabled": { bgcolor: "#eef2f7", color: "#9CA3AF" } }}>
-            {full ? "Full" : "Register"}
-          </Button>
+          <ActionButton />
         </Box>
       </CardContent>
     </Card>

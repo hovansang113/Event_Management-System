@@ -13,19 +13,12 @@ const getFilterKey = (filters = {}) => {
 
 export const eventService = {
   getAll: async (filters = {}) => {
-    const key = getFilterKey(filters);
-    if (listCache.has(key)) return listCache.get(key);
-
     const response = await api.get(API_ENDPOINTS.ATTENDEE.EVENTS.ALL, { params: filters });
-    listCache.set(key, response.data);
     return response.data;
   },
 
   getById: async (id) => {
-    if (detailCache.has(String(id))) return detailCache.get(String(id));
-
     const response = await api.get(API_ENDPOINTS.ATTENDEE.EVENTS.GET(id));
-    detailCache.set(String(id), response.data);
     return response.data;
   },
 
@@ -40,5 +33,13 @@ export const eventService = {
   seedDetail: (event) => {
     if (!event?.id) return;
     detailCache.set(String(event.id), { data: event });
+  },
+
+  register: async (id) => {
+    return await api.post(API_ENDPOINTS.ATTENDEE.EVENTS.REGISTER(id));
+  },
+
+  cancel: async (registrationId) => {
+    return await api.delete(API_ENDPOINTS.ATTENDEE.EVENTS.CANCEL(registrationId));
   },
 };

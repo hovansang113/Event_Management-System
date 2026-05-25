@@ -39,7 +39,7 @@ const DetailItem = ({ icon, label, value }) => (
   </Box>
 );
 
-export default function EventDetailPage() {
+function EventDetailPage() {
   const { id } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
@@ -170,17 +170,17 @@ export default function EventDetailPage() {
           <Box sx={{ bgcolor: "#fff", border: "1px solid #DADDE3", borderRadius: "10px", p: { xs: 2, sm: 2.5 }, mt: { xs: 0, lg: 3.5 }, boxShadow: "0 10px 28px rgba(15, 23, 42, 0.06)" }}>
             <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>
               <Typography sx={{ color: "#111827", fontSize: 14, fontWeight: 700 }}>Availability</Typography>
-              <Typography sx={{ color: "#16A34A", fontSize: 14, fontWeight: 800 }}>
-                {eventStats.available}/{eventStats.capacity}
+              <Typography sx={{ color: eventStats.available === 0 ? "#DC3545" : "#16A34A", fontSize: 14, fontWeight: 800 }}>
+                {eventStats.registered}/{eventStats.capacity}
               </Typography>
             </Box>
             <LinearProgress
               variant="determinate"
               value={eventStats.progress}
-              sx={{ height: 6, borderRadius: 999, bgcolor: "#E5E7EB", mb: 1.1, "& .MuiLinearProgress-bar": { bgcolor: "#28A745" } }}
+              sx={{ height: 6, borderRadius: 999, bgcolor: "#E5E7EB", mb: 1.1, "& .MuiLinearProgress-bar": { bgcolor: eventStats.available === 0 ? "#DC3545" : "#28A745" } }}
             />
             <Typography sx={{ color: "#4B5563", fontSize: 12, mb: 2.5 }}>
-              {eventStats.available} spots available
+              {eventStats.available === 0 ? "No spots available" : `${eventStats.available} spots available`}
             </Typography>
 
             <Box sx={{ bgcolor: "#FFF4CC", border: "1px solid #F6B300", borderRadius: "8px", px: 1.5, py: 1.2, mb: 2.5 }}>
@@ -193,18 +193,33 @@ export default function EventDetailPage() {
               fullWidth
               variant={userRegistration ? "outlined" : "contained"}
               onClick={userRegistration ? handleCancel : handleRegister}
-              disabled={registering || (!userRegistration && eventStats.available === 0)}
+              disabled={registering}
               sx={{ 
-                bgcolor: userRegistration ? "transparent" : "#007BFF", 
+                bgcolor: userRegistration 
+                  ? "transparent" 
+                  : (!isLoggedIn || eventStats.available > 0 ? "#007BFF" : "#FFC107"), 
                 borderRadius: "6px", 
                 py: 1.25, 
                 textTransform: "none", 
                 fontWeight: 800, 
-                "&:hover": { bgcolor: userRegistration ? "#fee2e2" : "#0056B3", color: userRegistration ? "#dc2626" : "inherit" },
-                color: userRegistration ? "#dc2626" : "inherit"
+                "&:hover": { 
+                  bgcolor: userRegistration 
+                    ? "#fee2e2" 
+                    : (!isLoggedIn || eventStats.available > 0 ? "#0056B3" : "#E5AE00"), 
+                  color: userRegistration ? "#dc2626" : "inherit" 
+                },
+                color: userRegistration 
+                  ? "#dc2626" 
+                  : (isLoggedIn && eventStats.available === 0 ? "#202633" : "inherit")
               }}
             >
-              {registering ? "Processing..." : (userRegistration ? "Cancel Registration" : (eventStats.available === 0 ? "Event Full" : (isLoggedIn ? "Register Now" : "Login to Register")))}
+              {registering ? "Processing..." : (
+                userRegistration 
+                ? (userRegistration.status === 'Waitlist' ? "Leave Waitlist" : "Cancel Registration")
+                : (!isLoggedIn 
+                   ? "Login to Register" 
+                   : (eventStats.available === 0 ? "Join Waitlist" : "Register Now"))
+              )}
             </Button>
           </Box>
         </Box>
@@ -212,3 +227,5 @@ export default function EventDetailPage() {
     </Box>
   );
 }
+
+export default EventDetailPage;

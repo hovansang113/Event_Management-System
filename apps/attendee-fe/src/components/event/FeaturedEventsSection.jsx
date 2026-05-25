@@ -4,6 +4,13 @@ import { eventService } from "../../services/eventService";
 import EventCard from "./EventCard";
 
 const mapEventData = (apiEvent) => {
+  // Use registered count from API if available, otherwise fallback to counting confirmed registrations
+  const registeredCount = apiEvent.registered !== undefined 
+    ? apiEvent.registered 
+    : (Array.isArray(apiEvent.registrations) 
+        ? apiEvent.registrations.filter(r => r.status === 'Confirmed').length 
+        : 0);
+
   return {
     id: apiEvent.id,
     title: apiEvent.title || apiEvent.name || "",
@@ -14,9 +21,10 @@ const mapEventData = (apiEvent) => {
     image: apiEvent.image || apiEvent.image_url || "https://via.placeholder.com/500x300",
     rating: Number(apiEvent.rating || 0),
     reviews: Number(apiEvent.reviews || apiEvent.review_count || 0),
-    registered: Number(apiEvent.confirmed_count || apiEvent.registered || 0),
+    registered: registeredCount,
     capacity: Number(apiEvent.capacity || 100),
-    progressColor: "#10b981"
+    progressColor: "#10b981",
+    registrations: apiEvent.registrations || [] // Pass registrations for EventCard if needed
   };
 };
 

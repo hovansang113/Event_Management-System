@@ -24,6 +24,7 @@ const mapEventData = (apiEvent) => ({
   reviews: Number(apiEvent.reviews || apiEvent.review_count || 0),
   registered: Number(apiEvent.confirmed_count || apiEvent.registered || 0),
   capacity: Number(apiEvent.capacity || 100),
+  userRegistration: apiEvent.registrations?.find(r => ["Confirmed", "Waitlist"].includes(r.status)) || null,
 });
 
 const extractArray = (payload) => {

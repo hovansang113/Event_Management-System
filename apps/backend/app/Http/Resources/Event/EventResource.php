@@ -27,7 +27,7 @@ class EventResource extends JsonResource
             'capacity' => $this->capacity,
             'registered' => $this->getAttributeValue('confirmed_count') ?? $this->registrations()->where('status', 'Confirmed')->count(),
             'waitlist_count' => $this->getAttributeValue('waitlist_count') ?? $this->registrations()->where('status', 'Waitlist')->count(),
-            'registrations' => $this->registrations,
+            'registrations' => $this->registrations->where('user_id', auth()->id())->values(),
             'status' => $this->status,
             'rejection_reason' => $this->rejection_reason,
             'cancellation_reason' => $this->cancellation_reason,

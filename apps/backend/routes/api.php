@@ -34,6 +34,12 @@ Route::prefix('attendee')->group(function () {
     Route::get('/events', [AttendeeEventController::class, 'index']);
     Route::get('/events/{id}', [AttendeeEventController::class, 'show']);
     Route::get('/categories', [AttendeeEventController::class, 'categories']);
+
+    // Protected Attendee Routes
+    Route::middleware('auth:api')->group(function () {
+        Route::post('/events/{id}/register', [AttendeeEventController::class, 'register']);
+        Route::delete('/registrations/{id}', [AttendeeEventController::class, 'cancel']);
+    });
 });
 
 // Admin Routes
