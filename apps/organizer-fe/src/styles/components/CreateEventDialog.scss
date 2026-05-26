@@ -1,0 +1,131 @@
+@import '../variables';
+
+.create-event-dialog {
+  .dialog-title {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding-bottom: $spacing-sm !important;
+
+    .title-text {
+      font-size: $font-size-lg !important;
+      font-weight: $font-weight-bold !important;
+      color: $gray-900 !important;
+    }
+  }
+
+  .dialog-content {
+    padding: $spacing-xl !important;
+  }
+
+  .section-title {
+    font-size: $font-size-md !important;
+    font-weight: $font-weight-bold !important;
+    margin-bottom: $spacing-lg !important;
+    color: $gray-900 !important;
+  }
+
+  .field-wrapper {
+    margin-bottom: $spacing-lg !important;
+
+    &.mb-sm {
+      margin-bottom: $spacing-md !important;
+    }
+  }
+
+  .field-label {
+    font-size: $font-size-base !important;
+    font-weight: $font-weight-semibold !important;
+    margin-bottom: $spacing-sm !important;
+    color: $gray-700 !important;
+
+    .required {
+      color: $danger !important;
+    }
+  }
+
+  .char-counter {
+    font-size: $font-size-xs !important;
+    color: $gray-400 !important;
+    text-align: right !important;
+    margin-top: 4px !important;
+  }
+
+  .grid-2 {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: $spacing-lg !important;
+  }
+}
+
+.upload-area {
+  border: 2px dashed $gray-300 !important;
+  border-radius: $border-radius-md !important;
+  padding: $spacing-xl !important;
+  text-align: center !important;
+  background-color: $gray-50 !important;
+  margin-bottom: $spacing-lg !important;
+  cursor: pointer !important;
+  transition: all 0.2s !important;
+  display: block !important;
+
+  &:hover {
+    background-color: $gray-100 !important;
+    border-color: $gray-400 !important;
+  }
+
+  .upload-icon {
+    font-size: 32px !important;
+    color: $gray-400 !important;
+    margin-bottom: $spacing-sm !important;
+  }
+
+  .upload-text {
+    font-size: $font-size-sm !important;
+    color: $gray-500 !important;
+    margin-bottom: 4px !important;
+  }
+
+  .upload-hint {
+    font-size: $font-size-xs !important;
+    color: $gray-400 !important;
+  }
+
+  .preview-image {
+    max-width: 100% !important;
+    max-height: 200px !important;
+    border-radius: $border-radius-md !important;
+  }
+
+  .change-text {
+    font-size: $font-size-xs !important;
+    color: $gray-500 !important;
+    margin-top: $spacing-sm !important;
+  }
+}
+
+.create-event-dialog {
+  .info-alert {
+    margin-bottom: $spacing-lg !important;
+    font-size: $font-size-sm !important;
+  }
+
+  .error-alert {
+    margin-bottom: $spacing-lg !important;
+    font-size: $font-size-sm !important;
+  }
+
+  .actions {
+    display: flex !important;
+    gap: $spacing-md !important;
+    justify-content: flex-end !important;
+
+    .btn {
+      text-transform: none !important;
+      font-size: $font-size-base !important;
+      font-weight: $font-weight-semibold !important;
+      border-radius: $border-radius-sm !important;
+      box-shadow: none !important;
+    }
+  }
+}

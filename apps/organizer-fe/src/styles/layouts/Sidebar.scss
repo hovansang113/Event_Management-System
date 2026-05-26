@@ -1,0 +1,114 @@
+@import '../variables';
+
+.sidebar {
+  width: 240px;
+  height: 100vh;
+  background-color: $gray-900;
+  color: white;
+  display: flex;
+  flex-direction: column;
+
+  .sidebar-header {
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+
+    .logo {
+      font-size: $font-size-lg;
+      font-weight: $font-weight-bold;
+      color: $primary;
+    }
+  }
+
+  .sidebar-nav {
+    flex: 1;
+    padding: $spacing-lg 0;
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: $spacing-md;
+      padding: $spacing-md $spacing-lg;
+      color: $gray-400;
+      text-decoration: none;
+      transition: all 0.2s;
+      cursor: pointer;
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+        color: white;
+      }
+
+      &.active {
+        background-color: rgba(59, 130, 246, 0.1);
+        color: $primary;
+        border-right: 3px solid $primary;
+      }
+
+      .nav-icon {
+        font-size: 20px;
+      }
+
+      .nav-text {
+        font-size: $font-size-base;
+        font-weight: $font-weight-medium;
+      }
+    }
+  }
+
+  .sidebar-footer {
+    padding: $spacing-lg;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: $spacing-md;
+      margin-bottom: $spacing-md;
+
+      .user-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background-color: $primary;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: $font-weight-bold;
+      }
+
+      .user-details {
+        flex: 1;
+
+        .user-name {
+          font-size: $font-size-base;
+          font-weight: $font-weight-semibold;
+          color: white;
+        }
+
+        .user-role {
+          font-size: $font-size-xs;
+          color: $gray-400;
+        }
+      }
+    }
+
+    .logout-btn {
+      width: 100%;
+      text-transform: none;
+      font-size: $font-size-sm;
+      font-weight: $font-weight-medium;
+      border-radius: $border-radius-sm;
+      color: $gray-400;
+      border-color: $gray-700;
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+        border-color: $gray-600;
+        color: white;
+      }
+    }
+  }
+}

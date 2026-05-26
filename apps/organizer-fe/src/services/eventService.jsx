@@ -1,0 +1,43 @@
+import api from "../../../../packages/shared-ui/src/services/api";
+import { API_ENDPOINTS } from "../constants/api";
+
+export const eventService = {
+    getStats: async () => {
+        const response = await api.get(API_ENDPOINTS.ORGANIZER.DASHBOARD.STATS);
+        return response.data;
+    },
+
+    getEvents: async (params) => {
+        const response = await api.get(API_ENDPOINTS.ORGANIZER.EVENTS.LIST, { params });
+        return response.data;
+    },
+
+    getDetail: async (id) => {
+        const response = await api.get(API_ENDPOINTS.ORGANIZER.EVENTS.DETAIL(id));
+        return response.data;
+    },
+
+    create: async (data) => {
+        const response = await api.post(API_ENDPOINTS.ORGANIZER.EVENTS.CREATE, data);
+        return response.data;
+    },
+
+    submit: async (id) => {
+        const response = await api.patch(API_ENDPOINTS.ORGANIZER.EVENTS.SUBMIT(id));
+        return response.data;
+    },
+
+    update: async (id, data) => {
+        const response = await api.put(API_ENDPOINTS.ORGANIZER.EVENTS.UPDATE(id), data);
+        return response.data;
+    },
+
+    cancel: async (id, reason) => {
+        const response = await api.patch(API_ENDPOINTS.ORGANIZER.EVENTS.CANCEL(id), {
+            cancellation_reason: reason
+        });
+        return response.data;
+    }
+
+    
+};
