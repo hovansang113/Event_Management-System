@@ -7,10 +7,20 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom', 'react-router-dom'],
-          mui: ['@mui/material', '@mui/icons-material'],
-          emotion: ['@emotion/react', '@emotion/styled'],
+        manualChunks(id) {
+          if (id.includes('@mui/material') || id.includes('@mui/icons-material')) {
+            return 'mui'
+          }
+          if (id.includes('@emotion/react') || id.includes('@emotion/styled')) {
+            return 'emotion'
+          }
+          if (
+            id.includes('node_modules/react/') || 
+            id.includes('node_modules/react-dom/') || 
+            id.includes('node_modules/react-router-dom/')
+          ) {
+            return 'vendor'
+          }
         },
       },
     },
