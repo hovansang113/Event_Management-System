@@ -42,7 +42,7 @@ class RegistrationRepository implements RegistrationRepositoryInterface
     {
         return Registration::where('user_id', $userId)
             ->with(['event' => function($q) {
-                $q->with(['category', 'organizer']);
+                $q->with(['category', 'organizer', 'reviews']);
             }])
             ->orderBy('created_at', 'desc')
             ->get();

@@ -1,10 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Box, Container, Typography } from "@mui/material";
 import { eventService } from "../../services/eventService";
 import EventCard from "./EventCard";
 
 const mapEventData = (apiEvent) => {
-  // Use registered count from API if available, otherwise fallback to counting confirmed registrations
   const registeredCount = apiEvent.registered !== undefined 
     ? apiEvent.registered 
     : (Array.isArray(apiEvent.registrations) 
@@ -24,7 +23,7 @@ const mapEventData = (apiEvent) => {
     registered: registeredCount,
     capacity: Number(apiEvent.capacity || 100),
     progressColor: "#10b981",
-    registrations: apiEvent.registrations || [] // Pass registrations for EventCard if needed
+    registrations: apiEvent.registrations || []
   };
 };
 
@@ -39,8 +38,12 @@ const getInitialEvents = () => {
 export default function FeaturedEventsSection() {
   const [events, setEvents] = useState(getInitialEvents);
   const [loading, setLoading] = useState(events.length === 0);
+  const fetched = useRef(false);
 
   useEffect(() => {
+    if (fetched.current) return;
+    fetched.current = true;
+
     const loadEvents = async () => {
       try {
         if (events.length === 0) setLoading(true);
@@ -57,7 +60,7 @@ export default function FeaturedEventsSection() {
     };
 
     loadEvents();
-  }, [events.length]);
+  }, []);
 
   return (
     <Box sx={{ bgcolor: "#fff", py: { xs: "48px", md: "64px" }, px: { xs: "18px", sm: "24px" } }}>

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { eventService } from "../services/eventService";
 import { categoryService } from "../services/categoryService";
 
@@ -60,8 +60,12 @@ export const useEventsBrowse = () => {
   const [toDate, setToDate] = useState("");
   const [location, setLocation] = useState("");
   const [onlyAvailable, setOnlyAvailable] = useState(false);
+  const fetched = useRef(false);
 
   useEffect(() => {
+    if (fetched.current) return;
+    fetched.current = true;
+
     const loadEvents = async () => {
       setApiError("");
       try {
@@ -95,7 +99,7 @@ export const useEventsBrowse = () => {
     };
 
     loadEvents();
-  }, [events.length]);
+  }, []);
 
   const categories = useMemo(() => {
     const counts = events.reduce((acc, item) => {

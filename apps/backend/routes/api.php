@@ -4,6 +4,7 @@ use App\Http\Controllers\api\AuthController;
 use App\Http\Controllers\api\admin\CategoryController;
 use App\Http\Controllers\api\admin\AdminEventController;
 use App\Http\Controllers\api\attendee\EventController as AttendeeEventController;
+use App\Http\Controllers\api\attendee\ReviewController as AttendeeReviewController;
 use App\Http\Controllers\api\admin\DashboardController;
 use App\Http\Controllers\api\organizer\EventController;
 use Illuminate\Support\Facades\Route;
@@ -41,6 +42,9 @@ Route::prefix('attendee')->group(function () {
         Route::post('/events/{id}/register', [AttendeeEventController::class, 'register']);
         Route::delete('/registrations/{id}', [AttendeeEventController::class, 'cancel']);
     });
+
+    Route::get('/events/{id}/reviews', [AttendeeReviewController::class, 'index']);
+    Route::middleware('auth:api')->post('/events/{id}/reviews', [AttendeeReviewController::class, 'store']);
 });
 
 // Admin Routes

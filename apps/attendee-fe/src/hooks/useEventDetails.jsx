@@ -1,11 +1,25 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { eventService } from '../services/eventService';
 
 export const useEventDetails = (eventId, initialEvent = null) => {
   const [event, setEvent] = useState(() => initialEvent || eventService.peekById(eventId)?.data || null);
   const [error, setError] = useState(null);
+  const fetched = useRef(false);
+
+  const loadReviewsIfMissing = async (eventData) => {
+    if (!eventData?.reviews_list && eventData?.id) {
+      try {
+        const res = await eventService.getReviews(eventData.id);
+        eventData.reviews_list = res.data || [];
+        setEvent({ ...eventData });
+      } catch (_) {}
+    }
+  };
 
   useEffect(() => {
+    if (fetched.current) return;
+    fetched.current = true;
+
     const loadEvent = async () => {
       if (!eventId) {
         setEvent(null);
@@ -13,10 +27,18 @@ export const useEventDetails = (eventId, initialEvent = null) => {
         return;
       }
 
+      const cached = eventService.peekById(eventId);
+      if (cached) {
+        setEvent(cached.data);
+        loadReviewsIfMissing(cached.data);
+        return;
+      }
+
       try {
         setError(null);
         const eventResult = await eventService.getById(eventId);
         setEvent(eventResult.data);
+        loadReviewsIfMissing(eventResult.data);
       } catch {
         setEvent(null);
         setError("Cannot load event detail");

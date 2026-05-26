@@ -10,5 +10,9 @@
     CATEGORIES: {
       ALL: "attendee/categories",
     },
+    REVIEWS: {
+      LIST: (eventId) => `attendee/events/${eventId}/reviews`,
+      CREATE: (eventId) => `attendee/events/${eventId}/reviews`,
+    },
   },
 };

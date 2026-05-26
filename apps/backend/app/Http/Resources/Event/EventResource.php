@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Event;
 
+use App\Http\Resources\Review\ReviewResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -28,12 +29,17 @@ class EventResource extends JsonResource
             'registered' => $this->getAttributeValue('confirmed_count') ?? $this->registrations()->where('status', 'Confirmed')->count(),
             'waitlist_count' => $this->getAttributeValue('waitlist_count') ?? $this->registrations()->where('status', 'Waitlist')->count(),
             'registrations' => $this->registrations->where('user_id', auth()->id())->values(),
+            'reviews_list' => $this->relationLoaded('reviews')
+                ? ReviewResource::collection($this->reviews->sortByDesc('created_at'))
+                : [],
             'status' => $this->status,
             'rejection_reason' => $this->rejection_reason,
             'cancellation_reason' => $this->cancellation_reason,
             'cancelled_at' => $this->cancelled_at,
-            'rating' => $this->rating ?? 0,
-            'reviews' => $this->reviews_count ?? 0,
+            'rating' => $this->relationLoaded('reviews')
+                ? round($this->reviews->avg('rating'), 1)
+                : (float) ($this->rating ?? 0),
+            'reviews' => $this->relationLoaded('reviews') ? $this->reviews->count() : (int) ($this->reviews_count ?? 0),
             'category' => [
                 'id' => $this->category?->id,
                 'name' => $this->category?->name,

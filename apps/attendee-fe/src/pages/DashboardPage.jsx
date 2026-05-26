@@ -16,8 +16,10 @@ import {
   Stack,
   Avatar,
   Divider,
+  Rating,
+  TextField,
 } from "@mui/material";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { eventService } from "../services/eventService";
 import { useAuth } from "@eventnextday/shared-ui";
 import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
@@ -27,8 +29,6 @@ import GridViewOutlinedIcon from "@mui/icons-material/GridViewOutlined";
 import HistoryIcon from "@mui/icons-material/History";
 import AssignmentTurnedInOutlinedIcon from "@mui/icons-material/AssignmentTurnedInOutlined";
 import { Link as RouterLink } from "react-router-dom";
-
-// --- Design Components ---
 
 const SidebarItem = ({ icon, label, active, count, onClick }) => (
   <Button
@@ -75,11 +75,17 @@ const StatMini = ({ label, value }) => (
 
 export default function DashboardPage() {
   const { user } = useAuth();
-  const [tabValue, setTabValue] = useState(0); // 0: Upcoming, 1: Waitlist, 2: Past
+  const [tabValue, setTabValue] = useState(0);
   const [registrations, setRegistrations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [cancelDialog, setCancelDialog] = useState({ open: false, id: null });
   const [cancelling, setCancelling] = useState(false);
+  const [reviewDialog, setReviewDialog] = useState({ open: false, eventId: null, eventTitle: "" });
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewComment, setReviewComment] = useState("");
+  const [submittingReview, setSubmittingReview] = useState(false);
+  const [reviewError, setReviewError] = useState("");
+  const fetched = useRef(false);
 
   const fetchRegistrations = async () => {
     try {
@@ -94,6 +100,8 @@ export default function DashboardPage() {
   };
 
   useEffect(() => {
+    if (fetched.current) return;
+    fetched.current = true;
     fetchRegistrations();
   }, []);
 
@@ -118,10 +126,39 @@ export default function DashboardPage() {
     }
   };
 
+  const openReviewDialog = (eventId, eventTitle) => {
+    setReviewDialog({ open: true, eventId, eventTitle });
+    setReviewRating(0);
+    setReviewComment("");
+    setReviewError("");
+  };
+
+  const handleSubmitReview = async () => {
+    if (reviewRating === 0) {
+      setReviewError("Please select a rating.");
+      return;
+    }
+
+    setSubmittingReview(true);
+    setReviewError("");
+
+    try {
+      await eventService.submitReview(reviewDialog.eventId, {
+        rating: reviewRating,
+        comment: reviewComment || null,
+      });
+      setReviewDialog({ open: false, eventId: null, eventTitle: "" });
+      fetchRegistrations();
+    } catch (err) {
+      setReviewError(err.response?.data?.message || "Failed to submit review.");
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
+
   return (
     <Box sx={{ pt: "110px", pb: 8, minHeight: "100vh", bgcolor: "#F8FAFC" }}>
       <Container maxWidth="xl">
-        {/* The Master Frame */}
         <Box sx={{ 
           display: "flex", 
           flexDirection: { xs: "column", md: "row" },
@@ -132,8 +169,6 @@ export default function DashboardPage() {
           overflow: "hidden",
           minHeight: "750px"
         }}>
-          
-          {/* Framed Sidebar */}
           <Box sx={{ 
             width: { xs: "100%", md: 280 }, 
             flexShrink: 0, 
@@ -186,7 +221,6 @@ export default function DashboardPage() {
             </Box>
           </Box>
 
-          {/* Framed Content Area */}
           <Box sx={{ flexGrow: 1, p: { xs: 3, md: 5 }, bgcolor: "#FFFFFF" }}>
             {loading ? (
               <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", py: 20, gap: 2 }}>
@@ -222,7 +256,9 @@ export default function DashboardPage() {
                         key={reg.id} 
                         reg={reg} 
                         type={tabValue} 
+                        userId={user?.id}
                         onCancel={() => setCancelDialog({ open: true, id: reg.id })} 
+                        onReview={() => openReviewDialog(reg.event.id, reg.event.title)}
                       />
                     ))}
                   </Stack>
@@ -245,7 +281,6 @@ export default function DashboardPage() {
         </Box>
       </Container>
 
-      {/* Modern Confirmation Dialog */}
       <Dialog 
         open={cancelDialog.open} 
         onClose={() => setCancelDialog({ open: false, id: null })}
@@ -269,91 +304,176 @@ export default function DashboardPage() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Dialog 
+        open={reviewDialog.open} 
+        onClose={() => !submittingReview && setReviewDialog({ open: false, eventId: null, eventTitle: "" })}
+        PaperProps={{ elevation: 0, sx: { borderRadius: "16px", border: "1px solid #E2E8F0", maxWidth: 480, p: 1 } }}
+      >
+        <DialogTitle sx={{ fontWeight: 900, fontSize: "1.35rem", letterSpacing: "-0.5px" }}>
+          Review Event
+        </DialogTitle>
+        <DialogContent sx={{ pb: 1 }}>
+          <Typography sx={{ color: "#64748B", fontSize: "0.9rem", mb: 2 }}>
+            {reviewDialog.eventTitle}
+          </Typography>
+
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
+            <Rating
+              value={reviewRating}
+              onChange={(_, v) => { setReviewRating(v); setReviewError(""); }}
+              size="large"
+              sx={{ color: "#FFC107" }}
+            />
+            <Typography sx={{ fontSize: 13, color: "#6B7280" }}>
+              {reviewRating === 0 ? "Select rating" : `${reviewRating}/5`}
+            </Typography>
+          </Box>
+
+          <TextField
+            value={reviewComment}
+            onChange={(e) => setReviewComment(e.target.value)}
+            placeholder="Share your experience (optional, max 300 characters)"
+            multiline
+            rows={3}
+            inputProps={{ maxLength: 300 }}
+            fullWidth
+            size="small"
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "8px",
+                bgcolor: "#F9FAFB",
+                fontSize: 14,
+              },
+            }}
+          />
+          <Typography sx={{ fontSize: 11, color: "#9CA3AF", textAlign: "right", mt: 0.5 }}>
+            {reviewComment.length}/300
+          </Typography>
+
+          {reviewError && (
+            <Typography sx={{ fontSize: 13, color: "#DC2626", mt: 1.5 }}>
+              {reviewError}
+            </Typography>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ p: 2, pt: 0, gap: 1 }}>
+          <Button 
+            onClick={() => setReviewDialog({ open: false, eventId: null, eventTitle: "" })} 
+            disabled={submittingReview}
+            sx={{ color: "#64748B", textTransform: "none", fontWeight: 700 }}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleSubmitReview} 
+            variant="contained" 
+            disabled={submittingReview || reviewRating === 0}
+            sx={{ bgcolor: "#007BFF", "&:hover": { bgcolor: "#0056B3" }, textTransform: "none", fontWeight: 800, borderRadius: "10px", px: 3, boxShadow: "none" }}
+          >
+            {submittingReview ? "Submitting..." : "Submit Review"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
 
-const EventRow = ({ reg, type, onCancel }) => (
-  <Card 
-    elevation={0}
-    sx={{ 
-      display: "flex", 
-      alignItems: "center", 
-      p: 2, 
-      borderRadius: "12px", 
-      border: "1px solid #F1F5F9",
-      transition: "all 0.2s ease",
-      "&:hover": { borderColor: "#CBD5E1", bgcolor: "#FAFAFA", transform: "translateX(4px)" }
-    }}
-  >
-    <Avatar 
-      variant="rounded" 
-      src={reg.event.image} 
-      sx={{ width: 60, height: 60, mr: 2.5, borderRadius: "10px", border: "1px solid #F1F5F9" }} 
-    />
-    
-    <Box sx={{ flexGrow: 1 }}>
-      <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 0.5 }}>
-        <Typography sx={{ fontSize: "0.95rem", fontWeight: 800, color: "#0F172A", letterSpacing: "-0.2px" }}>
-          {reg.event.title}
-        </Typography>
-        {type === 1 && (
-          <Chip 
-            label={`Pos: #${reg.position_in_waitlist}`} 
-            size="small" 
-            sx={{ height: 18, fontSize: "0.65rem", fontWeight: 900, bgcolor: "#FEF3C7", color: "#92400E", borderRadius: "4px" }} 
-          />
-        )}
-      </Stack>
-      
-      <Stack direction="row" spacing={2.5} sx={{ color: "#94A3B8" }}>
-        <Typography sx={{ fontSize: "0.75rem", display: "flex", alignItems: "center", gap: 0.6, fontWeight: 600 }}>
-          <CalendarTodayOutlinedIcon sx={{ fontSize: 13, color: "#64748B" }} /> {new Date(reg.event.date).toLocaleDateString('en-GB')}
-        </Typography>
-        <Typography sx={{ fontSize: "0.75rem", display: "flex", alignItems: "center", gap: 0.6, fontWeight: 600 }}>
-          <LocationOnOutlinedIcon sx={{ fontSize: 13, color: "#64748B" }} /> {reg.event.location}
-        </Typography>
-      </Stack>
-    </Box>
+const EventRow = ({ reg, type, userId, onCancel, onReview }) => {
+  const isPast = new Date(reg.event.date) < new Date();
+  const isConfirmed = reg.status === 'Confirmed';
+  const hasReviewed = reg.event.reviews?.some(r => r.user_id === userId);
 
-    <Stack direction="row" spacing={1} sx={{ ml: 2 }}>
-      <Button 
-        component={RouterLink} 
-        to={`/events/${reg.event.id}`}
-        variant="text" 
-        size="small" 
-        sx={{ textTransform: "none", color: "#0F172A", fontWeight: 800, fontSize: "0.8rem" }}
-      >
-        Details
-      </Button>
+  return (
+    <Card 
+      elevation={0}
+      sx={{ 
+        display: "flex", 
+        alignItems: "center", 
+        p: 2, 
+        borderRadius: "12px", 
+        border: "1px solid #F1F5F9",
+        transition: "all 0.2s ease",
+        "&:hover": { borderColor: "#CBD5E1", bgcolor: "#FAFAFA", transform: "translateX(4px)" }
+      }}
+    >
+      <Avatar 
+        variant="rounded" 
+        src={reg.event.image} 
+        sx={{ width: 60, height: 60, mr: 2.5, borderRadius: "10px", border: "1px solid #F1F5F9" }} 
+      />
       
-      {new Date(reg.event.date) < new Date() ? (
+      <Box sx={{ flexGrow: 1 }}>
+        <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 0.5 }}>
+          <Typography sx={{ fontSize: "0.95rem", fontWeight: 800, color: "#0F172A", letterSpacing: "-0.2px" }}>
+            {reg.event.title}
+          </Typography>
+          {type === 1 && (
+            <Chip 
+              label={`Pos: #${reg.position_in_waitlist}`} 
+              size="small" 
+              sx={{ height: 18, fontSize: "0.65rem", fontWeight: 900, bgcolor: "#FEF3C7", color: "#92400E", borderRadius: "4px" }} 
+            />
+          )}
+          {hasReviewed && (
+            <Chip 
+              label="Reviewed" 
+              size="small" 
+              sx={{ height: 18, fontSize: "0.65rem", fontWeight: 900, bgcolor: "#D1FAE5", color: "#065F46", borderRadius: "4px" }} 
+            />
+          )}
+        </Stack>
+        
+        <Stack direction="row" spacing={2.5} sx={{ color: "#94A3B8" }}>
+          <Typography sx={{ fontSize: "0.75rem", display: "flex", alignItems: "center", gap: 0.6, fontWeight: 600 }}>
+            <CalendarTodayOutlinedIcon sx={{ fontSize: 13, color: "#64748B" }} /> {new Date(reg.event.date).toLocaleDateString('en-GB')}
+          </Typography>
+          <Typography sx={{ fontSize: "0.75rem", display: "flex", alignItems: "center", gap: 0.6, fontWeight: 600 }}>
+            <LocationOnOutlinedIcon sx={{ fontSize: 13, color: "#64748B" }} /> {reg.event.location}
+          </Typography>
+        </Stack>
+      </Box>
+
+      <Stack direction="row" spacing={1} sx={{ ml: 2 }}>
         <Button 
-          variant="outlined" 
-          size="small" 
-          disabled
-          sx={{ textTransform: "none", color: "#94A3B8", borderColor: "#E2E8F0", fontWeight: 800, fontSize: "0.8rem", borderRadius: "8px", px: 2 }}
-        >
-          Finished
-        </Button>
-      ) : type !== 2 ? (
-        <Button 
-          onClick={onCancel}
+          component={RouterLink} 
+          to={`/events/${reg.event.id}`}
           variant="text" 
           size="small" 
-          sx={{ textTransform: "none", color: "#EF4444", fontWeight: 800, fontSize: "0.8rem", "&:hover": { bgcolor: "#FEF2F2" } }}
+          sx={{ textTransform: "none", color: "#0F172A", fontWeight: 800, fontSize: "0.8rem" }}
         >
-          Cancel
+          Details
         </Button>
-      ) : (
-        <Button 
-          variant="outlined" 
-          size="small" 
-          sx={{ textTransform: "none", color: "#0F172A", borderColor: "#E2E8F0", fontWeight: 800, fontSize: "0.8rem", borderRadius: "8px", px: 2 }}
-        >
-          Review
-        </Button>
-      )}
-    </Stack>
-  </Card>
-);
+        
+        {isPast && isConfirmed && !hasReviewed ? (
+          <Button 
+            onClick={onReview}
+            variant="outlined" 
+            size="small" 
+            sx={{ textTransform: "none", color: "#007BFF", borderColor: "#007BFF", fontWeight: 800, fontSize: "0.8rem", borderRadius: "8px", px: 2, "&:hover": { bgcolor: "#EFF6FF" } }}
+          >
+            Write Review
+          </Button>
+        ) : isPast ? (
+          <Button 
+            variant="outlined" 
+            size="small" 
+            disabled
+            sx={{ textTransform: "none", color: "#94A3B8", borderColor: "#E2E8F0", fontWeight: 800, fontSize: "0.8rem", borderRadius: "8px", px: 2 }}
+          >
+            Finished
+          </Button>
+        ) : type !== 2 ? (
+          <Button 
+            onClick={onCancel}
+            variant="text" 
+            size="small" 
+            sx={{ textTransform: "none", color: "#EF4444", fontWeight: 800, fontSize: "0.8rem", "&:hover": { bgcolor: "#FEF2F2" } }}
+          >
+            Cancel
+          </Button>
+        ) : null}
+      </Stack>
+    </Card>
+  );
+};
