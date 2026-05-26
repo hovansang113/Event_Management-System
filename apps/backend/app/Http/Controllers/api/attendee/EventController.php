@@ -59,7 +59,7 @@ class EventController extends Controller
     public function register(int $id): JsonResponse
     {
         try {
-            $registration = $this->registrationService->registerUser(auth()->id(), $id);
+            $registration = $this->registrationService->registerUser(auth('api')->id(), $id);
             $message = $registration->status === 'Waitlist' 
                 ? 'Event is full. You have been added to the waitlist.' 
                 : 'Registered successfully.';
@@ -81,7 +81,7 @@ class EventController extends Controller
 
     public function registrations(): JsonResponse
     {
-        $registrations = $this->registrationService->getUserRegistrations(auth()->id());
+        $registrations = $this->registrationService->getUserRegistrations(auth('api')->id());
         return $this->success(RegistrationResource::collection($registrations), 'Registrations retrieved successfully');
     }
 }
