@@ -2,15 +2,12 @@ import {
   Box,
   Container,
   Typography,
-  Tabs,
-  Tab,
   Card,
   Button,
   Chip,
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogContentText,
   DialogActions,
   CircularProgress,
   Stack,
@@ -18,16 +15,21 @@ import {
   Divider,
   Rating,
   TextField,
+  LinearProgress,
+  IconButton,
 } from "@mui/material";
+import StarIcon from "@mui/icons-material/Star";
+import StarBorderIcon from "@mui/icons-material/StarBorder";
 import { useState, useEffect, useRef } from "react";
 import { eventService } from "../services/eventService";
 import { useAuth } from "@eventnextday/shared-ui";
 import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
-import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
 import GridViewOutlinedIcon from "@mui/icons-material/GridViewOutlined";
 import HistoryIcon from "@mui/icons-material/History";
 import AssignmentTurnedInOutlinedIcon from "@mui/icons-material/AssignmentTurnedInOutlined";
+import RateReviewOutlinedIcon from "@mui/icons-material/RateReviewOutlined";
+import CloseIcon from "@mui/icons-material/Close";
 import { Link as RouterLink } from "react-router-dom";
 
 const SidebarItem = ({ icon, label, active, count, onClick }) => (
@@ -72,6 +74,14 @@ const StatMini = ({ label, value }) => (
     </Typography>
   </Box>
 );
+
+const ratingLabels = {
+  1: "Poor — Needs improvement",
+  2: "Fair — Just okay",
+  3: "Good — Solid experience",
+  4: "Very Good — Almost perfect",
+  5: "Excellent — Absolutely loved it!",
+};
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -305,75 +315,202 @@ export default function DashboardPage() {
         </DialogActions>
       </Dialog>
 
-      <Dialog 
-        open={reviewDialog.open} 
+      <Dialog
+        open={reviewDialog.open}
         onClose={() => !submittingReview && setReviewDialog({ open: false, eventId: null, eventTitle: "" })}
-        PaperProps={{ elevation: 0, sx: { borderRadius: "16px", border: "1px solid #E2E8F0", maxWidth: 480, p: 1 } }}
+        PaperProps={{
+          elevation: 0,
+          sx: { borderRadius: "20px", border: "1px solid #E2E8F0", maxWidth: 500, p: 0, overflow: "hidden" }
+        }}
       >
-        <DialogTitle sx={{ fontWeight: 900, fontSize: "1.35rem", letterSpacing: "-0.5px" }}>
-          Review Event
-        </DialogTitle>
-        <DialogContent sx={{ pb: 1 }}>
-          <Typography sx={{ color: "#64748B", fontSize: "0.9rem", mb: 2 }}>
-            {reviewDialog.eventTitle}
+        <Box sx={{
+          background: "linear-gradient(135deg, #1E293B 0%, #0F172A 100%)",
+          px: 3.5,
+          py: 3,
+          display: "flex",
+          alignItems: "center",
+          gap: 2,
+          position: "relative"
+        }}>
+          <Box sx={{
+            width: 48,
+            height: 48,
+            borderRadius: "14px",
+            background: "rgba(255,255,255,0.12)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}>
+            <RateReviewOutlinedIcon sx={{ color: "#FBBF24", fontSize: 26 }} />
+          </Box>
+          <Box sx={{ flexGrow: 1 }}>
+            <Typography sx={{ color: "#FFFFFF", fontWeight: 800, fontSize: "1.15rem", letterSpacing: "-0.3px", mb: 0.3 }}>
+              Share Your Experience
+            </Typography>
+            <Typography sx={{ color: "rgba(255,255,255,0.6)", fontSize: "0.8rem", fontWeight: 500, lineHeight: 1.3 }}>
+              {reviewDialog.eventTitle}
+            </Typography>
+          </Box>
+          <IconButton
+            onClick={() => setReviewDialog({ open: false, eventId: null, eventTitle: "" })}
+            disabled={submittingReview}
+            sx={{
+              color: "rgba(255,255,255,0.5)",
+              position: "absolute",
+              top: 8,
+              right: 8,
+              "&:hover": { bgcolor: "rgba(255,255,255,0.1)", color: "#FFFFFF" },
+            }}
+            size="small"
+          >
+            <CloseIcon sx={{ fontSize: 20 }} />
+          </IconButton>
+        </Box>
+
+        <Box sx={{ px: 3.5, py: 3.5 }}>
+          <Typography sx={{ fontSize: "0.75rem", fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: "1.2px", mb: 2 }}>
+            Your Rating
           </Typography>
 
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
+          <Box sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 1.5,
+            mb: 3.5,
+            p: 3,
+            borderRadius: "14px",
+            bgcolor: "#F8FAFC",
+            border: "1px solid #F1F5F9",
+          }}>
             <Rating
               value={reviewRating}
               onChange={(_, v) => { setReviewRating(v); setReviewError(""); }}
               size="large"
-              sx={{ color: "#FFC107" }}
+              icon={<StarIcon sx={{ fontSize: 36, color: "#F59E0B" }} />}
+              emptyIcon={<StarBorderIcon sx={{ fontSize: 36, color: "#CBD5E1" }} />}
+              sx={{ gap: 0.8, "& .MuiRating-icon": { transition: "transform 0.15s ease", "&:hover": { transform: "scale(1.25)" } } }}
             />
-            <Typography sx={{ fontSize: 13, color: "#6B7280" }}>
-              {reviewRating === 0 ? "Select rating" : `${reviewRating}/5`}
+            <Typography sx={{
+              fontSize: "0.95rem",
+              fontWeight: 700,
+              color: reviewRating === 0 ? "#94A3B8" : "#0F172A",
+              transition: "color 0.2s ease",
+            }}>
+              {reviewRating === 0 ? "Tap a star to rate" : `${ratingLabels[reviewRating]}`}
             </Typography>
+            {reviewRating > 0 && (
+              <Typography sx={{ fontSize: "0.75rem", color: "#94A3B8", fontWeight: 500, letterSpacing: "0.3px" }}>
+                {reviewRating} of 5 stars
+              </Typography>
+            )}
           </Box>
+
+          <Typography sx={{ fontSize: "0.75rem", fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: "1.2px", mb: 1.5 }}>
+            Write a Review <Typography component="span" sx={{ fontWeight: 400, textTransform: "none", color: "#94A3B8", fontSize: "0.7rem" }}>(optional)</Typography>
+          </Typography>
 
           <TextField
             value={reviewComment}
             onChange={(e) => setReviewComment(e.target.value)}
-            placeholder="Share your experience (optional, max 300 characters)"
+            placeholder="Tell others about your experience... What did you enjoy? Any highlights?"
             multiline
-            rows={3}
+            rows={4}
             inputProps={{ maxLength: 300 }}
             fullWidth
-            size="small"
+            variant="outlined"
             sx={{
               "& .MuiOutlinedInput-root": {
-                borderRadius: "8px",
-                bgcolor: "#F9FAFB",
+                borderRadius: "12px",
+                bgcolor: "#F8FAFC",
                 fontSize: 14,
+                lineHeight: 1.6,
+                padding: "12px 16px",
+                "& fieldset": { borderColor: "#E2E8F0", borderWidth: "1.5px" },
+                "&:hover fieldset": { borderColor: "#CBD5E1" },
+                "&.Mui-focused fieldset": { borderColor: "#0F172A", borderWidth: "2px" },
               },
             }}
           />
-          <Typography sx={{ fontSize: 11, color: "#9CA3AF", textAlign: "right", mt: 0.5 }}>
-            {reviewComment.length}/300
-          </Typography>
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mt: 1 }}>
+            <Typography sx={{ fontSize: 11, color: reviewComment.length > 260 ? "#DC2626" : "#9CA3AF", fontWeight: 500, transition: "color 0.2s" }}>
+              {reviewComment.length === 0 ? "" : `${300 - reviewComment.length} characters remaining`}
+            </Typography>
+            <Typography sx={{ fontSize: 11, color: reviewComment.length > 260 ? "#DC2626" : "#94A3B8", fontWeight: 700 }}>
+              {reviewComment.length}/300
+            </Typography>
+          </Box>
+          {reviewComment.length > 260 && (
+            <LinearProgress
+              variant="determinate"
+              value={(reviewComment.length / 300) * 100}
+              sx={{ mt: 0.75, height: 3, borderRadius: 2, bgcolor: "#FEE2E2", "& .MuiLinearProgress-bar": { bgcolor: "#DC2626", borderRadius: 2 } }}
+            />
+          )}
 
           {reviewError && (
-            <Typography sx={{ fontSize: 13, color: "#DC2626", mt: 1.5 }}>
-              {reviewError}
-            </Typography>
+            <Box sx={{
+              mt: 2,
+              p: 2,
+              borderRadius: "10px",
+              bgcolor: "#FEF2F2",
+              border: "1px solid #FECACA",
+              display: "flex",
+              alignItems: "center",
+              gap: 1.5,
+            }}>
+              <Box sx={{ width: 6, height: 6, borderRadius: "50%", bgcolor: "#DC2626", flexShrink: 0 }} />
+              <Typography sx={{ fontSize: "0.8rem", color: "#991B1B", fontWeight: 600, lineHeight: 1.4 }}>
+                {reviewError}
+              </Typography>
+            </Box>
           )}
-        </DialogContent>
-        <DialogActions sx={{ p: 2, pt: 0, gap: 1 }}>
-          <Button 
-            onClick={() => setReviewDialog({ open: false, eventId: null, eventTitle: "" })} 
+        </Box>
+
+        <Box sx={{ px: 3.5, pb: 3.5, display: "flex", gap: 1.5, justifyContent: "flex-end" }}>
+          <Button
+            onClick={() => setReviewDialog({ open: false, eventId: null, eventTitle: "" })}
             disabled={submittingReview}
-            sx={{ color: "#64748B", textTransform: "none", fontWeight: 700 }}
+            sx={{
+              color: "#64748B",
+              textTransform: "none",
+              fontWeight: 700,
+              fontSize: "0.85rem",
+              borderRadius: "10px",
+              px: 3,
+              py: 1.2,
+              border: "1.5px solid #E2E8F0",
+              "&:hover": { bgcolor: "#F8FAFC", borderColor: "#CBD5E1" },
+            }}
           >
             Cancel
           </Button>
-          <Button 
-            onClick={handleSubmitReview} 
-            variant="contained" 
+          <Button
+            onClick={handleSubmitReview}
+            variant="contained"
             disabled={submittingReview || reviewRating === 0}
-            sx={{ bgcolor: "#007BFF", "&:hover": { bgcolor: "#0056B3" }, textTransform: "none", fontWeight: 800, borderRadius: "10px", px: 3, boxShadow: "none" }}
+            sx={{
+              textTransform: "none",
+              fontWeight: 800,
+              fontSize: "0.85rem",
+              borderRadius: "10px",
+              px: 4,
+              py: 1.2,
+              background: reviewRating === 0 ? undefined : "linear-gradient(135deg, #1E293B 0%, #0F172A 100%)",
+              "&:hover": { background: reviewRating === 0 ? undefined : "linear-gradient(135deg, #334155 0%, #1E293B 100%)" },
+              boxShadow: "none",
+              "&.Mui-disabled": { bgcolor: "#E2E8F0", color: "#94A3B8" },
+            }}
           >
-            {submittingReview ? "Submitting..." : "Submit Review"}
+            {submittingReview ? (
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <CircularProgress size={16} thickness={6} sx={{ color: "#FFFFFF" }} />
+                Submitting...
+              </Box>
+            ) : "Submit Review"}
           </Button>
-        </DialogActions>
+        </Box>
       </Dialog>
     </Box>
   );
@@ -382,7 +519,7 @@ export default function DashboardPage() {
 const EventRow = ({ reg, type, userId, onCancel, onReview }) => {
   const isPast = new Date(reg.event.date) < new Date();
   const isConfirmed = reg.status === 'Confirmed';
-  const hasReviewed = reg.event.reviews?.some(r => r.user_id === userId);
+  const hasReviewed = reg.event.reviews_list?.some(r => r.user?.id === userId);
 
   return (
     <Card 
