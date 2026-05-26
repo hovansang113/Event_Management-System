@@ -37,6 +37,7 @@ Route::prefix('attendee')->group(function () {
 
     // Protected Attendee Routes
     Route::middleware('auth:api')->group(function () {
+        Route::get('/registrations', [AttendeeEventController::class, 'registrations']);
         Route::post('/events/{id}/register', [AttendeeEventController::class, 'register']);
         Route::delete('/registrations/{id}', [AttendeeEventController::class, 'cancel']);
     });

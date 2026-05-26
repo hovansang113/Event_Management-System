@@ -60,7 +60,7 @@ class RegistrationService extends BaseService
         return DB::transaction(function () use ($registrationId) {
             $reg = Registration::where('id', $registrationId)->lockForUpdate()->firstOrFail();
             
-            if ($reg->user_id !== auth()->id()) {
+            if ($reg->user_id !== auth('api')->id()) {
                 throw new \Exception('Unauthorized action.');
             }
 
@@ -91,5 +91,10 @@ class RegistrationService extends BaseService
                     ->decrement('position_in_waitlist');
             }
         });
+    }
+
+    public function getUserRegistrations(int $userId)
+    {
+        return $this->repo->getByUser($userId);
     }
 }

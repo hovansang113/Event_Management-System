@@ -25,20 +25,20 @@ import {
 
 const loginRoleCopy = {
   attendee: {
-    label: "Attendee access",
+    label: "Attendee Sign In",
     title: "Welcome back",
     backdropTitle: "Find your next event",
     backdropText: "A focused space for discovering, saving, and joining events.",
   },
   organizer: {
-    label: "Organizer access",
+    label: "Organizer Sign In",
     title: "Manage your events",
     backdropTitle: "Build memorable event days",
     backdropText: "Tools for publishing events, tracking status, and managing audiences.",
   },
   admin: {
-    label: "Admin access",
-    title: "Admin sign in",
+    label: "Admin Sign In",
+    title: "Admin Sign In",
     backdropTitle: "Platform control center",
     backdropText: "Secure access for reviewing activity and keeping operations consistent.",
   },
@@ -175,7 +175,7 @@ export const LoginForm = ({ role, onSuccess, showRegisterLink = true }) => {
             {loading ? (
               <CircularProgress size={24} color="inherit" />
             ) : (
-              "Login"
+              "Sign In"
             )}
           </Button>
 
@@ -201,7 +201,7 @@ export const LoginForm = ({ role, onSuccess, showRegisterLink = true }) => {
             >
               Don't have an account?{" "}
               <Link href="/register" underline="hover">
-                Register now
+                Sign Up now
               </Link>
             </Typography>
           )}

@@ -37,4 +37,14 @@ class RegistrationRepository implements RegistrationRepositoryInterface
     {
         return Registration::findOrFail($id)->update($data);
     }
+
+    public function getByUser(int $userId)
+    {
+        return Registration::where('user_id', $userId)
+            ->with(['event' => function($q) {
+                $q->with(['category', 'organizer']);
+            }])
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
 }
