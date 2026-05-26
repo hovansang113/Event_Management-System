@@ -21,8 +21,14 @@ class DashboardRepository implements DashboardRepositoryInterface
 
     public function getOverview(): array
     {
-        // Example: Monthly registrations
         return [
+            'stats' => [
+                'total_users' => User::count(),
+                'total_events' => Event::count(),
+                'pending_approval' => Event::where('status', 'pending')->count(),
+                'approved_events' => Event::where('status', 'published')->count(),
+                'active_categories' => \App\Models\Category::where('is_active', true)->count(),
+            ],
             'monthly_registrations' => Registration::selectRaw('COUNT(*) as count, MONTH(created_at) as month')
                 ->groupBy('month')
                 ->get(),

@@ -18,7 +18,7 @@ import { useCreateEvent } from "../hooks/useCreateEvent";
 import "../styles/components/CreateEventDialog.scss";
 
 const CreateEventDialog = ({ open, onClose, onSuccess, eventId = null }) => {
-  const { formData, loading, isFetching, error, categories, imagePreview, handleChange, handleImageChange, handleSaveDraft, handleSubmitReview, handleUpdate, resetForm } = useCreateEvent(() => {
+  const { formData, loading, isFetching, error, categories, imagePreview, handleChange, handleImageChange, handleRemoveImage, handleSaveDraft, handleSubmitReview, handleUpdate, resetForm } = useCreateEvent(() => {
     onSuccess?.();
     onClose();
   }, eventId);
@@ -190,11 +190,24 @@ const CreateEventDialog = ({ open, onClose, onSuccess, eventId = null }) => {
                 onChange={handleImageChange}
               />
               {imagePreview ? (
-                <Box>
+                <Box sx={{ position: 'relative' }}>
                   <img src={imagePreview} alt="Preview" className="preview-image" />
-                  <Typography className="change-text">
-                    Click to change image
-                  </Typography>
+                  <Box sx={{ mt: 1, display: 'flex', gap: 1, justifyContent: 'center' }}>
+                    <Typography className="change-text">
+                      Click to change image
+                    </Typography>
+                    <Button 
+                      size="small" 
+                      color="error" 
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleRemoveImage();
+                      }}
+                      sx={{ textTransform: 'none', fontSize: 12 }}
+                    >
+                      Remove
+                    </Button>
+                  </Box>
                 </Box>
               ) : (
                 <>
@@ -245,7 +258,7 @@ const CreateEventDialog = ({ open, onClose, onSuccess, eventId = null }) => {
                   startIcon={loading ? <CircularProgress size={14} /> : null}
                   className="btn"
                 >
-                  {loading ? "Updating..." : "Update Event"}
+                  {loading ? "Processing..." : "Update Event"}
                 </Button>
               ) : (
                 <>
@@ -255,7 +268,7 @@ const CreateEventDialog = ({ open, onClose, onSuccess, eventId = null }) => {
                     disabled={loading}
                     className="btn"
                   >
-                    Save as Draft
+                    {loading ? "Processing..." : "Save as Draft"}
                   </Button>
                   <Button
                     variant="contained"
@@ -264,7 +277,7 @@ const CreateEventDialog = ({ open, onClose, onSuccess, eventId = null }) => {
                     startIcon={loading ? <CircularProgress size={14} /> : <SendIcon sx={{ fontSize: 16 }} />}
                     className="btn"
                   >
-                    {loading ? "Submitting..." : "Submit for Review"}
+                    {loading ? "Processing..." : "Submit for Review"}
                   </Button>
                 </>
               )}

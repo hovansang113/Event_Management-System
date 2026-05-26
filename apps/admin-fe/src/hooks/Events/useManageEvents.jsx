@@ -36,11 +36,14 @@ export const useManageEvents = () => {
     setError(null);
     try {
       const filters = {
-        status: activeTab !== "All" ? activeTab : undefined,
+        status: activeTab !== "All" ? activeTab.toLowerCase() : undefined,
+        category: selectedCategory !== "all" ? selectedCategory : undefined,
+        search: searchTerm || undefined,
       };
 
       const result = await eventService.getAll(filters);
-      setEvents(Array.isArray(result.data?.data) ? result.data.data : []);
+      // result.data contains { events: { data: [...] }, stats: ... }
+      setEvents(Array.isArray(result.data?.events?.data) ? result.data.events.data : []);
       setStats(result.data?.stats);
     } catch (err) {
       setError(err.response?.data?.message || "Failed to load events");
@@ -48,7 +51,7 @@ export const useManageEvents = () => {
     } finally {
       setLoading(false);
     }
-  }, [activeTab]);
+  }, [activeTab, selectedCategory, searchTerm]);
 
   // Fetch Categories
   useEffect(() => {
@@ -68,28 +71,8 @@ export const useManageEvents = () => {
     fetchEvents();
   }, [fetchEvents]);
 
-  // Filter events by category and search
-  const filteredEvents = useMemo(() => {
-    let filtered = events;
-    if (activeTab !== "All") {
-      filtered = events.filter((e) => e.status === activeTab);
-    }
-    
-    if (selectedCategory !== "all") {
-      filtered = filtered.filter((e) => e.category?.slug === selectedCategory);
-    }
-    
-    if (searchTerm) {
-      const search = searchTerm.toLowerCase();
-      filtered = filtered.filter((e) => 
-        e.title?.toLowerCase().includes(search) ||
-        e.organizer?.name?.toLowerCase().includes(search) ||
-        e.category?.name?.toLowerCase().includes(search)
-      );
-    }
-    
-    return filtered;
-  }, [events, activeTab, selectedCategory, searchTerm]);
+  // Since we are filtering on server side, we just return events
+  const filteredEvents = useMemo(() => events, [events]);
 
   // Handle View Event
   const handleViewEvent = useCallback(async (eventId) => {
