@@ -18,15 +18,7 @@ export const eventService = {
     },
 
     create: async (data) => {
-        const formData = new FormData();
-        Object.keys(data).forEach(key => {
-            if (data[key] !== null && data[key] !== undefined && data[key] !== '') {
-                formData.append(key, data[key]);
-            }
-        });
-        const response = await api.post(API_ENDPOINTS.ORGANIZER.EVENTS.CREATE, formData, {
-            headers: { 'Content-Type': 'multipart/form-data' }
-        });
+        const response = await api.post(API_ENDPOINTS.ORGANIZER.EVENTS.CREATE, data);
         return response.data;
     },
 
@@ -36,20 +28,7 @@ export const eventService = {
     },
 
     update: async (id, data) => {
-        const formData = new FormData();
-        Object.keys(data).forEach(key => {
-            if (data[key] !== null && data[key] !== undefined && data[key] !== '') {
-                formData.append(key, data[key]);
-            }
-        });
-        
-        // Laravel workaround: PHP cannot parse multipart/form-data on PUT requests.
-        // We use POST and add _method: PUT to fake it.
-        formData.append('_method', 'PUT');
-
-        const response = await api.post(API_ENDPOINTS.ORGANIZER.EVENTS.UPDATE(id), formData, {
-            headers: { 'Content-Type': 'multipart/form-data' }
-        });
+        const response = await api.put(API_ENDPOINTS.ORGANIZER.EVENTS.UPDATE(id), data);
         return response.data;
     },
 

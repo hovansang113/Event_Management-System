@@ -97,11 +97,13 @@ class EventRepository extends BaseRepository implements EventRepositoryInterface
                 'organizer:id,name,email',
                 'registrations' => function ($q) use ($userId) {
                     $q->where('user_id', $userId);
-                }
+                },
+                'reviews',
             ])
             ->withCount([
                 'registrations as confirmed_count' => fn($q) => $q->where('status', 'Confirmed'),
                 'registrations as waitlist_count' => fn($q) => $q->where('status', 'Waitlist'),
+                'reviews as reviews_count',
             ])
             ->where('status', EventStatus::PUBLISHED->value)
             ->whereHas('category', fn($q) => $q->where('is_active', true));
@@ -149,11 +151,13 @@ class EventRepository extends BaseRepository implements EventRepositoryInterface
                 'organizer:id,name,email', 
                 'registrations' => function ($q) use ($userId) {
                     $q->where('user_id', $userId);
-                }
+                },
+                'reviews.user',
             ])
             ->withCount([
                 'registrations as confirmed_count' => fn($q) => $q->where('status', 'Confirmed'),
                 'registrations as waitlist_count' => fn($q) => $q->where('status', 'Waitlist'),
+                'reviews as reviews_count',
             ])
             ->where('status', EventStatus::PUBLISHED->value)
             ->whereHas('category', fn($q) => $q->where('is_active', true))

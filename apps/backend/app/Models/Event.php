@@ -45,4 +45,9 @@ class Event extends Model
     {
         return $this->hasMany(Registration::class);
     }
+
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
 }

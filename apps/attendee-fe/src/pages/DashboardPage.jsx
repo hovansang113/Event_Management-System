@@ -2,33 +2,35 @@ import {
   Box,
   Container,
   Typography,
-  Tabs,
-  Tab,
   Card,
   Button,
   Chip,
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogContentText,
   DialogActions,
   CircularProgress,
   Stack,
   Avatar,
   Divider,
+  Rating,
+  TextField,
+  LinearProgress,
+  IconButton,
 } from "@mui/material";
-import { useState, useEffect } from "react";
+import StarIcon from "@mui/icons-material/Star";
+import StarBorderIcon from "@mui/icons-material/StarBorder";
+import { useState, useEffect, useRef } from "react";
 import { eventService } from "../services/eventService";
 import { useAuth } from "@eventnextday/shared-ui";
 import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
-import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
 import GridViewOutlinedIcon from "@mui/icons-material/GridViewOutlined";
 import HistoryIcon from "@mui/icons-material/History";
 import AssignmentTurnedInOutlinedIcon from "@mui/icons-material/AssignmentTurnedInOutlined";
+import RateReviewOutlinedIcon from "@mui/icons-material/RateReviewOutlined";
+import CloseIcon from "@mui/icons-material/Close";
 import { Link as RouterLink } from "react-router-dom";
-
-// --- Design Components ---
 
 const SidebarItem = ({ icon, label, active, count, onClick }) => (
   <Button
@@ -73,13 +75,27 @@ const StatMini = ({ label, value }) => (
   </Box>
 );
 
+const ratingLabels = {
+  1: "Poor — Needs improvement",
+  2: "Fair — Just okay",
+  3: "Good — Solid experience",
+  4: "Very Good — Almost perfect",
+  5: "Excellent — Absolutely loved it!",
+};
+
 export default function DashboardPage() {
   const { user } = useAuth();
-  const [tabValue, setTabValue] = useState(0); // 0: Upcoming, 1: Waitlist, 2: Past
+  const [tabValue, setTabValue] = useState(0);
   const [registrations, setRegistrations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [cancelDialog, setCancelDialog] = useState({ open: false, id: null });
   const [cancelling, setCancelling] = useState(false);
+  const [reviewDialog, setReviewDialog] = useState({ open: false, eventId: null, eventTitle: "" });
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewComment, setReviewComment] = useState("");
+  const [submittingReview, setSubmittingReview] = useState(false);
+  const [reviewError, setReviewError] = useState("");
+  const fetched = useRef(false);
 
   const fetchRegistrations = async () => {
     try {
@@ -94,13 +110,15 @@ export default function DashboardPage() {
   };
 
   useEffect(() => {
+    if (fetched.current) return;
+    fetched.current = true;
     fetchRegistrations();
   }, []);
 
   const now = new Date();
   
   const upcomingRegs = registrations.filter(r => r.status === 'Confirmed' && new Date(r.event.date) >= now);
-  const waitlistRegs = registrations.filter(r => r.status === 'Waitlist');
+  const waitlistRegs = registrations.filter(r => r.status === 'Waitlist' && new Date(r.event.date) >= now);
   const pastRegs = registrations.filter(r => new Date(r.event.date) < now && r.status !== 'Cancelled');
 
   const filteredData = tabValue === 0 ? upcomingRegs : tabValue === 1 ? waitlistRegs : pastRegs;
@@ -118,10 +136,39 @@ export default function DashboardPage() {
     }
   };
 
+  const openReviewDialog = (eventId, eventTitle) => {
+    setReviewDialog({ open: true, eventId, eventTitle });
+    setReviewRating(0);
+    setReviewComment("");
+    setReviewError("");
+  };
+
+  const handleSubmitReview = async () => {
+    if (reviewRating === 0) {
+      setReviewError("Please select a rating.");
+      return;
+    }
+
+    setSubmittingReview(true);
+    setReviewError("");
+
+    try {
+      await eventService.submitReview(reviewDialog.eventId, {
+        rating: reviewRating,
+        comment: reviewComment || null,
+      });
+      setReviewDialog({ open: false, eventId: null, eventTitle: "" });
+      fetchRegistrations();
+    } catch (err) {
+      setReviewError(err.response?.data?.message || "Failed to submit review.");
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
+
   return (
     <Box sx={{ pt: "110px", pb: 8, minHeight: "100vh", bgcolor: "#F8FAFC" }}>
       <Container maxWidth="xl">
-        {/* The Master Frame */}
         <Box sx={{ 
           display: "flex", 
           flexDirection: { xs: "column", md: "row" },
@@ -132,8 +179,6 @@ export default function DashboardPage() {
           overflow: "hidden",
           minHeight: "750px"
         }}>
-          
-          {/* Framed Sidebar */}
           <Box sx={{ 
             width: { xs: "100%", md: 280 }, 
             flexShrink: 0, 
@@ -186,7 +231,6 @@ export default function DashboardPage() {
             </Box>
           </Box>
 
-          {/* Framed Content Area */}
           <Box sx={{ flexGrow: 1, p: { xs: 3, md: 5 }, bgcolor: "#FFFFFF" }}>
             {loading ? (
               <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", py: 20, gap: 2 }}>
@@ -222,7 +266,9 @@ export default function DashboardPage() {
                         key={reg.id} 
                         reg={reg} 
                         type={tabValue} 
+                        userId={user?.id}
                         onCancel={() => setCancelDialog({ open: true, id: reg.id })} 
+                        onReview={() => openReviewDialog(reg.event.id, reg.event.title)}
                       />
                     ))}
                   </Stack>
@@ -245,7 +291,6 @@ export default function DashboardPage() {
         </Box>
       </Container>
 
-      {/* Modern Confirmation Dialog */}
       <Dialog 
         open={cancelDialog.open} 
         onClose={() => setCancelDialog({ open: false, id: null })}
@@ -269,82 +314,303 @@ export default function DashboardPage() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Dialog
+        open={reviewDialog.open}
+        onClose={() => !submittingReview && setReviewDialog({ open: false, eventId: null, eventTitle: "" })}
+        PaperProps={{
+          elevation: 0,
+          sx: { borderRadius: "20px", border: "1px solid #E2E8F0", maxWidth: 500, p: 0, overflow: "hidden" }
+        }}
+      >
+        <Box sx={{
+          background: "linear-gradient(135deg, #1E293B 0%, #0F172A 100%)",
+          px: 3.5,
+          py: 3,
+          display: "flex",
+          alignItems: "center",
+          gap: 2,
+          position: "relative"
+        }}>
+          <Box sx={{
+            width: 48,
+            height: 48,
+            borderRadius: "14px",
+            background: "rgba(255,255,255,0.12)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}>
+            <RateReviewOutlinedIcon sx={{ color: "#FBBF24", fontSize: 26 }} />
+          </Box>
+          <Box sx={{ flexGrow: 1 }}>
+            <Typography sx={{ color: "#FFFFFF", fontWeight: 800, fontSize: "1.15rem", letterSpacing: "-0.3px", mb: 0.3 }}>
+              Share Your Experience
+            </Typography>
+            <Typography sx={{ color: "rgba(255,255,255,0.6)", fontSize: "0.8rem", fontWeight: 500, lineHeight: 1.3 }}>
+              {reviewDialog.eventTitle}
+            </Typography>
+          </Box>
+          <IconButton
+            onClick={() => setReviewDialog({ open: false, eventId: null, eventTitle: "" })}
+            disabled={submittingReview}
+            sx={{
+              color: "rgba(255,255,255,0.5)",
+              position: "absolute",
+              top: 8,
+              right: 8,
+              "&:hover": { bgcolor: "rgba(255,255,255,0.1)", color: "#FFFFFF" },
+            }}
+            size="small"
+          >
+            <CloseIcon sx={{ fontSize: 20 }} />
+          </IconButton>
+        </Box>
+
+        <Box sx={{ px: 3.5, py: 3.5 }}>
+          <Typography sx={{ fontSize: "0.75rem", fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: "1.2px", mb: 2 }}>
+            Your Rating
+          </Typography>
+
+          <Box sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 1.5,
+            mb: 3.5,
+            p: 3,
+            borderRadius: "14px",
+            bgcolor: "#F8FAFC",
+            border: "1px solid #F1F5F9",
+          }}>
+            <Rating
+              value={reviewRating}
+              onChange={(_, v) => { setReviewRating(v); setReviewError(""); }}
+              size="large"
+              icon={<StarIcon sx={{ fontSize: 36, color: "#F59E0B" }} />}
+              emptyIcon={<StarBorderIcon sx={{ fontSize: 36, color: "#CBD5E1" }} />}
+              sx={{ gap: 0.8, "& .MuiRating-icon": { transition: "transform 0.15s ease", "&:hover": { transform: "scale(1.25)" } } }}
+            />
+            <Typography sx={{
+              fontSize: "0.95rem",
+              fontWeight: 700,
+              color: reviewRating === 0 ? "#94A3B8" : "#0F172A",
+              transition: "color 0.2s ease",
+            }}>
+              {reviewRating === 0 ? "Tap a star to rate" : `${ratingLabels[reviewRating]}`}
+            </Typography>
+            {reviewRating > 0 && (
+              <Typography sx={{ fontSize: "0.75rem", color: "#94A3B8", fontWeight: 500, letterSpacing: "0.3px" }}>
+                {reviewRating} of 5 stars
+              </Typography>
+            )}
+          </Box>
+
+          <Typography sx={{ fontSize: "0.75rem", fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: "1.2px", mb: 1.5 }}>
+            Write a Review <Typography component="span" sx={{ fontWeight: 400, textTransform: "none", color: "#94A3B8", fontSize: "0.7rem" }}>(optional)</Typography>
+          </Typography>
+
+          <TextField
+            value={reviewComment}
+            onChange={(e) => setReviewComment(e.target.value)}
+            placeholder="Tell others about your experience... What did you enjoy? Any highlights?"
+            multiline
+            rows={4}
+            inputProps={{ maxLength: 300 }}
+            fullWidth
+            variant="outlined"
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "12px",
+                bgcolor: "#F8FAFC",
+                fontSize: 14,
+                lineHeight: 1.6,
+                padding: "12px 16px",
+                "& fieldset": { borderColor: "#E2E8F0", borderWidth: "1.5px" },
+                "&:hover fieldset": { borderColor: "#CBD5E1" },
+                "&.Mui-focused fieldset": { borderColor: "#0F172A", borderWidth: "2px" },
+              },
+            }}
+          />
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mt: 1 }}>
+            <Typography sx={{ fontSize: 11, color: reviewComment.length > 260 ? "#DC2626" : "#9CA3AF", fontWeight: 500, transition: "color 0.2s" }}>
+              {reviewComment.length === 0 ? "" : `${300 - reviewComment.length} characters remaining`}
+            </Typography>
+            <Typography sx={{ fontSize: 11, color: reviewComment.length > 260 ? "#DC2626" : "#94A3B8", fontWeight: 700 }}>
+              {reviewComment.length}/300
+            </Typography>
+          </Box>
+          {reviewComment.length > 260 && (
+            <LinearProgress
+              variant="determinate"
+              value={(reviewComment.length / 300) * 100}
+              sx={{ mt: 0.75, height: 3, borderRadius: 2, bgcolor: "#FEE2E2", "& .MuiLinearProgress-bar": { bgcolor: "#DC2626", borderRadius: 2 } }}
+            />
+          )}
+
+          {reviewError && (
+            <Box sx={{
+              mt: 2,
+              p: 2,
+              borderRadius: "10px",
+              bgcolor: "#FEF2F2",
+              border: "1px solid #FECACA",
+              display: "flex",
+              alignItems: "center",
+              gap: 1.5,
+            }}>
+              <Box sx={{ width: 6, height: 6, borderRadius: "50%", bgcolor: "#DC2626", flexShrink: 0 }} />
+              <Typography sx={{ fontSize: "0.8rem", color: "#991B1B", fontWeight: 600, lineHeight: 1.4 }}>
+                {reviewError}
+              </Typography>
+            </Box>
+          )}
+        </Box>
+
+        <Box sx={{ px: 3.5, pb: 3.5, display: "flex", gap: 1.5, justifyContent: "flex-end" }}>
+          <Button
+            onClick={() => setReviewDialog({ open: false, eventId: null, eventTitle: "" })}
+            disabled={submittingReview}
+            sx={{
+              color: "#64748B",
+              textTransform: "none",
+              fontWeight: 700,
+              fontSize: "0.85rem",
+              borderRadius: "10px",
+              px: 3,
+              py: 1.2,
+              border: "1.5px solid #E2E8F0",
+              "&:hover": { bgcolor: "#F8FAFC", borderColor: "#CBD5E1" },
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSubmitReview}
+            variant="contained"
+            disabled={submittingReview || reviewRating === 0}
+            sx={{
+              textTransform: "none",
+              fontWeight: 800,
+              fontSize: "0.85rem",
+              borderRadius: "10px",
+              px: 4,
+              py: 1.2,
+              background: reviewRating === 0 ? undefined : "linear-gradient(135deg, #1E293B 0%, #0F172A 100%)",
+              "&:hover": { background: reviewRating === 0 ? undefined : "linear-gradient(135deg, #334155 0%, #1E293B 100%)" },
+              boxShadow: "none",
+              "&.Mui-disabled": { bgcolor: "#E2E8F0", color: "#94A3B8" },
+            }}
+          >
+            {submittingReview ? (
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <CircularProgress size={16} thickness={6} sx={{ color: "#FFFFFF" }} />
+                Submitting...
+              </Box>
+            ) : "Submit Review"}
+          </Button>
+        </Box>
+      </Dialog>
     </Box>
   );
 }
 
-const EventRow = ({ reg, type, onCancel }) => (
-  <Card 
-    elevation={0}
-    sx={{ 
-      display: "flex", 
-      alignItems: "center", 
-      p: 2, 
-      borderRadius: "12px", 
-      border: "1px solid #F1F5F9",
-      transition: "all 0.2s ease",
-      "&:hover": { borderColor: "#CBD5E1", bgcolor: "#FAFAFA", transform: "translateX(4px)" }
-    }}
-  >
-    <Avatar 
-      variant="rounded" 
-      src={reg.event.image} 
-      sx={{ width: 60, height: 60, mr: 2.5, borderRadius: "10px", border: "1px solid #F1F5F9" }} 
-    />
-    
-    <Box sx={{ flexGrow: 1 }}>
-      <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 0.5 }}>
-        <Typography sx={{ fontSize: "0.95rem", fontWeight: 800, color: "#0F172A", letterSpacing: "-0.2px" }}>
-          {reg.event.title}
-        </Typography>
-        {type === 1 && (
-          <Chip 
-            label={`Pos: #${reg.position_in_waitlist}`} 
-            size="small" 
-            sx={{ height: 18, fontSize: "0.65rem", fontWeight: 900, bgcolor: "#FEF3C7", color: "#92400E", borderRadius: "4px" }} 
-          />
-        )}
-      </Stack>
-      
-      <Stack direction="row" spacing={2.5} sx={{ color: "#94A3B8" }}>
-        <Typography sx={{ fontSize: "0.75rem", display: "flex", alignItems: "center", gap: 0.6, fontWeight: 600 }}>
-          <CalendarTodayOutlinedIcon sx={{ fontSize: 13, color: "#64748B" }} /> {new Date(reg.event.date).toLocaleDateString('en-GB')}
-        </Typography>
-        <Typography sx={{ fontSize: "0.75rem", display: "flex", alignItems: "center", gap: 0.6, fontWeight: 600 }}>
-          <LocationOnOutlinedIcon sx={{ fontSize: 13, color: "#64748B" }} /> {reg.event.location}
-        </Typography>
-      </Stack>
-    </Box>
+const EventRow = ({ reg, type, userId, onCancel, onReview }) => {
+  const isPast = new Date(reg.event.date) < new Date();
+  const isConfirmed = reg.status === 'Confirmed';
+  const hasReviewed = reg.event.reviews_list?.some(r => r.user?.id === userId);
 
-    <Stack direction="row" spacing={1} sx={{ ml: 2 }}>
-      <Button 
-        component={RouterLink} 
-        to={`/events/${reg.event.id}`}
-        variant="text" 
-        size="small" 
-        sx={{ textTransform: "none", color: "#0F172A", fontWeight: 800, fontSize: "0.8rem" }}
-      >
-        Details
-      </Button>
+  return (
+    <Card 
+      elevation={0}
+      sx={{ 
+        display: "flex", 
+        alignItems: "center", 
+        p: 2, 
+        borderRadius: "12px", 
+        border: "1px solid #F1F5F9",
+        transition: "all 0.2s ease",
+        "&:hover": { borderColor: "#CBD5E1", bgcolor: "#FAFAFA", transform: "translateX(4px)" }
+      }}
+    >
+      <Avatar 
+        variant="rounded" 
+        src={reg.event.image} 
+        sx={{ width: 60, height: 60, mr: 2.5, borderRadius: "10px", border: "1px solid #F1F5F9" }} 
+      />
       
-      {type !== 2 ? (
+      <Box sx={{ flexGrow: 1 }}>
+        <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 0.5 }}>
+          <Typography sx={{ fontSize: "0.95rem", fontWeight: 800, color: "#0F172A", letterSpacing: "-0.2px" }}>
+            {reg.event.title}
+          </Typography>
+          {type === 1 && (
+            <Chip 
+              label={`Pos: #${reg.position_in_waitlist}`} 
+              size="small" 
+              sx={{ height: 18, fontSize: "0.65rem", fontWeight: 900, bgcolor: "#FEF3C7", color: "#92400E", borderRadius: "4px" }} 
+            />
+          )}
+          {hasReviewed && (
+            <Chip 
+              label="Reviewed" 
+              size="small" 
+              sx={{ height: 18, fontSize: "0.65rem", fontWeight: 900, bgcolor: "#D1FAE5", color: "#065F46", borderRadius: "4px" }} 
+            />
+          )}
+        </Stack>
+        
+        <Stack direction="row" spacing={2.5} sx={{ color: "#94A3B8" }}>
+          <Typography sx={{ fontSize: "0.75rem", display: "flex", alignItems: "center", gap: 0.6, fontWeight: 600 }}>
+            <CalendarTodayOutlinedIcon sx={{ fontSize: 13, color: "#64748B" }} /> {new Date(reg.event.date).toLocaleDateString('en-GB')}
+          </Typography>
+          <Typography sx={{ fontSize: "0.75rem", display: "flex", alignItems: "center", gap: 0.6, fontWeight: 600 }}>
+            <LocationOnOutlinedIcon sx={{ fontSize: 13, color: "#64748B" }} /> {reg.event.location}
+          </Typography>
+        </Stack>
+      </Box>
+
+      <Stack direction="row" spacing={1} sx={{ ml: 2 }}>
         <Button 
-          onClick={onCancel}
+          component={RouterLink} 
+          to={`/events/${reg.event.id}`}
           variant="text" 
           size="small" 
-          sx={{ textTransform: "none", color: "#EF4444", fontWeight: 800, fontSize: "0.8rem", "&:hover": { bgcolor: "#FEF2F2" } }}
+          sx={{ textTransform: "none", color: "#0F172A", fontWeight: 800, fontSize: "0.8rem" }}
         >
-          Cancel
+          Details
         </Button>
-      ) : (
-        <Button 
-          variant="outlined" 
-          size="small" 
-          sx={{ textTransform: "none", color: "#0F172A", borderColor: "#E2E8F0", fontWeight: 800, fontSize: "0.8rem", borderRadius: "8px", px: 2 }}
-        >
-          Review
-        </Button>
-      )}
-    </Stack>
-  </Card>
-);
+        
+        {isPast && isConfirmed && !hasReviewed ? (
+          <Button 
+            onClick={onReview}
+            variant="outlined" 
+            size="small" 
+            sx={{ textTransform: "none", color: "#007BFF", borderColor: "#007BFF", fontWeight: 800, fontSize: "0.8rem", borderRadius: "8px", px: 2, "&:hover": { bgcolor: "#EFF6FF" } }}
+          >
+            Write Review
+          </Button>
+        ) : isPast ? (
+          <Button 
+            variant="outlined" 
+            size="small" 
+            disabled
+            sx={{ textTransform: "none", color: "#94A3B8", borderColor: "#E2E8F0", fontWeight: 800, fontSize: "0.8rem", borderRadius: "8px", px: 2 }}
+          >
+            Finished
+          </Button>
+        ) : type !== 2 ? (
+          <Button 
+            onClick={onCancel}
+            variant="text" 
+            size="small" 
+            sx={{ textTransform: "none", color: "#EF4444", fontWeight: 800, fontSize: "0.8rem", "&:hover": { bgcolor: "#FEF2F2" } }}
+          >
+            Cancel
+          </Button>
+        ) : null}
+      </Stack>
+    </Card>
+  );
+};

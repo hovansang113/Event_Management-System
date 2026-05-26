@@ -10,6 +10,8 @@ use App\Repositories\Interfaces\CategoryRepositoryInterface;
 use App\Repositories\Interfaces\EventRepositoryInterface;
 use App\Repositories\Interfaces\UserRepositoryInterface;
 use App\Repositories\Interfaces\RegistrationRepositoryInterface;
+use App\Repositories\Eloquent\ReviewRepository;
+use App\Repositories\Interfaces\ReviewRepositoryInterface;
 use Illuminate\Support\ServiceProvider;
 
 use App\Repositories\Eloquent\DashboardRepository;
@@ -27,5 +29,6 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(UserRepositoryInterface::class, UserRepository::class);
         $this->app->bind(DashboardRepositoryInterface::class, DashboardRepository::class);
         $this->app->bind(RegistrationRepositoryInterface::class, RegistrationRepository::class);
+        $this->app->bind(ReviewRepositoryInterface::class, ReviewRepository::class);
     }
 }

@@ -30,7 +30,7 @@ class UpdateEventRequest extends FormRequest
             "event_time" => "sometimes",
             "capacity" => "sometimes|integer|min:1",
             "category_id" => "sometimes|required|exists:categories,id",
-            "image" => "sometimes|image|mimes:jpeg,png,jpg,gif,svg|max:10240"
+            "image" => "nullable|string"
         
         ];
     }

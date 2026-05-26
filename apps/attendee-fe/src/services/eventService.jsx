@@ -1,8 +1,11 @@
 import api from "../../../../packages/shared-ui/src/services/api";
 import { API_ENDPOINTS } from "../contracts/api";
 
+const CACHE_TTL = 5 * 60 * 1000;
+
 const listCache = new Map();
 const detailCache = new Map();
+let registrationsCache = { data: null, timestamp: null };
 
 const getFilterKey = (filters = {}) => {
   const sorted = Object.keys(filters)
@@ -11,40 +14,79 @@ const getFilterKey = (filters = {}) => {
   return JSON.stringify(sorted);
 };
 
+const isValid = (entry) => entry && entry.timestamp && (Date.now() - entry.timestamp < CACHE_TTL);
+
+const setListCache = (key, data) => {
+  listCache.set(key, { data, timestamp: Date.now() });
+};
+
+const setDetailCache = (id, data) => {
+  detailCache.set(String(id), { data, timestamp: Date.now() });
+};
+
 export const eventService = {
   getAll: async (filters = {}) => {
+    const key = getFilterKey(filters);
+    const cached = listCache.get(key);
+    if (isValid(cached)) return cached.data;
+
     const response = await api.get(API_ENDPOINTS.ATTENDEE.EVENTS.ALL, { params: filters });
+    setListCache(key, response.data);
     return response.data;
   },
 
   getById: async (id) => {
+    const key = String(id);
+    const cached = detailCache.get(key);
+    if (isValid(cached)) return cached.data;
+
     const response = await api.get(API_ENDPOINTS.ATTENDEE.EVENTS.GET(id));
+    setDetailCache(key, response.data);
     return response.data;
   },
 
-  peekAll: (filters = {}) => {
-    return listCache.get(getFilterKey(filters)) || null;
-  },
+  getMyRegistrations: async () => {
+    if (isValid(registrationsCache)) return registrationsCache.data;
 
-  peekById: (id) => {
-    return detailCache.get(String(id)) || null;
-  },
-
-  seedDetail: (event) => {
-    if (!event?.id) return;
-    detailCache.set(String(event.id), { data: event });
+    const response = await api.get(API_ENDPOINTS.ATTENDEE.EVENTS.REGISTRATIONS);
+    registrationsCache = { data: response.data, timestamp: Date.now() };
+    return response.data;
   },
 
   register: async (id) => {
-    return await api.post(API_ENDPOINTS.ATTENDEE.EVENTS.REGISTER(id));
-  },
-
-  getMyRegistrations: async () => {
-    const response = await api.get(API_ENDPOINTS.ATTENDEE.EVENTS.REGISTRATIONS);
+    const response = await api.post(API_ENDPOINTS.ATTENDEE.EVENTS.REGISTER(id));
+    registrationsCache = { data: null, timestamp: null };
     return response.data;
   },
 
   cancel: async (registrationId) => {
-    return await api.delete(API_ENDPOINTS.ATTENDEE.EVENTS.CANCEL(registrationId));
+    const response = await api.delete(API_ENDPOINTS.ATTENDEE.EVENTS.CANCEL(registrationId));
+    registrationsCache = { data: null, timestamp: null };
+    return response.data;
+  },
+
+  peekAll: (filters = {}) => {
+    const cached = listCache.get(getFilterKey(filters));
+    return isValid(cached) ? cached.data : null;
+  },
+
+  peekById: (id) => {
+    const cached = detailCache.get(String(id));
+    return isValid(cached) ? cached.data : null;
+  },
+
+  getReviews: async (eventId, sort = 'newest') => {
+    const response = await api.get(API_ENDPOINTS.ATTENDEE.REVIEWS.LIST(eventId), { params: { sort } });
+    return response.data;
+  },
+
+  submitReview: async (eventId, data) => {
+    const response = await api.post(API_ENDPOINTS.ATTENDEE.REVIEWS.CREATE(eventId), data);
+    return response.data;
+  },
+
+  seedDetail: (event) => {
+    if (!event?.id) return;
+    setDetailCache(event.id, { success: true, data: event });
   },
 };

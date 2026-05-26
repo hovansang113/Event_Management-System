@@ -30,7 +30,7 @@ class StoreEventRequest extends FormRequest
             'event_time' => 'required',
             'capacity' => 'required|integer|min:1',
             'category_id' => 'required|exists:categories,id',
-            'image' => 'nullable|image|mimes:jpeg,jpg,png,gif|max:10240',
+            'image' => 'nullable|string',
             'status' => 'nullable|in:draft,pending',
         ];
     }

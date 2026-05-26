@@ -5,6 +5,8 @@ import {
   Container,
   LinearProgress,
   Rating,
+  ToggleButton,
+  ToggleButtonGroup,
   Typography,
 } from "@mui/material";
 import { useState, useEffect } from "react";
@@ -16,6 +18,7 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "@eventnextday/shared-ui";
 import { useEventDetails } from "../hooks/useEventDetails";
 import { eventService } from "../services/eventService";
+import { ReviewList } from "../components/review";
 
 const formatDate = (value) => {
   if (!value) return "TBD";
@@ -48,6 +51,8 @@ function EventDetailPage() {
   const { isLoggedIn, user } = useAuth();
   const [registering, setRegistering] = useState(false);
   const [userRegistration, setUserRegistration] = useState(null);
+  const [reviews, setReviews] = useState([]);
+  const [reviewSort, setReviewSort] = useState("newest");
 
   useEffect(() => {
     if (isLoggedIn && user && event) {
@@ -55,6 +60,22 @@ function EventDetailPage() {
       setUserRegistration(existing || null);
     }
   }, [isLoggedIn, user, event]);
+
+  useEffect(() => {
+    if (event?.reviews_list) {
+      setReviews(event.reviews_list);
+    }
+  }, [event]);
+
+  const sortedReviews = [...reviews].sort((a, b) => {
+    if (reviewSort === "highest") {
+      if (b.rating !== a.rating) return b.rating - a.rating;
+      return new Date(b.created_at) - new Date(a.created_at);
+    }
+    return new Date(b.created_at) - new Date(a.created_at);
+  });
+
+  const isPast = new Date(event?.date) < new Date();
 
   const handleRegister = async () => {
     if (!isLoggedIn) {
@@ -157,7 +178,7 @@ function EventDetailPage() {
               </Box>
             </Box>
 
-            <Box sx={{ bgcolor: "#fff", border: "1px solid #DADDE3", borderRadius: "10px", p: { xs: 2.5, md: 3 } }}>
+            <Box sx={{ bgcolor: "#fff", border: "1px solid #DADDE3", borderRadius: "10px", p: { xs: 2.5, md: 3 }, mb: 3 }}>
               <Typography sx={{ color: "#111827", fontSize: 22, fontWeight: 800, mb: 2 }}>
                 About This Event
               </Typography>
@@ -165,8 +186,40 @@ function EventDetailPage() {
                 {event.description || "No description available."}
               </Typography>
             </Box>
+
+            <Box sx={{ bgcolor: "#fff", border: "1px solid #DADDE3", borderRadius: "10px", p: { xs: 2.5, md: 3 } }}>
+              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+                <Typography sx={{ color: "#111827", fontSize: 22, fontWeight: 800 }}>
+                  Reviews ({reviews.length})
+                </Typography>
+                {reviews.length > 0 && (
+                  <ToggleButtonGroup
+                    value={reviewSort}
+                    exclusive
+                    onChange={(_, v) => v && setReviewSort(v)}
+                    size="small"
+                    sx={{
+                      "& .MuiToggleButton-root": {
+                        textTransform: "none",
+                        fontSize: 12,
+                        fontWeight: 600,
+                        borderRadius: "6px",
+                        border: "1px solid #E2E8F0",
+                        px: 1.5,
+                        color: "#64748B",
+                        "&.Mui-selected": { bgcolor: "#F1F5F9", color: "#0F172A" },
+                      },
+                    }}
+                  >
+                    <ToggleButton value="newest">Newest</ToggleButton>
+                    <ToggleButton value="highest">Highest</ToggleButton>
+                  </ToggleButtonGroup>
+                )}
+              </Box>
+
+              <ReviewList reviews={sortedReviews} />
+            </Box>
           </Box>
-          
 
           <Box sx={{ bgcolor: "#fff", border: "1px solid #DADDE3", borderRadius: "10px", p: { xs: 2, sm: 2.5 }, mt: { xs: 0, lg: 3.5 }, boxShadow: "0 10px 28px rgba(15, 23, 42, 0.06)" }}>
             <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>
@@ -190,6 +243,24 @@ function EventDetailPage() {
               </Typography>
             </Box>
 
+            {isPast ? (
+              <Button
+                fullWidth
+                variant="contained"
+                disabled
+                sx={{ 
+                  bgcolor: "#E2E8F0", 
+                  borderRadius: "6px", 
+                  py: 1.25, 
+                  textTransform: "none", 
+                  fontWeight: 800, 
+                  color: "#94A3B8",
+                  boxShadow: "none"
+                }}
+              >
+                Event Ended
+              </Button>
+            ) : (
             <Button
               fullWidth
               variant={userRegistration ? "outlined" : "contained"}
@@ -222,6 +293,7 @@ function EventDetailPage() {
                    : (eventStats.available === 0 ? "Join Waitlist" : "Register Now"))
               )}
             </Button>
+            )}
           </Box>
         </Box>
       </Container>
