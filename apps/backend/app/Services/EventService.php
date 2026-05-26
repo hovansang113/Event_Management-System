@@ -8,6 +8,8 @@ use App\Repositories\Interfaces\EventRepositoryInterface;
 use App\Repositories\Interfaces\CategoryRepositoryInterface;
 use App\Mail\EventCancelledMail;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -81,26 +83,39 @@ class EventService extends BaseService
 
     public function cancelEvent($id, $reason): bool
     {
-        $event = $this->getEventById($id);
-        if (!$event || $event->status !== EventStatus::PUBLISHED->value) {
+        try {
+            DB::beginTransaction();
+            $event = $this->getEventById($id);
+            if (!$event || $event->status !== EventStatus::PUBLISHED->value) {
+                return false;
+            }
+
+            $result = $this->eventRepository->update($id, [
+                'status' => EventStatus::CANCELLED->value,
+                'cancellation_reason' => $reason,
+                'cancelled_at' => now(),
+            ]);
+
+            if ($result) {
+                $event->refresh();
+                // Load registrations with users to ensure email address is available
+                $registrations = $event->registrations()->where('status', 'Confirmed')->with('user')->get();
+                
+                foreach ($registrations as $registration) {
+                    if ($registration->user && $registration->user->email) {
+                        Mail::to($registration->user->email)->send(new EventCancelledMail($event));
+                        Log::info("Cancellation email sent to attendee: " . $registration->user->email . " for event: " . $event->id);
+                    }
+                }
+            }
+
+            DB::commit();
+            return $result;
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error("Failed to cancel event: " . $e->getMessage());
             return false;
         }
-
-        $result = $this->eventRepository->update($id, [
-            'status' => EventStatus::CANCELLED->value,
-            'cancellation_reason' => $reason,
-            'cancelled_at' => now(),
-        ]);
-
-        if ($result) {
-            $event->refresh();
-            $registrations = $event->registrations()->where('status', 'Confirmed')->get();
-            foreach ($registrations as $registration) {
-                Mail::to($registration->user->email)->send(new EventCancelledMail($event));
-            }
-        }
-
-        return $result;
     }
 
     public function updateEvent($id, array $data): ?Event
