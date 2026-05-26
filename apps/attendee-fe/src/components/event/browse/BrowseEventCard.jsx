@@ -63,7 +63,28 @@ const BrowseEventCard = memo(({ event, viewMode = "grid" }) => {
     }
   };
 
+  const isPast = new Date(event.date) < new Date();
+
   const ActionButton = () => {
+    if (isPast) {
+      return (
+        <Button 
+          variant="contained"
+          disabled
+          sx={{ 
+            flex: 1, 
+            textTransform: "none", 
+            borderRadius: "8px", 
+            bgcolor: "#E2E8F0", 
+            color: "#94A3B8",
+            boxShadow: "none"
+          }}
+        >
+          Finished
+        </Button>
+      );
+    }
+
     const isWaitlist = userReg?.status === 'Waitlist';
     const label = loading ? "..." : (userReg ? (isWaitlist ? "Leave" : "Cancel") : (full ? "Waitlist" : "Register"));
     

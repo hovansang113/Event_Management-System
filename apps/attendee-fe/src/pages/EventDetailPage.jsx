@@ -190,6 +190,24 @@ function EventDetailPage() {
               </Typography>
             </Box>
 
+            {new Date(event.date) < new Date() ? (
+              <Button
+                fullWidth
+                variant="contained"
+                disabled
+                sx={{ 
+                  bgcolor: "#E2E8F0", 
+                  borderRadius: "6px", 
+                  py: 1.25, 
+                  textTransform: "none", 
+                  fontWeight: 800, 
+                  color: "#94A3B8",
+                  boxShadow: "none"
+                }}
+              >
+                Event Ended
+              </Button>
+            ) : (
             <Button
               fullWidth
               variant={userRegistration ? "outlined" : "contained"}
@@ -222,6 +240,7 @@ function EventDetailPage() {
                    : (eventStats.available === 0 ? "Join Waitlist" : "Register Now"))
               )}
             </Button>
+            )}
           </Box>
         </Box>
       </Container>

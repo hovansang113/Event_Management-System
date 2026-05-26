@@ -22,6 +22,8 @@ export default function EventCard({ event }) {
   const safeCapacity = event.capacity > 0 ? event.capacity : 1;
   const progress = Math.min(100, Math.round((event.registered / safeCapacity) * 100));
   const full = event.registered >= safeCapacity;
+  const isPast = new Date(event.date) < new Date();
+
   const goToDetail = () => {
     eventService.seedDetail(event);
     navigate(`/events/${event.id}`, { state: { event } });
@@ -113,14 +115,24 @@ export default function EventCard({ event }) {
 
         <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1.2 }}>
           <Button variant="outlined" onClick={goToDetail} sx={{ textTransform: "none", borderRadius: 2, fontSize: 12, fontWeight: 600 }}>View</Button>
-          <Button
-            variant="contained"
-            disabled={loading}
-            onClick={handleRegister}
-            sx={{ textTransform: "none", borderRadius: 2, fontSize: 12, fontWeight: 600 }}
-          >
-            {loading ? "Processing..." : (full ? "Join Waitlist" : "Register")}
-          </Button>
+          {isPast ? (
+            <Button
+              variant="contained"
+              disabled
+              sx={{ textTransform: "none", borderRadius: 2, fontSize: 12, fontWeight: 600, bgcolor: "#E2E8F0", color: "#94A3B8", boxShadow: "none" }}
+            >
+              Finished
+            </Button>
+          ) : (
+            <Button
+              variant="contained"
+              disabled={loading}
+              onClick={handleRegister}
+              sx={{ textTransform: "none", borderRadius: 2, fontSize: 12, fontWeight: 600 }}
+            >
+              {loading ? "Processing..." : (full ? "Join Waitlist" : "Register")}
+            </Button>
+          )}
         </Box>
       </CardContent>
     </Card>

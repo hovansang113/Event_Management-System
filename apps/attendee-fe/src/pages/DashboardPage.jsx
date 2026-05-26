@@ -100,7 +100,7 @@ export default function DashboardPage() {
   const now = new Date();
   
   const upcomingRegs = registrations.filter(r => r.status === 'Confirmed' && new Date(r.event.date) >= now);
-  const waitlistRegs = registrations.filter(r => r.status === 'Waitlist');
+  const waitlistRegs = registrations.filter(r => r.status === 'Waitlist' && new Date(r.event.date) >= now);
   const pastRegs = registrations.filter(r => new Date(r.event.date) < now && r.status !== 'Cancelled');
 
   const filteredData = tabValue === 0 ? upcomingRegs : tabValue === 1 ? waitlistRegs : pastRegs;
@@ -327,7 +327,16 @@ const EventRow = ({ reg, type, onCancel }) => (
         Details
       </Button>
       
-      {type !== 2 ? (
+      {new Date(reg.event.date) < new Date() ? (
+        <Button 
+          variant="outlined" 
+          size="small" 
+          disabled
+          sx={{ textTransform: "none", color: "#94A3B8", borderColor: "#E2E8F0", fontWeight: 800, fontSize: "0.8rem", borderRadius: "8px", px: 2 }}
+        >
+          Finished
+        </Button>
+      ) : type !== 2 ? (
         <Button 
           onClick={onCancel}
           variant="text" 
