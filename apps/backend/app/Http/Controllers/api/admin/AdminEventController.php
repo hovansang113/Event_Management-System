@@ -11,6 +11,8 @@ use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use App\Mail\EventRejectionMail;
 
 class AdminEventController extends Controller
@@ -68,11 +70,24 @@ class AdminEventController extends Controller
     public function reject(RejectEventRequest $request, $id): JsonResponse
     {
         try {
+            DB::beginTransaction();
             $event = $this->eventService->rejectEvent($id, $request->rejection_reason);
-            Mail::to($event->organizer->email)->send(new EventRejectionMail($event));
+            
+            // Ensure organizer is loaded for the email
+            $event->load('organizer');
 
+            if ($event->organizer && $event->organizer->email) {
+                Mail::to($event->organizer->email)->send(new EventRejectionMail($event));
+                Log::info("Rejection email sent to: " . $event->organizer->email . " for event: " . $event->id);
+            } else {
+                Log::warning("Could not send rejection email: Organizer or email missing for event " . $event->id);
+            }
+
+            DB::commit();
             return $this->success(new EventResource($event), 'Event rejected successfully');
         } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error("Failed to reject event: " . $e->getMessage());
             return $this->error($e->getMessage(), 400);
         }
     }
