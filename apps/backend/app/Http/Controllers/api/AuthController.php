@@ -87,7 +87,9 @@ class AuthController extends Controller
         try {
             /** @var \Laravel\Socialite\Two\AbstractProvider $driver */
             $driver = Socialite::driver('google');
-            return $driver->stateless()->redirect();
+            return $driver->stateless()
+                        ->with(['prompt' => 'select_account'])
+                        ->redirect();
         } catch (Exception $e) {
             return $this->error($e->getMessage(), 500);
         }
