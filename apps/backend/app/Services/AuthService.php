@@ -33,7 +33,7 @@ class AuthService
             'verification_token_expires_at' => now()->addHours(24),
         ]);
 
-        Mail::to($user->email)->send(new VerificationMail($user, $token));
+        Mail::to($user->email)->queue(new VerificationMail($user, $token));
 
         return $user;
     }
@@ -102,7 +102,7 @@ class AuthService
             'verification_token_expires_at' => now()->addHours(24),
         ]);
 
-        Mail::to($user->email)->send(new VerificationMail($user, $token));
+        Mail::to($user->email)->queue(new VerificationMail($user, $token));
 
         return true;
     }
