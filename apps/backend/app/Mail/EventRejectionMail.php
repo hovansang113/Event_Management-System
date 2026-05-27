@@ -4,10 +4,11 @@ namespace App\Mail;
 
 use App\Models\Event;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
-class EventRejectionMail extends Mailable
+class EventRejectionMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
