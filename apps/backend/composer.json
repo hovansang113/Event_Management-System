@@ -14,7 +14,8 @@
         "laravel/socialite": "^5.27",
         "laravel/tinker": "^3.0",
         "php-open-source-saver/jwt-auth": "^2.9",
-        "resend/resend-laravel": "^1.4"
+        "resend/resend-laravel": "^1.4",
+        "symfony/brevo-mailer": "^8.0"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
