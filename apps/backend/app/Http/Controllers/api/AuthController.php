@@ -115,7 +115,7 @@ class AuthController extends Controller
             
 
             $role = $data['user']['role'];
-            $frontendUrl = env('FRONTEND_ATTENDEE_URL', 'http://localhost:3002');
+            $frontendUrl = env('FRONTEND_URL', 'http://localhost:3002');
 
             if ($role === 'organizer') {
                 $frontendUrl = env('FRONTEND_ORGANIZER_URL', 'http://localhost:3001');
@@ -129,7 +129,7 @@ class AuthController extends Controller
         } catch (Exception $e) {
             \Illuminate\Support\Facades\Log::error('LỖI ĐĂNG NHẬP GOOGLE: ' . $e->getMessage());
             
-            $fallbackUrl = env('FRONTEND_ATTENDEE_URL', 'http://localhost:3002');
+            $fallbackUrl = env('FRONTEND_URL', 'http://localhost:3002');
             return redirect()->to($fallbackUrl . '/login?error=' . urlencode($e->getMessage()));
         }
     }
