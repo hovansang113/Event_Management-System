@@ -47,9 +47,7 @@ RUN chown -R www-data:www-data storage bootstrap/cache && \
     chmod -R 775 storage bootstrap/cache
 
 # Chạy bù các lệnh tối ưu hóa của Laravel sau khi đã có đầy đủ source code và phân quyền
-RUN php artisan package:discover --ansi && \
-    php artisan config:cache && \
-    php artisan route:cache
+RUN php artisan package:discover --ansi 
 
 # 7. Cấu hình Nginx & Supervisor
 RUN rm -f /etc/nginx/http.d/default.conf && \
@@ -60,4 +58,7 @@ COPY docker/supervisord.conf /etc/supervisord.conf
 
 EXPOSE 80
 
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
+COPY docker/start.sh /start.sh
+RUN chmod +x /start.sh
+
+CMD ["/start.sh"]
