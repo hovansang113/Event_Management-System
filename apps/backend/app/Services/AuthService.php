@@ -25,15 +25,16 @@ class AuthService
         $token = Str::random(64);
 
         $user = $this->userRepository->create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => Hash::make($data['password']),
-            'role' => $data['role'],
-            'verification_token' => $token,
-            'verification_token_expires_at' => now()->addHours(24),
+            'name'                           => $data['name'],
+            'email'                          => $data['email'],
+            'password'                       => Hash::make($data['password']),
+            'role'                           => $data['role'],
+            'verification_token'             => $token,
+            'verification_token_expires_at'  => now()->addHours(24),
         ]);
 
-        Mail::to($user->email)->queue(new VerificationMail($user, $token));
+        // ✅ Đổi queue() → send()
+        Mail::to($user->email)->send(new VerificationMail($user, $token));
 
         return $user;
     }
@@ -58,9 +59,9 @@ class AuthService
 
         return [
             'access_token' => $token,
-            'token_type' => 'Bearer',
-            'user' => [
-                'id' => $user->id,
+            'token_type'   => 'Bearer',
+            'user'         => [
+                'id'   => $user->id,
                 'name' => $user->name,
                 'role' => $user->role,
             ],
@@ -80,9 +81,9 @@ class AuthService
         }
 
         return $this->userRepository->update($user->id, [
-            'email_verified' => true,
-            'email_verified_at' => now(),
-            'verification_token' => null,
+            'email_verified'                => true,
+            'email_verified_at'             => now(),
+            'verification_token'            => null,
             'verification_token_expires_at' => null,
         ]);
     }
@@ -96,13 +97,14 @@ class AuthService
         }
 
         $token = Str::random(64);
-        
+
         $this->userRepository->update($user->id, [
-            'verification_token' => $token,
+            'verification_token'            => $token,
             'verification_token_expires_at' => now()->addHours(24),
         ]);
 
-        Mail::to($user->email)->queue(new VerificationMail($user, $token));
+        // ✅ Đổi queue() → send()
+        Mail::to($user->email)->send(new VerificationMail($user, $token));
 
         return true;
     }
@@ -121,25 +123,25 @@ class AuthService
 
     public function handleSocialLogin(string $provider, $socialUser): array
     {
-        $email = $socialUser->getEmail();
+        $email    = $socialUser->getEmail();
         $googleId = $socialUser->getId();
 
         $user = $this->userRepository->findByEmail($email);
 
         if (!$user) {
             $user = $this->userRepository->create([
-                'name' => $socialUser->getName() ?? 'User',
-                'email' => $email,
-                'password' => Hash::make(Str::random(32)),
-                'role' => 'attendee',
-                'email_verified' => true,
+                'name'              => $socialUser->getName() ?? 'User',
+                'email'             => $email,
+                'password'          => Hash::make(Str::random(32)),
+                'role'              => 'attendee',
+                'email_verified'    => true,
                 'email_verified_at' => now(),
-                'google_id' => $googleId,
+                'google_id'         => $googleId,
             ]);
         } else {
             $this->userRepository->update($user->id, [
-                'google_id' => $googleId,
-                'email_verified' => true,
+                'google_id'         => $googleId,
+                'email_verified'    => true,
                 'email_verified_at' => $user->email_verified_at ?? now(),
             ]);
         }
@@ -148,7 +150,7 @@ class AuthService
 
         return [
             'token' => $token,
-            'user' => $user,
+            'user'  => $user,
         ];
     }
 }
