@@ -115,12 +115,12 @@ class AuthController extends Controller
             
 
             $role = $data['user']['role'];
-            $frontendUrl = 'http://localhost:3002'; // Default for attendee
+            $frontendUrl = env('FRONTEND_ATTENDEE_URL', 'http://localhost:3002');
 
             if ($role === 'organizer') {
-                $frontendUrl = 'http://localhost:3001';
+                $frontendUrl = env('FRONTEND_ORGANIZER_URL', 'http://localhost:3001');
             } else if ($role === 'admin') {
-                $frontendUrl = 'http://localhost:3003';
+                $frontendUrl = env('FRONTEND_ADMIN_URL', 'http://localhost:3003');
             }
 
             \Illuminate\Support\Facades\Log::info('Redirecting to frontend', ['url' => $frontendUrl, 'role' => $role]);
@@ -129,8 +129,8 @@ class AuthController extends Controller
         } catch (Exception $e) {
             \Illuminate\Support\Facades\Log::error('LỖI ĐĂNG NHẬP GOOGLE: ' . $e->getMessage());
             
-            // Luôn quay về attendee frontend (3002) khi có lỗi
-            return redirect()->to('http://localhost:3002/login?error=' . urlencode($e->getMessage()));
+            $fallbackUrl = env('FRONTEND_ATTENDEE_URL', 'http://localhost:3002');
+            return redirect()->to($fallbackUrl . '/login?error=' . urlencode($e->getMessage()));
         }
     }
 }
