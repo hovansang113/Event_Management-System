@@ -15,10 +15,15 @@ import PlaceOutlinedIcon from "@mui/icons-material/PlaceOutlined";
 import { useNavigate } from "react-router-dom";
 import { eventService } from "../../services/eventService";
 import { useState } from "react";
+import { useAuth } from "@eventnextday/shared-ui";
 
 export default function EventCard({ event }) {
   const navigate = useNavigate();
+  const { isLoggedIn, user } = useAuth();
   const [loading, setLoading] = useState(false);
+
+  const userRegistration = isLoggedIn && user && event.registrations?.find(r => ['Confirmed', 'Waitlist'].includes(r.status));
+
   const safeCapacity = event.capacity > 0 ? event.capacity : 1;
   const progress = Math.min(100, Math.round((event.registered / safeCapacity) * 100));
   const full = event.registered >= safeCapacity;
@@ -29,18 +34,35 @@ export default function EventCard({ event }) {
     navigate(`/events/${event.id}`, { state: { event } });
   };
 
-  const handleRegister = async (e) => {
+  const handleAction = async (e) => {
     e.stopPropagation();
+    if (!isLoggedIn) {
+      navigate("/login");
+      return;
+    }
+
     setLoading(true);
     try {
-      await eventService.register(event.id);
-      alert(full ? "Joined waitlist successfully!" : "Registered successfully!");
+      if (userRegistration) {
+        await eventService.cancel(userRegistration.id);
+        alert("Action successful!");
+      } else {
+        await eventService.register(event.id);
+        alert(full ? "Joined waitlist successfully!" : "Registered successfully!");
+      }
+      window.location.reload();
     } catch (err) {
-      alert("Failed to register: " + (err.response?.data?.message || err.message));
+      alert("Action failed: " + (err.response?.data?.message || err.message));
     } finally {
       setLoading(false);
     }
   };
+
+  const label = loading 
+    ? "Processing..." 
+    : (userRegistration 
+        ? (userRegistration.status === 'Waitlist' ? "Leave Waitlist" : "Cancel") 
+        : (full ? "Join Waitlist" : "Register"));
 
   return (
     <Card
@@ -125,12 +147,25 @@ export default function EventCard({ event }) {
             </Button>
           ) : (
             <Button
-              variant="contained"
+              variant={userRegistration ? "outlined" : "contained"}
               disabled={loading}
-              onClick={handleRegister}
-              sx={{ textTransform: "none", borderRadius: 2, fontSize: 12, fontWeight: 600 }}
+              onClick={handleAction}
+              sx={{ 
+                textTransform: "none", 
+                borderRadius: 2, 
+                fontSize: 12, 
+                fontWeight: 600,
+                bgcolor: userRegistration ? "transparent" : (full ? "#FFC107" : "#0d6efd"),
+                color: userRegistration ? "#dc2626" : (full ? "#202633" : "inherit"),
+                borderColor: userRegistration ? "#dc2626" : "transparent",
+                "&:hover": {
+                  bgcolor: userRegistration ? "#fee2e2" : (full ? "#E5AE00" : "#0b5ed7"),
+                  color: userRegistration ? "#dc2626" : "inherit",
+                  borderColor: userRegistration ? "#dc2626" : "transparent"
+                }
+              }}
             >
-              {loading ? "Processing..." : (full ? "Join Waitlist" : "Register")}
+              {label}
             </Button>
           )}
         </Box>
