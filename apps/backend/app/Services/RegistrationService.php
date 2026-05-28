@@ -66,7 +66,12 @@ class RegistrationService extends BaseService
 
             if ($reg->status === 'Cancelled') return;
 
+            // Lock the event to prevent concurrent registration/promotion issues
+            $event = Event::where('id', $reg->event_id)->lockForUpdate()->firstOrFail();
+
             $oldStatus = $reg->status;
+            $oldPosition = $reg->position_in_waitlist;
+
             $reg->update(['status' => 'Cancelled', 'cancelled_at' => now(), 'position_in_waitlist' => null]);
 
             if ($oldStatus === 'Confirmed') {
@@ -81,13 +86,20 @@ class RegistrationService extends BaseService
                         'status' => 'Confirmed',
                         'position_in_waitlist' => null
                     ]);
+                    
+                    // After promoting someone, all other waitlist positions must be decremented
+                    Registration::where('event_id', $reg->event_id)
+                        ->where('status', 'Waitlist')
+                        ->whereNotNull('position_in_waitlist')
+                        ->decrement('position_in_waitlist');
+                    
                     // TODO: Send notification email to the promoted user
                 }
-            } else if ($oldStatus === 'Waitlist') {
-                // Re-order waitlist positions
+            } else if ($oldStatus === 'Waitlist' && $oldPosition !== null) {
+                // Re-order waitlist positions for those who were behind the cancelled person
                 Registration::where('event_id', $reg->event_id)
                     ->where('status', 'Waitlist')
-                    ->where('position_in_waitlist', '>', $reg->getOriginal('position_in_waitlist'))
+                    ->where('position_in_waitlist', '>', $oldPosition)
                     ->decrement('position_in_waitlist');
             }
         });

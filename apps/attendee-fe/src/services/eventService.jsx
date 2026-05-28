@@ -55,13 +55,19 @@ export const eventService = {
 
   register: async (id) => {
     const response = await api.post(API_ENDPOINTS.ATTENDEE.EVENTS.REGISTER(id));
+    // Clear all caches to ensure data consistency
     registrationsCache = { data: null, timestamp: null };
+    listCache.clear();
+    detailCache.clear();
     return response.data;
   },
 
   cancel: async (registrationId) => {
     const response = await api.delete(API_ENDPOINTS.ATTENDEE.EVENTS.CANCEL(registrationId));
+    // Clear all caches to ensure data consistency
     registrationsCache = { data: null, timestamp: null };
+    listCache.clear();
+    detailCache.clear();
     return response.data;
   },
 
