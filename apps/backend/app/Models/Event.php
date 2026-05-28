@@ -28,6 +28,7 @@ class Event extends Model
         'event_date' => 'date',
         'event_time' => 'string',
         'capacity' => 'integer',
+        'status' => \App\Enums\EventStatus::class,
         'cancelled_at' => 'datetime',
     ];
 

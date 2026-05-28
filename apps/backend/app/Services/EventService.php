@@ -75,7 +75,7 @@ class EventService extends BaseService
     public function submitForApproval($id): bool
     {
         $event = $this->getEventById($id);
-        if (!$event || !in_array($event->status, [EventStatus::DRAFT->value, EventStatus::REJECTED->value])) {
+        if (!$event || !in_array($event->status, [EventStatus::DRAFT, EventStatus::REJECTED])) {
             return false;
         }
         return $this->eventRepository->update($id, ['status' => EventStatus::PENDING->value]);
@@ -86,8 +86,14 @@ class EventService extends BaseService
         try {
             DB::beginTransaction();
             $event = $this->getEventById($id);
-            if (!$event || $event->status !== EventStatus::PUBLISHED->value) {
-                return false;
+            
+            if (!$event) {
+                throw new ApiException('Event not found or unauthorized', 404);
+            }
+
+            if ($event->status !== EventStatus::PUBLISHED) {
+                $statusName = $event->status instanceof EventStatus ? $event->status->value : $event->status;
+                throw new ApiException("Cannot cancel an event with status: {$statusName}. Only published events can be cancelled.", 400);
             }
 
             $result = $this->eventRepository->update($id, [
@@ -96,32 +102,43 @@ class EventService extends BaseService
                 'cancelled_at' => now(),
             ]);
 
-            if ($result) {
+            if (!$result) {
+                throw new \Exception('Failed to update event status in database');
+            }
+
+            DB::commit();
+
+            // Send emails after successful commit to prevent rollback if mail fails
+            try {
                 $event->refresh();
-                // Load registrations with users to ensure email address is available
                 $registrations = $event->registrations()->where('status', 'Confirmed')->with('user')->get();
                 
                 foreach ($registrations as $registration) {
                     if ($registration->user && $registration->user->email) {
-                        Mail::to($registration->user->email)->send(new EventCancelledMail($event));
-                        Log::info("Cancellation email sent to attendee: " . $registration->user->email . " for event: " . $event->id);
+                        // Use queue if configured, otherwise send synchronously
+                        Mail::to($registration->user->email)->queue(new EventCancelledMail($event));
                     }
                 }
+            } catch (\Exception $e) {
+                Log::error("Failed to send cancellation emails: " . $e->getMessage());
+                // Don't fail the whole operation if only emails fail
             }
 
-            DB::commit();
-            return $result;
+            return true;
+        } catch (ApiException $e) {
+            DB::rollBack();
+            throw $e;
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error("Failed to cancel event: " . $e->getMessage());
-            return false;
+            throw new ApiException('An unexpected error occurred while cancelling the event: ' . $e->getMessage(), 400);
         }
     }
 
     public function updateEvent($id, array $data): ?Event
     {
         $event = $this->getEventById($id);
-        if (!$event || in_array($event->status, [EventStatus::PENDING->value, EventStatus::PUBLISHED->value])) {
+        if (!$event || in_array($event->status, [EventStatus::PENDING, EventStatus::PUBLISHED])) {
             return null;
         }
 
@@ -152,11 +169,11 @@ class EventService extends BaseService
     public function approveEvent($id): Event
     {
         $event = $this->eventRepository->findById($id);
-        
+
         if (!$event) {
             throw new ApiException('Event not found', 404);
         }
-        if ($event->status !== EventStatus::PENDING->value) {
+        if ($event->status !== EventStatus::PENDING) {
             throw new ApiException('Only pending events can be approved', 400);
         }
 
@@ -168,11 +185,11 @@ class EventService extends BaseService
     public function rejectEvent($id, $reason): Event
     {
         $event = $this->eventRepository->findById($id);
-        
+
         if (!$event) {
             throw new ApiException('Event not found', 404);
         }
-        if ($event->status !== EventStatus::PENDING->value) {
+        if ($event->status !== EventStatus::PENDING) {
             throw new ApiException('Only pending events can be rejected', 400);
         }
 
