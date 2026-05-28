@@ -55,11 +55,11 @@ function EventDetailPage() {
   const [reviewSort, setReviewSort] = useState("newest");
 
   useEffect(() => {
-    if (isLoggedIn && user && event) {
-      const existing = event.registrations?.find(r => r.user_id === user.id && ['Confirmed', 'Waitlist'].includes(r.status));
+    if (isLoggedIn && event) {
+      const existing = event.registrations?.find(r => ['Confirmed', 'Waitlist'].includes(r.status));
       setUserRegistration(existing || null);
     }
-  }, [isLoggedIn, user, event]);
+  }, [isLoggedIn, event]);
 
   useEffect(() => {
     if (event?.reviews_list) {
