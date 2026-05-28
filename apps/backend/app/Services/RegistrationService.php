@@ -6,6 +6,9 @@ use App\Repositories\Interfaces\RegistrationRepositoryInterface;
 use App\Models\Event;
 use Illuminate\Support\Facades\DB;
 use App\Models\Registration;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\EventPromotedMail;
+use App\Mail\EventRegisterMail;
 
 class RegistrationService extends BaseService
 {
@@ -18,7 +21,7 @@ class RegistrationService extends BaseService
 
     public function registerUser(int $userId, int $eventId)
     {
-        return DB::transaction(function () use ($userId, $eventId) {
+        $registration = DB::transaction(function () use ($userId, $eventId) {
             // Lock event for update to prevent race conditions on capacity
             $event = Event::where('id', $eventId)->lockForUpdate()->firstOrFail();
 
@@ -53,6 +56,18 @@ class RegistrationService extends BaseService
                 'position_in_waitlist' => $lastPos + 1
             ]);
         });
+
+        // Send confirmation email after transaction commits
+        try {
+            $registration->load('user', 'event');
+            if ($registration->user && $registration->user->email) {
+                Mail::to($registration->user->email)->queue(new EventRegisterMail($registration));
+            }
+        } catch (\Exception $e) {
+            \Log::error('Failed to send registration email: ' . $e->getMessage());
+        }
+
+        return $registration;
     }
 
     public function cancelRegistration(int $registrationId)
@@ -93,7 +108,14 @@ class RegistrationService extends BaseService
                         ->whereNotNull('position_in_waitlist')
                         ->decrement('position_in_waitlist');
                     
-                    // TODO: Send notification email to the promoted user
+                    try {
+                        $next->load('user', 'event');
+                        if ($next->user && $next->user->email) {
+                            Mail::to($next->user->email)->queue(new EventPromotedMail($next));
+                        }
+                    } catch (\Exception $e) {
+                        \Log::error('Failed to send promotion email: ' . $e->getMessage());
+                    }
                 }
             } else if ($oldStatus === 'Waitlist' && $oldPosition !== null) {
                 // Re-order waitlist positions for those who were behind the cancelled person
