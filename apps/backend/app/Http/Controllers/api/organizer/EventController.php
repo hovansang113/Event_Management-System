@@ -75,13 +75,14 @@ class EventController extends Controller
 
     public function cancel(CancelEventRequest $request, $id): JsonResponse
     {
-        $result = $this->eventService->cancelEvent($id, $request->cancellation_reason);
-        
-        if (!$result) {
-            return $this->error('Cannot cancel this event', 400);
+        try {
+            $this->eventService->cancelEvent($id, $request->cancellation_reason);
+            return $this->success(null, 'Event cancelled successfully');
+        } catch (\App\Exceptions\ApiException $e) {
+            return $this->error($e->getMessage(), $e->getCode() ?: 400);
+        } catch (\Exception $e) {
+            return $this->error('Failed to cancel event: ' . $e->getMessage(), 400);
         }
-        
-        return $this->success(null, 'Event cancelled successfully');
     }
 
     public function statistics(): JsonResponse

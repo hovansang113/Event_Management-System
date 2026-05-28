@@ -52,7 +52,7 @@ class EventRepository extends BaseRepository implements EventRepositoryInterface
 
         return [
             'total_events'    => $events->count(),
-            'published_count' => $events->where('status', EventStatus::PUBLISHED->value)->count(),
+            'published_count' => $events->where('status', EventStatus::PUBLISHED)->count(),
             'total_attendees' => $events->sum('confirmed_count'),
             'upcoming_events' => $events->where('event_date', '>=', $today)->count(),
         ];
@@ -105,7 +105,7 @@ class EventRepository extends BaseRepository implements EventRepositoryInterface
                 'registrations as waitlist_count' => fn($q) => $q->where('status', 'Waitlist'),
                 'reviews as reviews_count',
             ])
-            ->where('status', EventStatus::PUBLISHED->value)
+            ->where('status', EventStatus::PUBLISHED)
             ->whereHas('category', fn($q) => $q->where('is_active', true));
 
         if (!empty($filters['category'])) {
@@ -159,7 +159,7 @@ class EventRepository extends BaseRepository implements EventRepositoryInterface
                 'registrations as waitlist_count' => fn($q) => $q->where('status', 'Waitlist'),
                 'reviews as reviews_count',
             ])
-            ->where('status', EventStatus::PUBLISHED->value)
+            ->where('status', EventStatus::PUBLISHED)
             ->whereHas('category', fn($q) => $q->where('is_active', true))
             ->find($id);
     }
@@ -169,11 +169,11 @@ class EventRepository extends BaseRepository implements EventRepositoryInterface
         $today = now()->toDateString();
 
         return [
-            'total_pending'   => $this->model->where('status', EventStatus::PENDING->value)->count(),
-            'total_published' => $this->model->where('status', EventStatus::PUBLISHED->value)->count(),
-            'total_rejected'  => $this->model->where('status', EventStatus::REJECTED->value)->count(),
-            'approved_today'  => $this->model->where('status', EventStatus::PUBLISHED->value)->whereDate('updated_at', $today)->count(),
-            'rejected_today'  => $this->model->where('status', EventStatus::REJECTED->value)->whereDate('updated_at', $today)->count(),
+            'total_pending'   => $this->model->where('status', EventStatus::PENDING)->count(),
+            'total_published' => $this->model->where('status', EventStatus::PUBLISHED)->count(),
+            'total_rejected'  => $this->model->where('status', EventStatus::REJECTED)->count(),
+            'approved_today'  => $this->model->where('status', EventStatus::PUBLISHED)->whereDate('updated_at', $today)->count(),
+            'rejected_today'  => $this->model->where('status', EventStatus::REJECTED)->whereDate('updated_at', $today)->count(),
         ];
     }
 }
