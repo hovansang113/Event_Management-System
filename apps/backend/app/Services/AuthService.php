@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Repositories\Interfaces\UserRepositoryInterface;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 use Exception;
@@ -22,21 +23,22 @@ class AuthService
 
     public function register(array $data): User
     {
-        $token = Str::random(64);
+        return DB::transaction(function () use ($data) {
+            $token = Str::random(64);
 
-        $user = $this->userRepository->create([
-            'name'                           => $data['name'],
-            'email'                          => $data['email'],
-            'password'                       => Hash::make($data['password']),
-            'role'                           => $data['role'],
-            'verification_token'             => $token,
-            'verification_token_expires_at'  => now()->addHours(24),
-        ]);
+            $user = $this->userRepository->create([
+                'name'                           => $data['name'],
+                'email'                          => $data['email'],
+                'password'                       => Hash::make($data['password']),
+                'role'                           => $data['role'],
+                'verification_token'             => $token,
+                'verification_token_expires_at'  => now()->addHours(24),
+            ]);
 
-        // ✅ Đổi queue() → send()
-        Mail::to($user->email)->send(new VerificationMail($user, $token));
+            Mail::to($user->email)->send(new VerificationMail($user, $token));
 
-        return $user;
+            return $user;
+        });
     }
 
     public function login(array $credentials): array
@@ -103,7 +105,6 @@ class AuthService
             'verification_token_expires_at' => now()->addHours(24),
         ]);
 
-        // ✅ Đổi queue() → send()
         Mail::to($user->email)->send(new VerificationMail($user, $token));
 
         return true;
