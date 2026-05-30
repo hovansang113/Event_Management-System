@@ -163,8 +163,8 @@ const Dashboard = () => {
                     <Typography sx={{ fontSize: 11, color: "#9ca3af" }}>{time}</Typography>
                   </Box>
                   <Typography sx={{ fontSize: 13, color: "#4b5563" }} noWrap>{event.location || "-"}</Typography>
-                  <Typography sx={{ fontSize: 13, fontWeight: 600, color: "#111827" }}>
-                    {event.registrations_count ?? 0}/{event.capacity ?? 0}
+                    <Typography sx={{ fontSize: 13, fontWeight: 600, color: "#111827" }}>
+                    {event.registered ?? 0}/{event.capacity ?? 0}
                   </Typography>
                   <Typography sx={{ fontSize: 13, fontWeight: 600, color: (event.waitlist_count ?? 0) > 0 ? "#ca8a04" : "#9ca3af" }}>
                     {event.waitlist_count ?? 0}
