@@ -7,6 +7,7 @@ use App\Models\Event;
 use Illuminate\Support\Facades\DB;
 use App\Models\Registration;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 use App\Mail\EventPromotedMail;
 use App\Mail\EventRegisterMail;
 
@@ -59,12 +60,12 @@ class RegistrationService extends BaseService
 
         // Send confirmation email after transaction commits
         try {
-            $registration->load('user', 'event');
+            $registration->load(['user', 'event']);
             if ($registration->user && $registration->user->email) {
-                Mail::to($registration->user->email)->queue(new EventRegisterMail($registration));
+                Mail::to($registration->user->email)->send(new EventRegisterMail($registration));
             }
         } catch (\Exception $e) {
-            \Log::error('Failed to send registration email: ' . $e->getMessage());
+            Log::error('Failed to send registration email: ' . $e->getMessage());
         }
 
         return $registration;
@@ -72,14 +73,14 @@ class RegistrationService extends BaseService
 
     public function cancelRegistration(int $registrationId)
     {
-        return DB::transaction(function () use ($registrationId) {
+        $promotedRegistration = DB::transaction(function () use ($registrationId) {
             $reg = Registration::where('id', $registrationId)->lockForUpdate()->firstOrFail();
             
             if ($reg->user_id !== auth('api')->id()) {
                 throw new \Exception('Unauthorized action.');
             }
 
-            if ($reg->status === 'Cancelled') return;
+            if ($reg->status === 'Cancelled') return null;
 
             // Lock the event to prevent concurrent registration/promotion issues
             $event = Event::where('id', $reg->event_id)->lockForUpdate()->firstOrFail();
@@ -108,14 +109,7 @@ class RegistrationService extends BaseService
                         ->whereNotNull('position_in_waitlist')
                         ->decrement('position_in_waitlist');
                     
-                    try {
-                        $next->load('user', 'event');
-                        if ($next->user && $next->user->email) {
-                            Mail::to($next->user->email)->queue(new EventPromotedMail($next));
-                        }
-                    } catch (\Exception $e) {
-                        \Log::error('Failed to send promotion email: ' . $e->getMessage());
-                    }
+                    return $next;
                 }
             } else if ($oldStatus === 'Waitlist' && $oldPosition !== null) {
                 // Re-order waitlist positions for those who were behind the cancelled person
@@ -124,7 +118,23 @@ class RegistrationService extends BaseService
                     ->where('position_in_waitlist', '>', $oldPosition)
                     ->decrement('position_in_waitlist');
             }
+
+            return null;
         });
+
+        // Send promotion email after transaction commits
+        if ($promotedRegistration) {
+            try {
+                $promotedRegistration->load(['user', 'event']);
+                if ($promotedRegistration->user && $promotedRegistration->user->email) {
+                    Mail::to($promotedRegistration->user->email)->send(new EventPromotedMail($promotedRegistration));
+                }
+            } catch (\Exception $e) {
+                Log::error('Failed to send promotion email: ' . $e->getMessage());
+            }
+        }
+
+        return true;
     }
 
     public function getUserRegistrations(int $userId)

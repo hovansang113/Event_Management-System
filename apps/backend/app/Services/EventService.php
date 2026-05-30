@@ -115,8 +115,8 @@ class EventService extends BaseService
                 
                 foreach ($registrations as $registration) {
                     if ($registration->user && $registration->user->email) {
-                        // Use queue if configured, otherwise send synchronously
-                        Mail::to($registration->user->email)->queue(new EventCancelledMail($event));
+                        // Use send synchronously for reliability in this environment
+                        Mail::to($registration->user->email)->send(new EventCancelledMail($event));
                     }
                 }
             } catch (\Exception $e) {
