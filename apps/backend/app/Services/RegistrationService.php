@@ -23,7 +23,6 @@ class RegistrationService extends BaseService
     public function registerUser(int $userId, int $eventId)
     {
         $registration = DB::transaction(function () use ($userId, $eventId) {
-            // Lock event for update to prevent race conditions on capacity
             $event = Event::where('id', $eventId)->lockForUpdate()->firstOrFail();
 
             $existing = Registration::where('user_id', $userId)
