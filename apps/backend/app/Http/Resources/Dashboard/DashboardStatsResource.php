@@ -17,8 +17,8 @@ class DashboardStatsResource extends JsonResource
         return [
             'total_users' => $this['total_users'],
             'total_events' => $this['total_events'],
-            'pending_approval' => $this['pending_approval'],
-            'approved_events' => $this['approved_events'],
+            'pending_events' => $this['pending_events'],
+            'total_registrations' => $this['total_registrations'],
         ];
     }
 }
