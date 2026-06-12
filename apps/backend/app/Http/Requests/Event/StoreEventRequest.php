@@ -20,6 +20,14 @@ class StoreEventRequest extends FormRequest
      *
      * @return array<string, ValidationRule|array<mixed>|string>
      */
+    protected function prepareForValidation(): void
+    {
+        if ($this->has('status') && $this->status) {
+            $map = ['draft' => 'Draft', 'pending' => 'Pending'];
+            $this->merge(['status' => $map[strtolower($this->status)] ?? $this->status]);
+        }
+    }
+
     public function rules(): array
     {
         return [
