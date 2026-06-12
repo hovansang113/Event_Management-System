@@ -90,7 +90,7 @@ export default function EventCard({ event }) {
         <CardMedia
           className="event-card-image"
           component="img"
-          height="150"
+          height="190"
           image={event.image}
           alt={event.title}
           sx={{ transition: "transform 280ms ease" }}
