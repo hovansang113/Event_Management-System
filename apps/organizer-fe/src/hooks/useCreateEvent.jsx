@@ -138,10 +138,10 @@ export const useCreateEvent = (onSuccess, eventId = null) => {
         imageUrl = await upLoadImage(imageFile);
       }
       
-      const submitData = { 
-        ...formData, 
-        image: imageUrl, 
-        status: "draft" 
+      const submitData = {
+        ...formData,
+        image: imageUrl,
+        status: "Draft"
       };
       
       await eventService.create(submitData);
@@ -166,10 +166,10 @@ export const useCreateEvent = (onSuccess, eventId = null) => {
         imageUrl = await upLoadImage(imageFile);
       }
 
-      const submitData = { 
-        ...formData, 
-        image: imageUrl, 
-        status: "pending" 
+      const submitData = {
+        ...formData,
+        image: imageUrl,
+        status: "Pending"
       };
 
       await eventService.create(submitData);

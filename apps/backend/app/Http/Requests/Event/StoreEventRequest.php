@@ -31,7 +31,7 @@ class StoreEventRequest extends FormRequest
             'capacity' => 'required|integer|min:1',
             'category_id' => 'required|exists:categories,id',
             'image' => 'nullable|string',
-            'status' => 'nullable|in:draft,pending',
+            'status' => 'nullable|in:Draft,Pending',
         ];
     }
 }
